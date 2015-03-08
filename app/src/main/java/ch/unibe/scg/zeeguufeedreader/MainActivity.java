@@ -1,6 +1,7 @@
 package ch.unibe.scg.zeeguufeedreader;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -35,6 +36,7 @@ public class MainActivity extends ActionBarActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //setTheme(R.style.AppThemeBlue);
         setContentView(R.layout.activity_main);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
@@ -60,12 +62,15 @@ public class MainActivity extends ActionBarActivity
         switch (number) {
             case 1:
                 mTitle = getString(R.string.title_section1);
+                getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
                 break;
             case 2:
                 mTitle = getString(R.string.title_section2);
+                getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
                 break;
             case 3:
                 mTitle = getString(R.string.title_section3);
+                getWindow().setStatusBarColor(getResources().getColor(R.color.black));
                 break;
         }
     }
