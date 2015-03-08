@@ -2,6 +2,7 @@ package ch.unibe.scg.zeeguufeedreader;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -22,6 +23,11 @@ import android.widget.TextView;
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+
+    FragmentManager fragmentManager = getSupportFragmentManager();
+    FragmentTransaction fragmentTransaction;
+
+    WebViewFragment webViewFragment = new WebViewFragment();
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -66,11 +72,16 @@ public class MainActivity extends ActionBarActivity
                 break;
             case 2:
                 mTitle = getString(R.string.title_section2);
-                getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
+                getWindow().setStatusBarColor(getResources().getColor(R.color.black));
+
                 break;
             case 3:
                 mTitle = getString(R.string.title_section3);
-                getWindow().setStatusBarColor(getResources().getColor(R.color.black));
+
+                // Switch fragment
+                fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.add(R.id.container, webViewFragment);
+                fragmentTransaction.commit();
                 break;
         }
     }
@@ -109,6 +120,18 @@ public class MainActivity extends ActionBarActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Allow to use the Android back button to navigate back in the WebView
+     */
+    @Override
+    public void onBackPressed()
+    {
+        boolean goBack = webViewFragment.onBackPressed();
+
+        if (goBack)
+            super.onBackPressed();
     }
 
     /**
