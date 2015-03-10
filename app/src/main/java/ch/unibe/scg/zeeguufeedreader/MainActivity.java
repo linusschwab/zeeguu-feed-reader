@@ -20,12 +20,10 @@ import android.support.v4.widget.DrawerLayout;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     FragmentManager fragmentManager = getSupportFragmentManager();
-    FragmentTransaction fragmentTransaction;
 
     WebViewFragment webViewFragment = new WebViewFragment();
 
@@ -58,14 +56,7 @@ public class MainActivity extends ActionBarActivity
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-                .commit();
-    }
-
-    public void onSectionAttached(int number) {
-        switch (number) {
+        switch (position + 1) {
             case 1:
                 mTitle = getString(R.string.title_section1);
                 getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
@@ -73,17 +64,18 @@ public class MainActivity extends ActionBarActivity
             case 2:
                 mTitle = getString(R.string.title_section2);
                 getWindow().setStatusBarColor(getResources().getColor(R.color.black));
-
                 break;
             case 3:
                 mTitle = getString(R.string.title_section3);
-
-                // Switch fragment
-                fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.add(R.id.container, webViewFragment);
-                fragmentTransaction.commit();
+                switchFragment(webViewFragment);
                 break;
         }
+    }
+
+    private void switchFragment(Fragment fragment) {
+        fragmentManager.beginTransaction()
+            .replace(R.id.container, fragment)
+            .commit();
     }
 
     public void restoreActionBar() {
@@ -133,45 +125,4 @@ public class MainActivity extends ActionBarActivity
         if (goBack)
             super.onBackPressed();
     }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
-        }
-
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            ((MainActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
-        }
-    }
-
 }
