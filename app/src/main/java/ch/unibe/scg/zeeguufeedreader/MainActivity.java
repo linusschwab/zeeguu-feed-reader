@@ -23,14 +23,15 @@ import android.widget.TextView;
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
-    FragmentManager fragmentManager = getSupportFragmentManager();
-
-    WebViewFragment webViewFragment = new WebViewFragment();
+    private FragmentManager fragmentManager = getSupportFragmentManager();
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
+
+    private WebViewFragment webViewFragment = new WebViewFragment();
+    private FeedOverviewFragment feedOverviewFragment = new FeedOverviewFragment();
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -51,6 +52,10 @@ public class MainActivity extends ActionBarActivity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+        // Display Feed Overview
+        // TODO: Mark "Feed List" as active in the navigation drawer
+        onNavigationDrawerItemSelected(0);
     }
 
     @Override
@@ -59,15 +64,19 @@ public class MainActivity extends ActionBarActivity
         switch (position + 1) {
             case 1:
                 mTitle = getString(R.string.title_section1);
-                getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
+                switchFragment(feedOverviewFragment);
                 break;
             case 2:
                 mTitle = getString(R.string.title_section2);
-                getWindow().setStatusBarColor(getResources().getColor(R.color.black));
+                switchFragment(webViewFragment);
                 break;
             case 3:
                 mTitle = getString(R.string.title_section3);
-                switchFragment(webViewFragment);
+                getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
+                break;
+            case 4:
+                mTitle = getString(R.string.title_section4);
+                getWindow().setStatusBarColor(getResources().getColor(R.color.black));
                 break;
         }
     }

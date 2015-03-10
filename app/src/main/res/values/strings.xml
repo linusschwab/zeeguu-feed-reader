@@ -1,9 +1,10 @@
 <resources>
     <string name="app_name">Zeeguu Feed Reader</string>
 
-    <string name="title_section1">Red Status Bar</string>
-    <string name="title_section2">Black Status Bar</string>
-    <string name="title_section3">Web View</string>
+    <string name="title_section1">Feed List</string>
+    <string name="title_section2">Web View</string>
+    <string name="title_section3">Red Status Bar</string>
+    <string name="title_section4">Black Status Bar</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

@@ -6,8 +6,11 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ExpandableListView;
 
 public class FeedOverviewFragment extends Fragment {
+
+    private ExpandableListView mExpandableListView;
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -26,8 +29,12 @@ public class FeedOverviewFragment extends Fragment {
      * provide a UI.
      */
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return super.onCreateView(inflater, container, savedInstanceState);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View mainView = (View) inflater.inflate(R.layout.fragment_feed_overview, container, false);
+        mExpandableListView = (ExpandableListView) mainView.findViewById(R.id.main_list_view);
+
+        return mainView;
     }
 
     /**
