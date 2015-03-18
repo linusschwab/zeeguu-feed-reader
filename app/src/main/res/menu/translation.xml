@@ -1,5 +1,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/action_settings" android:title="Test"
+        android:orderInCategory="100" app:showAsAction="always" />
+    <item android:id="@+id/action_translate" android:title="Translate"
         android:orderInCategory="100" app:showAsAction="never" />
+
 </menu>

@@ -2,8 +2,11 @@ package ch.unibe.scg.zeeguufeedreader;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
+// import android.view.ActionMode;
+// import android.view.ActionMode.Callback;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +42,9 @@ public class FeedItemFragment extends Fragment {
 
         // Set content
         mTextView.setText(Html.fromHtml("<h2>Title</h2><br><p>this is <u>underlined</u> text</p> <br><br> <p>this is a <a href=\"http://google.ch\">link</a></p>"));
+
+        // Set custom action mode for the translation
+        mTextView.setCustomSelectionActionModeCallback(new TranslationActionMode(mTextView, getActivity()));
 
         return mainView;
     }

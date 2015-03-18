@@ -1,32 +1,17 @@
 package ch.unibe.scg.zeeguufeedreader;
 
-import android.app.Activity;
-import android.graphics.Color;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.view.ActionMode;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
 
-public class MainActivity extends ActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+public class MainActivity extends ActionBarActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     private FragmentManager fragmentManager = getSupportFragmentManager();
-
-    private ActionMode mActionMode = null;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -143,34 +128,5 @@ public class MainActivity extends ActionBarActivity
 
         if (goBack)
             super.onBackPressed();
-    }
-
-    @Override
-    public void onSupportActionModeStarted(ActionMode mode) {
-        // TODO: Check active fragment to allow different action modes for different fragments
-        if (mActionMode == null) {
-            mActionMode = mode;
-            Menu menu = mode.getMenu();
-
-            // Remove the default menu items (select all, copy, paste, search)
-            menu.clear();
-
-            // Remove the items individually
-            // menu.removeItem(android.R.id.[id_of_item_to_remove])
-
-            // Inflate custom menu items
-            mode.getMenuInflater().inflate(R.menu.translation, menu);
-
-            // Set translation
-            mode.setTitle("Translation");
-        }
-
-        super.onSupportActionModeStarted(mode);
-    }
-
-    @Override
-    public void onSupportActionModeFinished(ActionMode mode) {
-        mActionMode = null;
-        super.onSupportActionModeFinished(mode);
     }
 }
