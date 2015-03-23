@@ -1,20 +1,26 @@
 package ch.unibe.scg.zeeguufeedreader;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
+import android.view.ActionMode;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
-// import android.view.ActionMode;
-// import android.view.ActionMode.Callback;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 public class FeedItemFragment extends Fragment {
 
-    private TextView mTextView;
+    private TextViewSelection mTextView;
+    private TextViewSelection translationBar;
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -34,17 +40,19 @@ public class FeedItemFragment extends Fragment {
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View mainView = (View) inflater.inflate(R.layout.fragment_feed_item, container, false);
-        mTextView = (TextView) mainView.findViewById(R.id.feed_item_content);
+        View mainView = inflater.inflate(R.layout.fragment_feed_item, container, false);
+        mTextView = (TextViewSelection) mainView.findViewById(R.id.feed_item_content);
+        translationBar = (TextViewSelection) mainView.findViewById(R.id.feed_item_translation);
 
         // Make links clickable
         mTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Set content
-        mTextView.setText(Html.fromHtml("<h2>Title</h2><br><p>this is <u>underlined</u> text</p> <br><br> <p>this is a <a href=\"http://google.ch\">link</a></p>"));
+        mTextView.setText(Html.fromHtml("<h2>Title</h2><br><p>this is <u>underlined</u> text</p> <br><br> <p>this is a <a href=\"http://google.ch\">link</a></p>" + "Test"));
 
         // Set custom action mode for the translation
-        mTextView.setCustomSelectionActionModeCallback(new TranslationActionMode(mTextView, getActivity()));
+        mTextView.setCustomSelectionActionModeCallback(new TranslationActionMode(mainView, getActivity()));
+        mTextView.setTranslationBar(translationBar);
 
         return mainView;
     }

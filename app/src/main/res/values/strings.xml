@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Zeeguu Feed Reader</string>
 
-    <string name="title_section1">Feed List</string>
+    <string name="title_section1">Feed Overview</string>
     <string name="title_section2">Feed Item</string>
     <string name="title_section3">Web View</string>
     <string name="title_section4">Red Status Bar</string>

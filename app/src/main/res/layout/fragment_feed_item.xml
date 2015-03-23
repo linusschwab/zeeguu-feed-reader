@@ -2,8 +2,18 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <TextView
+    <ch.unibe.scg.zeeguufeedreader.TextViewSelection
+        android:id="@+id/feed_item_translation"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:padding="16dp"
+        android:textIsSelectable="false"
+        android:background="@color/gray"
+        android:visibility="gone"/>
+
+    <ch.unibe.scg.zeeguufeedreader.TextViewSelection
         android:id="@+id/feed_item_content"
+        android:layout_below="@+id/feed_item_translation"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"

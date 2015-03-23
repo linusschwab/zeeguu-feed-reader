@@ -1,19 +1,23 @@
 package ch.unibe.scg.zeeguufeedreader;
 
 import android.app.Activity;
+import android.text.Html;
 import android.view.ActionMode;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.TextView;
+import android.view.View;
 import android.widget.Toast;
 
 public class TranslationActionMode implements ActionMode.Callback {
 
-    private TextView mTextView;
+    private TextViewSelection mTextView;
+    private TextViewSelection translationBar;
     private Activity mActivity;
 
-    public TranslationActionMode(TextView textView, Activity activity) {
-        mTextView = textView;
+    public TranslationActionMode(View mainView, Activity activity) {
+        mTextView = (TextViewSelection) mainView.findViewById(R.id.feed_item_content);
+        translationBar = (TextViewSelection) mainView.findViewById(R.id.feed_item_translation);
         mActivity = activity;
     }
 
@@ -24,8 +28,10 @@ public class TranslationActionMode implements ActionMode.Callback {
         menu.removeItem(android.R.id.cut);
         //menu.removeItem(android.R.id.copy);
 
-        // Set translation menu
-        actionMode.getMenuInflater().inflate(R.menu.translation, menu);
+        // Inflate a menu resource providing context menu items
+        MenuInflater inflater = actionMode.getMenuInflater();
+        inflater.inflate(R.menu.translation, menu);
+
         return true;
     }
 
@@ -33,39 +39,29 @@ public class TranslationActionMode implements ActionMode.Callback {
     // will be used to generate action buttons for the action mode
     @Override
     public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
-        actionMode.setTitle(getSelectedText());
+        translationBar.setVisibility(View.VISIBLE);
+        translationBar.setText(Html.fromHtml("<h2>" + mTextView.getSelectedText() + "</h2>"));
         return true;
     }
 
     @Override
     public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
-        int id = menuItem.getItemId();
-
-        if (id == R.id.action_translate) {
-            actionMode.setTitle(getSelectedText());
-            return true;
+        switch (menuItem.getItemId()) {
+            case R.id.action_bookmark:
+                Toast.makeText(mActivity, "Word saved to your wordlist", Toast.LENGTH_SHORT).show();
+                actionMode.finish(); // Action picked, so close the CAB
+                return true;
+//              case R.id.action_translate:
+//              Toast.makeText(mActivity, "Translation: " + mTextView.getSelectedText(), Toast.LENGTH_LONG).show();
+//              return true;
+            default:
+                return false;
         }
-
-        return false;
     }
 
     @Override
     public void onDestroyActionMode(ActionMode actionMode) {
-
-    }
-
-    private String getSelectedText() {
-        int min = 0;
-        int max = mTextView.getText().length();
-
-        if (mTextView.isFocused()) {
-            final int selectionStart = mTextView.getSelectionStart();
-            final int selectionEnd = mTextView.getSelectionEnd();
-
-            min = Math.max(0, Math.min(selectionStart, selectionEnd));
-            max = Math.max(0, Math.max(selectionStart, selectionEnd));
-        }
-
-        return mTextView.getText().subSequence(min, max).toString().trim();
+        translationBar.setVisibility(View.GONE);
+        translationBar.setText("");
     }
 }

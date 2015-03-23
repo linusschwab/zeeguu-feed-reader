@@ -64,11 +64,9 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
                 switchFragment(webViewFragment);
                 break;
             case 4:
-                mTitle = getString(R.string.title_section4);
                 getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
                 break;
             case 5:
-                mTitle = getString(R.string.title_section5);
                 getWindow().setStatusBarColor(getResources().getColor(R.color.black));
                 break;
         }
@@ -110,7 +108,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+        // noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -122,8 +120,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
      * Allow to use the Android back button to navigate back in the WebView
      */
     @Override
-    public void onBackPressed()
-    {
+    public void onBackPressed() {
         boolean goBack = webViewFragment.onBackPressed();
 
         if (goBack)
