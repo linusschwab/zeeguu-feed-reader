@@ -34,7 +34,7 @@ public class TextViewSelection extends TextView {
         if (translationBar != null && (selStart != tempSelStart || selEnd != tempSelEnd)) {
             tempSelStart = selStart;
             tempSelEnd = selEnd;
-            translationBar.setText(Html.fromHtml("<h2>" + getSelectedText() + "</h2>"));
+            translationBar.setText(Html.fromHtml("<h2>" + getSelectedText(true) + "</h2>"));
         }
         super.onSelectionChanged(selStart, selEnd);
     }
@@ -43,11 +43,43 @@ public class TextViewSelection extends TextView {
         this.translationBar = translationBar;
     }
 
-    public String getSelectedText() {
+    public TextViewSelection getTranslationBar() {
+        return translationBar;
+    }
+
+    public String getSelectedText(boolean selectCompleteWord) {
         String text = getText().toString();
 
         int min = Math.max(0, getSelectionStart());
         int max = Math.max(0, getSelectionEnd());
+
+        if (selectCompleteWord) {
+            // Select complete word if partially selected (to the left side)
+            if (min != 0 && min != text.length()) {
+                String current = text.substring(min, min + 1);
+                String next = text.substring(min - 1, min);
+
+                while (min != 0
+                        && !(current.equals(" ") || next.equals(" "))
+                        && !(current.equals(newline) || next.equals(newline))) {
+                    next = text.substring(min - 1, min);
+                    min -= 1;
+                }
+            }
+
+            // Select complete word if partially selected (to the right side)
+            if (max != 0 && max != text.length()) {
+                String current = text.substring(max - 1, max);
+                String next = text.substring(max, max + 1);
+
+                while (max != text.length()
+                        && !(current.equals(" ") || next.equals(" "))
+                        && !(current.equals(newline) || next.equals(newline))) {
+                    next = text.substring(max, max + 1);
+                    max += 1;
+                }
+            }
+        }
 
         return text.substring(min, max).trim();
     }

@@ -40,7 +40,7 @@ public class TranslationActionMode implements ActionMode.Callback {
     @Override
     public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
         translationBar.setVisibility(View.VISIBLE);
-        translationBar.setText(Html.fromHtml("<h2>" + mTextView.getSelectedText() + "</h2>"));
+        translationBar.setText(Html.fromHtml("<h2>" + mTextView.getSelectedText(true) + "</h2>"));
         return true;
     }
 
