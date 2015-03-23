@@ -11,6 +11,8 @@ public class TextViewSelection extends TextView {
     private String newline = System.getProperty("line.separator");
     private int tempSelStart = 0;
     private int tempSelEnd = 0;
+    private int min = 0;
+    private int max = 0;
 
     public TextViewSelection(Context context) {
         super(context);
@@ -50,8 +52,10 @@ public class TextViewSelection extends TextView {
     public String getSelectedText(boolean selectCompleteWord) {
         String text = getText().toString();
 
-        int min = Math.max(0, getSelectionStart());
-        int max = Math.max(0, getSelectionEnd());
+        if (this.isFocused()) {
+            min = Math.max(0, getSelectionStart());
+            max = Math.max(0, getSelectionEnd());
+        }
 
         if (selectCompleteWord) {
             // Select complete word if partially selected (to the left side)
