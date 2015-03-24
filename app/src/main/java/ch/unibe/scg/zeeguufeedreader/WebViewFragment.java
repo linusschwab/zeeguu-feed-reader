@@ -9,6 +9,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+/**
+ *  Fragment to display the webpage of a feed article in the browser (for feeds with limited content)
+ */
 public class WebViewFragment extends Fragment {
 
     private WebView mWebView;

@@ -8,6 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 
+/**
+ *  Home fragment, displays all feeds and categories.
+ */
 public class FeedOverviewFragment extends Fragment {
 
     private ExpandableListView mExpandableListView;

@@ -9,6 +9,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 
+/**
+ *  Activity to display and switch between the fragments
+ */
 public class MainActivity extends ActionBarActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     private FragmentManager fragmentManager = getSupportFragmentManager();

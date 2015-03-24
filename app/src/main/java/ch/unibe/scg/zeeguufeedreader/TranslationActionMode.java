@@ -9,6 +9,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+/**
+ *  Action mode callback to display the translation of selected text and add words to the wordlist.
+ */
 public class TranslationActionMode implements ActionMode.Callback {
 
     private TextViewSelection mTextView;

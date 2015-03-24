@@ -5,6 +5,10 @@ import android.text.Html;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
+/**
+ *  Extended TextView that provides additional functions to select text, get the context of a
+ *  translated word and to update the translation if the text selection changes.
+ */
 public class TextViewSelection extends TextView {
 
     private TextViewSelection translationBar;
@@ -72,7 +76,7 @@ public class TextViewSelection extends TextView {
                     min -= 1;
                     inLoop = true;
                 }
-                if (inLoop)
+                if (inLoop && min != 0)
                     min += 1;
             }
 
@@ -90,7 +94,7 @@ public class TextViewSelection extends TextView {
                     max += 1;
                     inLoop = true;
                 }
-                if (inLoop)
+                if (inLoop && max != text.length())
                     max -=1;
 
             }
@@ -118,7 +122,7 @@ public class TextViewSelection extends TextView {
                 min -= 1;
                 inLoop = true;
             }
-            if (inLoop)
+            if (inLoop && min != 0)
                 min += 1;
         }
 
@@ -133,7 +137,7 @@ public class TextViewSelection extends TextView {
                 max += 1;
                 inLoop = true;
             }
-            if (inLoop)
+            if (inLoop && max != text.length())
                 max -= 1;
         }
 

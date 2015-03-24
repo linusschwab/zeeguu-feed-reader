@@ -1,22 +1,16 @@
 package ch.unibe.scg.zeeguufeedreader;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-
-import android.view.ActionMode;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
+/**
+ *  Fragment to display a single article from a feed
+ */
 public class FeedItemFragment extends Fragment {
 
     private TextViewSelection mTextView;
