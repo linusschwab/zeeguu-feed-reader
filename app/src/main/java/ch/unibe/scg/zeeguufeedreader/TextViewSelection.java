@@ -13,6 +13,7 @@ public class TextViewSelection extends TextView {
     private int tempSelEnd = 0;
     private int min = 0;
     private int max = 0;
+    private boolean inLoop;
 
     public TextViewSelection(Context context) {
         super(context);
@@ -63,12 +64,16 @@ public class TextViewSelection extends TextView {
                 String current = text.substring(min, min + 1);
                 String next = text.substring(min - 1, min);
 
+                inLoop = false;
                 while (min != 0
                         && !(current.equals(" ") || next.equals(" "))
                         && !(current.equals(newline) || next.equals(newline))) {
                     next = text.substring(min - 1, min);
                     min -= 1;
+                    inLoop = true;
                 }
+                if (inLoop)
+                    min += 1;
             }
 
             // Select complete word if partially selected (to the right side)
@@ -76,15 +81,67 @@ public class TextViewSelection extends TextView {
                 String current = text.substring(max - 1, max);
                 String next = text.substring(max, max + 1);
 
+                inLoop = false;
                 while (max != text.length()
                         && !(current.equals(" ") || next.equals(" "))
+                        && !(current.equals(".") || next.equals("."))
                         && !(current.equals(newline) || next.equals(newline))) {
                     next = text.substring(max, max + 1);
                     max += 1;
+                    inLoop = true;
                 }
+                if (inLoop)
+                    max -=1;
+
             }
         }
 
         return text.substring(min, max).trim();
+    }
+
+    public String getTranslationContext() {
+        String text = getText().toString();
+
+        if (this.isFocused()) {
+            min = Math.max(0, getSelectionStart());
+            max = Math.max(0, getSelectionEnd());
+        }
+
+        // Select context (to the left side)
+        if (min != 0 && min != text.length()) {
+            String current = text.substring(min, min + 1);
+            String next = text.substring(min - 1, min);
+
+            inLoop = false;
+            while (min != 0 && !(current.equals(newline) || next.equals(newline))) {
+                next = text.substring(min - 1, min);
+                min -= 1;
+                inLoop = true;
+            }
+            if (inLoop)
+                min += 1;
+        }
+
+        // Select context (to the right side)
+        if (max != 0 && max != text.length()) {
+            String current = text.substring(max - 1, max);
+            String next = text.substring(max, max + 1);
+
+            inLoop = false;
+            while (max != text.length() && !(current.equals(newline) || next.equals(newline))) {
+                next = text.substring(max, max + 1);
+                max += 1;
+                inLoop = true;
+            }
+            if (inLoop)
+                max -= 1;
+        }
+
+        return text.substring(min, max).trim();
+    }
+
+    public String getTranslation() {
+
+        return "";
     }
 }

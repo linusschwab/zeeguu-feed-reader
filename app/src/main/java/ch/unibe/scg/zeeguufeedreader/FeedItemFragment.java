@@ -48,7 +48,11 @@ public class FeedItemFragment extends Fragment {
         mTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Set content
-        mTextView.setText(Html.fromHtml("<h2>Title</h2><br><p>this is <u>underlined</u> text</p> <br><br> <p>this is a <a href=\"http://google.ch\">link</a></p>" + "Test"));
+        mTextView.setText(Html.fromHtml(
+                "<h2>Title</h2>" +
+                "<p>This is <u>underlined</u> text. And this is a test phrase that needs to be long enough so that it does not fit on one line.</p>" +
+                "<p>This is a <a href=\"http://google.ch\">link</a>.</p>" +
+                "Test"));
 
         // Set custom action mode for the translation
         mTextView.setCustomSelectionActionModeCallback(new TranslationActionMode(mainView, getActivity()));

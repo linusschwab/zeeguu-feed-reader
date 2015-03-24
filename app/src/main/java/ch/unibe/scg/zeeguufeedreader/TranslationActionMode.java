@@ -39,9 +39,16 @@ public class TranslationActionMode implements ActionMode.Callback {
     // will be used to generate action buttons for the action mode
     @Override
     public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
-        translationBar.setVisibility(View.VISIBLE);
-        translationBar.setText(Html.fromHtml("<h2>" + mTextView.getSelectedText(true) + "</h2>"));
-        return true;
+        // Only show action mode if selection is not empty
+        if (!mTextView.getSelectedText(false).equals("")) {
+            translationBar.setVisibility(View.VISIBLE);
+            translationBar.setText(Html.fromHtml("<h2>" + mTextView.getSelectedText(true) + "</h2>"));
+            return true;
+        }
+        else {
+            mTextView.clearFocus();
+            return false;
+        }
     }
 
     @Override
@@ -51,9 +58,9 @@ public class TranslationActionMode implements ActionMode.Callback {
                 Toast.makeText(mActivity, "Word saved to your wordlist", Toast.LENGTH_SHORT).show();
                 actionMode.finish(); // Action picked, so close the CAB
                 return true;
-//              case R.id.action_translate:
-//              Toast.makeText(mActivity, "Translation: " + mTextView.getSelectedText(), Toast.LENGTH_LONG).show();
-//              return true;
+                case R.id.action_context:
+                Toast.makeText(mActivity, mTextView.getTranslationContext(), Toast.LENGTH_LONG).show();
+                return true;
             default:
                 return false;
         }
