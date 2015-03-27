@@ -5,6 +5,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
+import android.support.v7.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
@@ -24,6 +25,9 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
     private WebViewFragment webViewFragment = new WebViewFragment();
     private FeedOverviewFragment feedOverviewFragment = new FeedOverviewFragment();
     private FeedItemFragment feedItemFragment = new FeedItemFragment();
+
+    private ActionMode mActionMode = null;
+    private String currentFragment;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -56,15 +60,15 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         switch (position + 1) {
             case 1:
                 mTitle = getString(R.string.title_section1);
-                switchFragment(feedOverviewFragment);
+                switchFragment(feedOverviewFragment, "feedOverviewFragment");
                 break;
             case 2:
                 mTitle = getString(R.string.title_section2);
-                switchFragment(feedItemFragment);
+                switchFragment(feedItemFragment, "feedItemFragment");
                 break;
             case 3:
                 mTitle = getString(R.string.title_section3);
-                switchFragment(webViewFragment);
+                switchFragment(webViewFragment, "webViewFragment");
                 break;
             case 4:
                 getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
@@ -75,10 +79,11 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         }
     }
 
-    private void switchFragment(Fragment fragment) {
+    private void switchFragment(Fragment fragment, String currentFragment) {
         fragmentManager.beginTransaction()
             .replace(R.id.container, fragment)
             .commit();
+        this.currentFragment = currentFragment;
     }
 
     public void restoreActionBar() {
@@ -128,5 +133,41 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
 
         if (goBack)
             super.onBackPressed();
+    }
+
+    /**
+     *  Custom action mode for webview text selection
+     */
+    @Override
+    public void onSupportActionModeStarted(ActionMode mode) {
+        if (mActionMode == null && currentFragment.equals("webViewFragment")) {
+            mActionMode = mode;
+            Menu menu = mode.getMenu();
+            // Remove the default menu items (select all, copy, paste, search)
+            menu.clear();
+
+            // If you want to keep any of the defaults,
+            // remove the items you don't want individually:
+            // menu.removeItem(android.R.id.[id_of_item_to_remove])
+
+            // Inflate your own menu items
+            mode.getMenuInflater().inflate(R.menu.main, menu);
+        }
+
+        super.onSupportActionModeStarted(mode);
+    }
+
+    public void onContextualMenuItemClicked(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_example) {
+            webViewFragment.getSelection();
+        }
+    }
+
+    @Override
+    public void onSupportActionModeFinished(ActionMode mode) {
+        mActionMode = null;
+        super.onSupportActionModeFinished(mode);
     }
 }

@@ -1,13 +1,17 @@
 package ch.unibe.scg.zeeguufeedreader;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 /**
  *  Fragment to display the webpage of a feed article in the browser (for feeds with limited content)
@@ -74,5 +78,19 @@ public class WebViewFragment extends Fragment {
         }
         else
             return true;
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public void getSelection() {
+        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
+        if (currentApiVersion >= android.os.Build.VERSION_CODES.KITKAT)
+            mWebView.evaluateJavascript("window.getSelection().toString()", new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String value) {
+                    Toast.makeText(getActivity(), value.substring(1, value.length()-1), Toast.LENGTH_SHORT).show();
+                }
+            });
+        else
+            Toast.makeText(getActivity(), "Not supported on your android version", Toast.LENGTH_SHORT).show();
     }
 }
