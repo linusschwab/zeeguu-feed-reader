@@ -7,6 +7,7 @@ import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 
 /**
  *  Fragment to display a single article from a feed
@@ -15,6 +16,7 @@ public class FeedItemFragment extends Fragment {
 
     private TextViewSelection mTextView;
     private TextViewSelection translationBar;
+    private ScrollView scrollView;
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -37,6 +39,7 @@ public class FeedItemFragment extends Fragment {
         View mainView = inflater.inflate(R.layout.fragment_feed_item, container, false);
         mTextView = (TextViewSelection) mainView.findViewById(R.id.feed_item_content);
         translationBar = (TextViewSelection) mainView.findViewById(R.id.feed_item_translation);
+        scrollView = (ScrollView) mainView.findViewById(R.id.feed_item_scrollview);
 
         // Make links clickable
         mTextView.setMovementMethod(LinkMovementMethod.getInstance());
@@ -46,6 +49,9 @@ public class FeedItemFragment extends Fragment {
                 "<h2>Title</h2>" +
                 "<p>This is <u>underlined</u> text. And this is a test phrase that needs to be long enough so that it does not fit on one line.</p>" +
                 "<p>This is a <a href=\"http://google.ch\">link</a>.</p>" +
+                "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
+                "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
+                "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "Test"));
 
         // Set custom action mode for the translation
