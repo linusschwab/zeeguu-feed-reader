@@ -1,4 +1,4 @@
-package ch.unibe.scg.zeeguufeedreader;
+package ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility;
 
 import android.content.Context;
 import android.text.Html;
@@ -11,8 +11,8 @@ import android.widget.TextView;
  */
 public class TextViewSelection extends TextView {
 
-    private TextViewSelection translationBar;
     private String newline = System.getProperty("line.separator");
+    private TextView translationBar;
     private int tempSelStart = 0;
     private int tempSelEnd = 0;
     private int min = 0;
@@ -46,11 +46,11 @@ public class TextViewSelection extends TextView {
         super.onSelectionChanged(selStart, selEnd);
     }
 
-    public void setTranslationBar (TextViewSelection translationBar) {
+    public void setTranslationBar (TextView translationBar) {
         this.translationBar = translationBar;
     }
 
-    public TextViewSelection getTranslationBar() {
+    public TextView getTranslationBar() {
         return translationBar;
     }
 

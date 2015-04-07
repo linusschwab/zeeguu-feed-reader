@@ -1,4 +1,4 @@
-package ch.unibe.scg.zeeguufeedreader;
+package ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -7,22 +7,18 @@ import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ScrollView;
 import android.widget.TextView;
-
-import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.TextViewSelection;
-import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.TranslationActionMode;
+import ch.unibe.scg.zeeguufeedreader.R;
 
 /**
  *  Fragment to display a single article from a feed
  */
-public class FeedItemFragment extends Fragment {
+public class FeedItemCompatibilityFragment extends Fragment {
 
+    private TextViewSelection textView;
     private TextView translationBar;
-    private WebView webView;
+    private ScrollView scrollView;
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -42,40 +38,28 @@ public class FeedItemFragment extends Fragment {
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View mainView = inflater.inflate(R.layout.fragment_feed_item, container, false);
+        View mainView = inflater.inflate(R.layout.fragment_feed_item_compatibility, container, false);
         translationBar = (TextView) mainView.findViewById(R.id.feed_item_translation);
-        webView = (WebView) mainView.findViewById(R.id.feed_item_content);
+        textView = (TextViewSelection) mainView.findViewById(R.id.feed_item_content);
+        scrollView = (ScrollView) mainView.findViewById(R.id.feed_item_scrollview);
 
-        // Enable Javascript
-        WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webView.addJavascriptInterface(new WebViewInterface(getActivity(), translationBar), "Android");
+        // Make links clickable
+        textView.setMovementMethod(LinkMovementMethod.getInstance());
 
-        // Force links and redirects to open in the WebView instead of in a browser
-        webView.setWebViewClient(new WebViewClient());
-
-        // Load HTML
-        String content = "<h2>Title</h2>" +
+        // Set content
+        textView.setText(Html.fromHtml("<h2>Title</h2>" +
                 "<p>This is <u>underlined</u> text. And this is a test phrase that needs to be long enough so that it does not fit on one line.</p>" +
                 "<p>This is a <a href=\"http://google.ch\">link</a>.</p>" +
                 "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
-                "Test";
-        String javascript = "<script>" +
-                                "document.addEventListener(\"selectionchange\", function() {" +
-                                    "Android.updateTranslation(window.getSelection().toString());" +
-                                "}, false);" +
-                            "</script>";
-        String html = "<html><body>" + javascript + content + "</body></html>";
+                "Test"));
 
-        webView.loadData(html, "text/html", "utf-8");
+        // Set custom action mode for the translation
+        textView.setCustomSelectionActionModeCallback(new TranslationActionMode(mainView, getActivity()));
+        textView.setTranslationBar(translationBar);
 
         return mainView;
-    }
-
-    public TextView getTranslationBar() {
-        return translationBar;
     }
 
     /**

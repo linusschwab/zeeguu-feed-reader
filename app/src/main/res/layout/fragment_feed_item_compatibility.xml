@@ -3,11 +3,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <WebView
-        android:id="@+id/feed_item_content"
+    <ScrollView
+        android:id="@+id/feed_item_scrollview"
         android:layout_above="@+id/feed_item_translation"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:scrollbars="vertical"
+        android:fillViewport="true" >
+
+        <ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.TextViewSelection
+            android:id="@+id/feed_item_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:linksClickable="true"
+            android:textIsSelectable="true" />
+
+    </ScrollView>
 
     <TextView
         android:id="@+id/feed_item_translation"

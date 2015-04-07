@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
+    <item android:id="@+id/action_bookmark" android:title="Add to wordlist"
+        android:orderInCategory="1" android:showAsAction="always"
+        android:icon="@drawable/ic_action_bookmark" />
+    <item android:id="@+id/action_context" android:title="Context"
+        android:orderInCategory="2" android:showAsAction="always" />
+</menu>

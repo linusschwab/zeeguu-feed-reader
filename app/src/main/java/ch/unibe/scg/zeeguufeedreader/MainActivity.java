@@ -1,5 +1,7 @@
 package ch.unibe.scg.zeeguufeedreader;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -9,6 +11,10 @@ import android.support.v7.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
+import android.view.View;
+import android.widget.Toast;
+
+import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.FeedItemCompatibilityFragment;
 
 /**
  *  Activity to display and switch between the fragments
@@ -25,8 +31,11 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
     private WebViewFragment webViewFragment = new WebViewFragment();
     private FeedOverviewFragment feedOverviewFragment = new FeedOverviewFragment();
     private FeedItemFragment feedItemFragment = new FeedItemFragment();
+    private FeedItemCompatibilityFragment feedItemCompatibilityFragment = new FeedItemCompatibilityFragment();
 
-    private ActionMode mActionMode = null;
+    private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
+
+    private ActionMode actionMode = null;
     private String currentFragment;
 
     /**
@@ -55,6 +64,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
     }
 
     @Override
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
         switch (position + 1) {
@@ -64,7 +74,10 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
                 break;
             case 2:
                 mTitle = getString(R.string.title_section2);
-                switchFragment(feedItemFragment, "feedItemFragment");
+                if (currentApiVersion >= android.os.Build.VERSION_CODES.KITKAT)
+                    switchFragment(feedItemFragment, "feedItemFragment");
+                else
+                    switchFragment(feedItemCompatibilityFragment, "feedItemCompatibilityFragment");
                 break;
             case 3:
                 mTitle = getString(R.string.title_section3);
@@ -140,34 +153,48 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
      */
     @Override
     public void onSupportActionModeStarted(ActionMode mode) {
-        if (mActionMode == null && currentFragment.equals("webViewFragment")) {
-            mActionMode = mode;
+        if (actionMode == null && currentFragment.equals("feedItemFragment")) {
+            actionMode = mode;
             Menu menu = mode.getMenu();
             // Remove the default menu items (select all, copy, paste, search)
             menu.clear();
 
-            // If you want to keep any of the defaults,
-            // remove the items you don't want individually:
+            // Remove menu items individually:
             // menu.removeItem(android.R.id.[id_of_item_to_remove])
 
-            // Inflate your own menu items
-            mode.getMenuInflater().inflate(R.menu.main, menu);
+            // Inflate menu items
+            mode.getMenuInflater().inflate(R.menu.translation, menu);
+
+            // Show translation bar
+            feedItemFragment.getTranslationBar().setVisibility(View.VISIBLE);
         }
 
         super.onSupportActionModeStarted(mode);
     }
 
     public void onContextualMenuItemClicked(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_example) {
-            webViewFragment.getSelection();
+        switch (item.getItemId()) {
+            case R.id.action_bookmark:
+                Toast.makeText(this, "Word saved to your wordlist", Toast.LENGTH_SHORT).show();
+                actionMode.finish(); // Action picked, so close the CAB
+                break;
+            case R.id.action_context:
+                Toast.makeText(this, "Context", Toast.LENGTH_LONG).show();
+                break;
+            default:
+                break;
         }
     }
 
     @Override
     public void onSupportActionModeFinished(ActionMode mode) {
-        mActionMode = null;
+        actionMode = null;
+
+        if (currentFragment.equals("feedItemFragment")) {
+            // Hide translation bar
+            feedItemFragment.getTranslationBar().setVisibility(View.GONE);
+        }
+
         super.onSupportActionModeFinished(mode);
     }
 }

@@ -1,4 +1,4 @@
-package ch.unibe.scg.zeeguufeedreader;
+package ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility;
 
 import android.app.Activity;
 import android.text.Html;
@@ -7,7 +7,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import ch.unibe.scg.zeeguufeedreader.R;
 
 /**
  *  Action mode callback to display the translation of selected text and add words to the wordlist.
@@ -15,12 +18,12 @@ import android.widget.Toast;
 public class TranslationActionMode implements ActionMode.Callback {
 
     private TextViewSelection mTextView;
-    private TextViewSelection translationBar;
+    private TextView translationBar;
     private Activity mActivity;
 
     public TranslationActionMode(View mainView, Activity activity) {
         mTextView = (TextViewSelection) mainView.findViewById(R.id.feed_item_content);
-        translationBar = (TextViewSelection) mainView.findViewById(R.id.feed_item_translation);
+        translationBar = (TextView) mainView.findViewById(R.id.feed_item_translation);
         mActivity = activity;
     }
 
@@ -33,7 +36,7 @@ public class TranslationActionMode implements ActionMode.Callback {
 
         // Inflate a menu resource providing context menu items
         MenuInflater inflater = actionMode.getMenuInflater();
-        inflater.inflate(R.menu.translation, menu);
+        inflater.inflate(R.menu.translation_compatibility, menu);
 
         return true;
     }
@@ -61,7 +64,7 @@ public class TranslationActionMode implements ActionMode.Callback {
                 Toast.makeText(mActivity, "Word saved to your wordlist", Toast.LENGTH_SHORT).show();
                 actionMode.finish(); // Action picked, so close the CAB
                 return true;
-                case R.id.action_context:
+            case R.id.action_context:
                 Toast.makeText(mActivity, mTextView.getTranslationContext(), Toast.LENGTH_LONG).show();
                 return true;
             default:
