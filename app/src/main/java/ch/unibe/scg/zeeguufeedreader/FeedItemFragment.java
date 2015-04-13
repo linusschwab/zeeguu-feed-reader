@@ -1,5 +1,7 @@
 package ch.unibe.scg.zeeguufeedreader;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -62,14 +64,17 @@ public class FeedItemFragment extends Fragment {
                 "Test";
         String javascript = "<script src=\"javascript/jquery-2.1.3.min.js\"></script>" +
                             "<script src=\"javascript/selectionChangeListener.js\"></script>" +
+                            "<script src=\"javascript/highlightWords.js\"></script>" +
                             "<script src=\"javascript/extractContext.js\"></script>";
-        String html = "<html>" + javascript + "<body>" + content + "</body></html>";
+        String css = "<link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\">";
+        String html = "<html><head>" + javascript + css + "</head><body>" + content + "</body></html>";
 
         webView.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "utf-8", null);
 
         return mainView;
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     public void extractContext() {
         webView.evaluateJavascript("extractContext();", new ValueCallback<String>() {
             @Override
@@ -83,6 +88,24 @@ public class FeedItemFragment extends Fragment {
         // context = Html.fromHtml(value.substring(1, value.length()-1)).toString();
         context = Utility.unescapeString(value.substring(1, value.length()-1));
         Toast.makeText(getActivity(), context, Toast.LENGTH_SHORT).show();
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public void highlight() {
+        webView.evaluateJavascript("highlight_words([window.getSelection().toString()]);", new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String value) {
+            }
+        });
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public void unhighlight() {
+        webView.evaluateJavascript("unhighlight_words();", new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String value) {
+            }
+        });
     }
 
     public TextView getTranslationBar() {

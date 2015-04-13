@@ -180,6 +180,15 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
                 break;
             case R.id.action_context:
                 feedItemFragment.extractContext();
+                actionMode.finish();
+                break;
+            case R.id.action_highlight:
+                feedItemFragment.highlight();
+                actionMode.finish();
+                break;
+            case R.id.action_unhighlight:
+                feedItemFragment.unhighlight();
+                actionMode.finish();
                 break;
             default:
                 break;
