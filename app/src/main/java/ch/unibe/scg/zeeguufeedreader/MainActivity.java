@@ -179,7 +179,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
                 actionMode.finish(); // Action picked, so close the CAB
                 break;
             case R.id.action_context:
-                Toast.makeText(this, "Context", Toast.LENGTH_LONG).show();
+                feedItemFragment.extractContext();
                 break;
             default:
                 break;

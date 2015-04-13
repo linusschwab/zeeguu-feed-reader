@@ -3,18 +3,15 @@ package ch.unibe.scg.zeeguufeedreader;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Html;
-import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.ScrollView;
 import android.widget.TextView;
-
-import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.TextViewSelection;
-import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.TranslationActionMode;
+import android.widget.Toast;
 
 /**
  *  Fragment to display a single article from a feed
@@ -23,6 +20,8 @@ public class FeedItemFragment extends Fragment {
 
     private TextView translationBar;
     private WebView webView;
+
+    private String context;
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -56,26 +55,42 @@ public class FeedItemFragment extends Fragment {
 
         // Load HTML
         String content = "<h2>Title</h2>" +
-                "<p>This is <u>underlined</u> text. And this is a test phrase that needs to be long enough so that it does not fit on one line.</p>" +
+                "<p>This is <u>underlined</u> text. And \"this\" is a test phrase that needs to be long enough so that it does not fit on one line.</p>" +
                 "<p>This is a <a href=\"http://google.ch\">link</a>.</p>" +
-                "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
+                "<p>Scrolling Test.</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "Test";
-        String javascript = "<script>" +
-                                "document.addEventListener(\"selectionchange\", function() {" +
-                                    "Android.updateTranslation(window.getSelection().toString());" +
-                                "}, false);" +
-                            "</script>";
-        String html = "<html><body>" + javascript + content + "</body></html>";
+        String javascript = "<script>" + Utility.assetToString(getActivity(), "selectionChangeListener.js") + "</script>";
+        String jQuery = "<script>" + Utility.assetToString(getActivity(), "jquery-2.1.3.min.js") + "</script>";
+        String html = "<html><body>" + jQuery + javascript + content + "</body></html>";
 
         webView.loadData(html, "text/html", "utf-8");
 
         return mainView;
     }
 
+    public void extractContext() {
+        webView.evaluateJavascript(Utility.assetToString(getActivity(), "extractContext.js"), new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String value) {
+                FeedItemFragment.this.setContext(value);
+            }
+        });
+    }
+
+    private void setContext(String value) {
+        // context = Html.fromHtml(value.substring(1, value.length()-1)).toString();
+        context = Utility.unescapeString(value.substring(1, value.length()-1));
+        Toast.makeText(getActivity(), context, Toast.LENGTH_SHORT).show();
+    }
+
     public TextView getTranslationBar() {
         return translationBar;
+    }
+
+    public WebView getWebView() {
+        return webView;
     }
 
     /**
