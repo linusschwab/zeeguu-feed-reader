@@ -2,7 +2,6 @@ package ch.unibe.scg.zeeguufeedreader;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,17 +60,18 @@ public class FeedItemFragment extends Fragment {
                 "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "Test";
-        String javascript = "<script>" + Utility.assetToString(getActivity(), "selectionChangeListener.js") + "</script>";
-        String jQuery = "<script>" + Utility.assetToString(getActivity(), "jquery-2.1.3.min.js") + "</script>";
-        String html = "<html><body>" + jQuery + javascript + content + "</body></html>";
+        String javascript = "<script src=\"javascript/jquery-2.1.3.min.js\"></script>" +
+                            "<script src=\"javascript/selectionChangeListener.js\"></script>" +
+                            "<script src=\"javascript/extractContext.js\"></script>";
+        String html = "<html>" + javascript + "<body>" + content + "</body></html>";
 
-        webView.loadData(html, "text/html", "utf-8");
+        webView.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "utf-8", null);
 
         return mainView;
     }
 
     public void extractContext() {
-        webView.evaluateJavascript(Utility.assetToString(getActivity(), "extractContext.js"), new ValueCallback<String>() {
+        webView.evaluateJavascript("extractContext();", new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String value) {
                 FeedItemFragment.this.setContext(value);

@@ -1,12 +1,13 @@
-var selection = window.getSelection();
-var term = selection.toString();
+function extractContext () {
 
-var surroundingParagraph = $(selection.baseNode.parentNode).text();
-extract_context(surroundingParagraph, term);
+    var selection = window.getSelection();
+    var term = selection.toString();
+    var surrounding_paragraph = $(selection.baseNode.parentNode).text();
 
-function extract_context (surrounding_paragraph, term) {
+    // debug information
     console.log(surrounding_paragraph);
     console.log(term);
+
     var context = "Error";
     try {
         var sentenceRegEx = /\(?[^\.!\?]+[\.!\?]\)?/g;
