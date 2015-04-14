@@ -1,6 +1,7 @@
 package ch.unibe.scg.zeeguufeedreader;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ public class FeedItemFragment extends Fragment {
 
     private TextView translationBar;
     private WebView webView;
+    private Activity activity;
 
     private String context, title, url;
 
@@ -46,11 +48,12 @@ public class FeedItemFragment extends Fragment {
         View mainView = inflater.inflate(R.layout.fragment_feed_item, container, false);
         translationBar = (TextView) mainView.findViewById(R.id.feed_item_translation);
         webView = (WebView) mainView.findViewById(R.id.feed_item_content);
+        activity = getActivity();
 
         // Enable Javascript
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        webView.addJavascriptInterface(new WebViewInterface(getActivity(), translationBar), "Android");
+        webView.addJavascriptInterface(new WebViewInterface(activity, translationBar), "Android");
 
         // Force links and redirects to open in the WebView instead of in a browser, inject css and javascript
         webView.setWebViewClient(new WebViewClient() {
@@ -59,14 +62,14 @@ public class FeedItemFragment extends Fragment {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 // css
-                view.evaluateJavascript(Utility.assetToString(getActivity(), "javascript/injectCSS.js"), null);
-                String css = Utility.assetToString(getActivity(), "css/highlight.css").replace("\n", "").replace("\r", "").trim();
+                view.evaluateJavascript(Utility.assetToString(activity, "javascript/injectCSS.js"), null);
+                String css = Utility.assetToString(activity, "css/highlight.css").replace("\n", "").replace("\r", "").trim();
                 view.evaluateJavascript("injectCSS(\"" + css + "\");", null);
                 // javascript
-                view.evaluateJavascript(Utility.assetToString(getActivity(), "javascript/jquery-2.1.3.min.js"), null);
-                view.evaluateJavascript(Utility.assetToString(getActivity(), "javascript/selectionChangeListener.js"), null);
-                view.evaluateJavascript(Utility.assetToString(getActivity(), "javascript/highlightWords.js"), null);
-                view.evaluateJavascript(Utility.assetToString(getActivity(), "javascript/extractContext.js"), null);
+                view.evaluateJavascript(Utility.assetToString(activity, "javascript/jquery-2.1.3.min.js"), null);
+                view.evaluateJavascript(Utility.assetToString(activity, "javascript/selectionChangeListener.js"), null);
+                view.evaluateJavascript(Utility.assetToString(activity, "javascript/highlightWords.js"), null);
+                view.evaluateJavascript(Utility.assetToString(activity, "javascript/extractContext.js"), null);
             }
         });
 
@@ -79,10 +82,10 @@ public class FeedItemFragment extends Fragment {
                 "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "Test";
         String title = "Feed Item";
-        String css = "<link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\">";
-        String html = "<html><head><title>" + title + "</title>" + css + "</head><body>" + content + "</body></html>";
+        String css = Utility.assetToString(activity, "css/style.css");
+        String html = "<html><head><title>" + title + "</title><style>" + css + "</style></head><body>" + content + "</body></html>";
 
-        webView.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "utf-8", null);
+        webView.loadData(html, "text/html", "utf-8");
 
         return mainView;
     }
@@ -116,7 +119,7 @@ public class FeedItemFragment extends Fragment {
     public void setContext(String value) {
         // context = Html.fromHtml(value.substring(1, value.length()-1)).toString();
         context = Utility.unescapeString(value.substring(1, value.length()-1));
-        Toast.makeText(getActivity(), context, Toast.LENGTH_SHORT).show();
+        Toast.makeText(activity, context, Toast.LENGTH_SHORT).show();
     }
 
     public String getContext() {
@@ -155,6 +158,20 @@ public class FeedItemFragment extends Fragment {
 
     public WebView getWebView() {
         return webView;
+    }
+
+    /**
+     * Allow to use the Android back button to navigate back in the WebView
+     */
+    public boolean goBack() {
+        if (webView == null)
+            return true;
+        else if (webView.canGoBack()) {
+            webView.goBack();
+            return false;
+        }
+        else
+            return true;
     }
 
     /**

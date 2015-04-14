@@ -142,9 +142,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
      */
     @Override
     public void onBackPressed() {
-        boolean goBack = webViewFragment.onBackPressed();
-
-        if (goBack)
+        if (feedItemFragment.goBack())
             super.onBackPressed();
     }
 
