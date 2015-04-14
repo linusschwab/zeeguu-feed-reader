@@ -1,6 +1,7 @@
 package ch.unibe.scg.zeeguufeedreader;
 
 import android.annotation.TargetApi;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -22,7 +23,7 @@ public class FeedItemFragment extends Fragment {
     private TextView translationBar;
     private WebView webView;
 
-    private String context;
+    private String context, title, url;
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -51,8 +52,23 @@ public class FeedItemFragment extends Fragment {
         webSettings.setJavaScriptEnabled(true);
         webView.addJavascriptInterface(new WebViewInterface(getActivity(), translationBar), "Android");
 
-        // Force links and redirects to open in the WebView instead of in a browser
-        webView.setWebViewClient(new WebViewClient());
+        // Force links and redirects to open in the WebView instead of in a browser, inject css and javascript
+        webView.setWebViewClient(new WebViewClient() {
+            @TargetApi(Build.VERSION_CODES.KITKAT)
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                // css
+                view.evaluateJavascript(Utility.assetToString(getActivity(), "javascript/injectCSS.js"), null);
+                String css = Utility.assetToString(getActivity(), "css/highlight.css").replace("\n", "").replace("\r", "").trim();
+                view.evaluateJavascript("injectCSS(\"" + css + "\");", null);
+                // javascript
+                view.evaluateJavascript(Utility.assetToString(getActivity(), "javascript/jquery-2.1.3.min.js"), null);
+                view.evaluateJavascript(Utility.assetToString(getActivity(), "javascript/selectionChangeListener.js"), null);
+                view.evaluateJavascript(Utility.assetToString(getActivity(), "javascript/highlightWords.js"), null);
+                view.evaluateJavascript(Utility.assetToString(getActivity(), "javascript/extractContext.js"), null);
+            }
+        });
 
         // Load HTML
         String content = "<h2>Title</h2>" +
@@ -62,50 +78,75 @@ public class FeedItemFragment extends Fragment {
                 "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "Test";
-        String javascript = "<script src=\"javascript/jquery-2.1.3.min.js\"></script>" +
-                            "<script src=\"javascript/selectionChangeListener.js\"></script>" +
-                            "<script src=\"javascript/highlightWords.js\"></script>" +
-                            "<script src=\"javascript/extractContext.js\"></script>";
+        String title = "Feed Item";
         String css = "<link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\">";
-        String html = "<html><head>" + javascript + css + "</head><body>" + content + "</body></html>";
+        String html = "<html><head><title>" + title + "</title>" + css + "</head><body>" + content + "</body></html>";
 
         webView.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "utf-8", null);
 
         return mainView;
     }
 
+    // Context methods
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    public void extractContext() {
+    public void extractContextFromPage() {
+        // Context
         webView.evaluateJavascript("extractContext();", new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String value) {
                 FeedItemFragment.this.setContext(value);
             }
         });
+        // Title
+        webView.evaluateJavascript("document.getElementsByTagName(\"title\")[0].innerHTML;", new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String value) {
+                FeedItemFragment.this.setTitle(value);
+            }
+        });
+        // URL
+        webView.evaluateJavascript("document.URL", new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String value) {
+                FeedItemFragment.this.setURL(value);
+            }
+        });
     }
 
-    private void setContext(String value) {
+    public void setContext(String value) {
         // context = Html.fromHtml(value.substring(1, value.length()-1)).toString();
         context = Utility.unescapeString(value.substring(1, value.length()-1));
         Toast.makeText(getActivity(), context, Toast.LENGTH_SHORT).show();
     }
 
+    public String getContext() {
+        return context;
+    }
+
+    public void setTitle(String value) {
+        title = Utility.unescapeString(value.substring(1, value.length()-1));
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setURL(String value) {
+        url = Utility.unescapeString(value.substring(1, value.length()-1));
+    }
+
+    public String getURL() {
+        return url;
+    }
+
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public void highlight() {
-        webView.evaluateJavascript("highlight_words([window.getSelection().toString()]);", new ValueCallback<String>() {
-            @Override
-            public void onReceiveValue(String value) {
-            }
-        });
+        webView.evaluateJavascript("highlight_words([window.getSelection().toString()]);", null);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public void unhighlight() {
-        webView.evaluateJavascript("unhighlight_words();", new ValueCallback<String>() {
-            @Override
-            public void onReceiveValue(String value) {
-            }
-        });
+        webView.evaluateJavascript("unhighlight_words();", null);
     }
 
     public TextView getTranslationBar() {
