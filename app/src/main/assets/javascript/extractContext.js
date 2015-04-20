@@ -24,5 +24,12 @@ function extractContext () {
         })[0])
     } catch (e) {
     }
-    return context;
+    var title = document.getElementsByTagName("title")[0].innerHTML;
+
+    return {
+        "term": term,
+        "context": context,
+        "title": title,
+        "url": document.URL
+    };
 }

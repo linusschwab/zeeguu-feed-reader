@@ -6,6 +6,9 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Html;
+import android.util.JsonReader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +18,9 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.IOException;
+import java.io.StringReader;
 
 /**
  *  Fragment to display a single article from a feed
@@ -26,6 +32,7 @@ public class FeedItemFragment extends Fragment {
     private Activity activity;
 
     private String context, title, url;
+    private String selection, translation;
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -53,7 +60,7 @@ public class FeedItemFragment extends Fragment {
         // Enable Javascript
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        webView.addJavascriptInterface(new WebViewInterface(activity, translationBar), "Android");
+        webView.addJavascriptInterface(new WebViewInterface(activity), "Android");
 
         // Force links and redirects to open in the WebView instead of in a browser, inject css and javascript
         webView.setWebViewClient(new WebViewClient() {
@@ -90,56 +97,44 @@ public class FeedItemFragment extends Fragment {
         return mainView;
     }
 
-    // Context methods
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public void extractContextFromPage() {
-        // Context
         webView.evaluateJavascript("extractContext();", new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String value) {
-                FeedItemFragment.this.setContext(value);
+                JsonReader reader = new JsonReader(new StringReader(value));
+                try {
+                    reader.beginObject();
+                    while (reader.hasNext()) {
+                        String name = reader.nextName();
+                        if (name.equals("term"))
+                            selection = reader.nextString();
+                        else if (name.equals("context"))
+                            context = reader.nextString();
+                        else if (name.equals("title"))
+                            title = reader.nextString();
+                        else if (name.equals("url"))
+                            url = reader.nextString();
+                        else
+                            reader.skipValue();
+                    }
+                    reader.endObject();
+                }
+                catch (IOException e) {}
+
+                submitContext();
             }
         });
-        // Title
-        webView.evaluateJavascript("document.getElementsByTagName(\"title\")[0].innerHTML;", new ValueCallback<String>() {
-            @Override
-            public void onReceiveValue(String value) {
-                FeedItemFragment.this.setTitle(value);
-            }
-        });
-        // URL
-        webView.evaluateJavascript("document.URL", new ValueCallback<String>() {
-            @Override
-            public void onReceiveValue(String value) {
-                FeedItemFragment.this.setURL(value);
-            }
-        });
     }
 
-    public void setContext(String value) {
-        // context = Html.fromHtml(value.substring(1, value.length()-1)).toString();
-        context = Utility.unescapeString(value.substring(1, value.length()-1));
-        Toast.makeText(activity, context, Toast.LENGTH_SHORT).show();
+    public void submitContext() {
+        MainActivity main = (MainActivity) activity;
+        main.getConnectionManager().contributeWithContext(selection, "EN", translation, "DE", title, url, context);
     }
 
-    public String getContext() {
-        return context;
-    }
-
-    public void setTitle(String value) {
-        title = Utility.unescapeString(value.substring(1, value.length()-1));
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setURL(String value) {
-        url = Utility.unescapeString(value.substring(1, value.length()-1));
-    }
-
-    public String getURL() {
-        return url;
+    public void setTranslation(String translation) {
+        translationBar.setText(Html.fromHtml("<h2>" + translation + "</h2>"));
+        this.translation = translation;
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)

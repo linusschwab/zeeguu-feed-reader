@@ -38,6 +38,8 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
     private ActionMode actionMode = null;
     private String currentFragment;
 
+    private ZeeguuConnectionManager connectionManager;
+
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
@@ -61,6 +63,9 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         // Display Feed Overview
         // TODO: Mark "Feed List" as active in the navigation drawer
         onNavigationDrawerItemSelected(0);
+
+        connectionManager = new ZeeguuConnectionManager(this, feedItemFragment);
+        connectionManager.getSessionId();
     }
 
     @Override
@@ -173,12 +178,8 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
     public void onContextualMenuItemClicked(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_bookmark:
-                Toast.makeText(this, "Word saved to your wordlist", Toast.LENGTH_SHORT).show();
-                actionMode.finish(); // Action picked, so close the CAB
-                break;
-            case R.id.action_context:
                 feedItemFragment.extractContextFromPage();
-                actionMode.finish();
+                actionMode.finish(); // Action picked, so close the CAB
                 break;
             case R.id.action_highlight:
                 feedItemFragment.highlight();
@@ -203,5 +204,13 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         }
 
         super.onSupportActionModeFinished(mode);
+    }
+
+    public FeedItemFragment getFeedItemFragment() {
+        return feedItemFragment;
+    }
+
+    public ZeeguuConnectionManager getConnectionManager() {
+        return connectionManager;
     }
 }
