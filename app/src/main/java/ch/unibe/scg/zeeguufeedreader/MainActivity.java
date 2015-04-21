@@ -1,11 +1,11 @@
 package ch.unibe.scg.zeeguufeedreader;
 
 import android.annotation.TargetApi;
+import android.app.Fragment;
 import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v7.view.ActionMode;
 import android.view.Menu;
@@ -21,17 +21,17 @@ import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.FeedItemCompatibility
  */
 public class MainActivity extends ActionBarActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
-    private FragmentManager fragmentManager = getSupportFragmentManager();
+    private FragmentManager fragmentManager = getFragmentManager();
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
 
-    private WebViewFragment webViewFragment = new WebViewFragment();
     private FeedOverviewFragment feedOverviewFragment = new FeedOverviewFragment();
     private FeedItemFragment feedItemFragment = new FeedItemFragment();
     private FeedItemCompatibilityFragment feedItemCompatibilityFragment = new FeedItemCompatibilityFragment();
+    private SettingsFragment settingsFragment = new SettingsFragment();
 
     private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
 
@@ -52,7 +52,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         setContentView(R.layout.activity_main);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
+                getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
         // Set up the drawer.
@@ -64,7 +64,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         // TODO: Mark "Feed List" as active in the navigation drawer
         onNavigationDrawerItemSelected(0);
 
-        connectionManager = new ZeeguuConnectionManager(this, feedItemFragment);
+        connectionManager = new ZeeguuConnectionManager(new ZeeguuAccount(), this, feedItemFragment);
         connectionManager.getSessionId();
     }
 
@@ -86,7 +86,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
                 break;
             case 3:
                 mTitle = getString(R.string.title_section3);
-                switchFragment(webViewFragment, "webViewFragment");
+                switchFragment(settingsFragment, "settingsFragment");
                 break;
             case 4:
                 getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));

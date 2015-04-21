@@ -2,7 +2,7 @@ package ch.unibe.scg.zeeguufeedreader;
 
 import android.annotation.TargetApi;
 import android.os.Build;
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
