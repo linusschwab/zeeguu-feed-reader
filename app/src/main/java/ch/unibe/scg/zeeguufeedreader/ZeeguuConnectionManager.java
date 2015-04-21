@@ -83,7 +83,7 @@ public class ZeeguuConnectionManager {
 
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                Log.e("translation", error.toString());
             }
         });
 
@@ -107,7 +107,8 @@ public class ZeeguuConnectionManager {
 
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(activity, "Error", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show();
+                Log.e("contribute_with_context", error.toString());
             }
         }) {
 

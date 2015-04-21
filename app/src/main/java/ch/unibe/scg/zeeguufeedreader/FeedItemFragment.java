@@ -76,6 +76,7 @@ public class FeedItemFragment extends Fragment {
                 view.evaluateJavascript(Utility.assetToString(activity, "javascript/jquery-2.1.3.min.js"), null);
                 view.evaluateJavascript(Utility.assetToString(activity, "javascript/selectionChangeListener.js"), null);
                 view.evaluateJavascript(Utility.assetToString(activity, "javascript/highlightWords.js"), null);
+                view.evaluateJavascript(Utility.assetToString(activity, "javascript/extractContribution.js"), null);
                 view.evaluateJavascript(Utility.assetToString(activity, "javascript/extractContext.js"), null);
             }
         });
@@ -99,7 +100,7 @@ public class FeedItemFragment extends Fragment {
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public void extractContextFromPage() {
-        webView.evaluateJavascript("extractContext();", new ValueCallback<String>() {
+        webView.evaluateJavascript("extractContribution();", new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String value) {
                 JsonReader reader = new JsonReader(new StringReader(value));

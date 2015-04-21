@@ -21,11 +21,13 @@ function highlight_words(words) {
 
          */
             for (j = 0; j < words.length; j++) {
-                var rgxp = new RegExp('(\\s|"|>)?(' + words[j]+')(\\s|,|<|"|[.])?', 'gi');
-                var repl = '$1<span class="zeeguu-visited" other="$2">$2</span>$3';
-                parent.innerHTML = parent.innerHTML.replace(rgxp, repl);
+                var wordExtractor = new RegExp('(\\s|"|>)+(' + words[j]+')(\\s|,|<|"|[.])+', 'gi');
+                var highlightedWord = '$1<span class="zeeguu-visited" other="$2">$2</span>$3';
+                parent.innerHTML = parent.innerHTML.replace(wordExtractor, highlightedWord);
             }
     }
+
+
 }
 
 function unhighlight_words() {
@@ -42,4 +44,14 @@ function unhighlight_words() {
         }
         parent.normalize();
     });
+}
+
+function change_highlight_of_page(highlight) {
+    if (highlight) {
+        getUserWords(function (user_words) {
+            highlight_words(user_words)
+        });
+    } else {
+        unhighlight_words();
+    }
 }
