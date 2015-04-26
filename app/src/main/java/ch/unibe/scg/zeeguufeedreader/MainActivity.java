@@ -12,7 +12,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 import android.view.View;
-import android.widget.Toast;
 
 import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.FeedItemCompatibilityFragment;
 
@@ -28,10 +27,12 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
 
-    private FeedOverviewFragment feedOverviewFragment = new FeedOverviewFragment();
-    private FeedItemFragment feedItemFragment = new FeedItemFragment();
-    private FeedItemCompatibilityFragment feedItemCompatibilityFragment = new FeedItemCompatibilityFragment();
-    private SettingsFragment settingsFragment = new SettingsFragment();
+    private FeedOverviewFragment feedOverviewFragment;
+    private FeedItemFragment feedItemFragment;
+    private FeedItemCompatibilityFragment feedItemCompatibilityFragment;
+    private SettingsFragment settingsFragment;
+
+    private ZeeguuLoginDialog zeeguuLoginDialog;
 
     private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
 
@@ -43,28 +44,49 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
-    private CharSequence mTitle;
+    private CharSequence title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setTheme(R.style.AppThemeBlue);
+
+        // Initialize fragments
+        feedOverviewFragment = (FeedOverviewFragment) fragmentManager.findFragmentByTag("feedOverviewFragment");
+        if (feedOverviewFragment == null) feedOverviewFragment = new FeedOverviewFragment();
+
+        feedItemFragment = (FeedItemFragment) fragmentManager.findFragmentByTag("feedItemFragment");
+        if (feedItemFragment == null) feedItemFragment = new FeedItemFragment();
+
+        feedItemCompatibilityFragment = (FeedItemCompatibilityFragment) fragmentManager.findFragmentByTag("feedItemCompatibilityFragment");
+        if (feedItemCompatibilityFragment == null) feedItemCompatibilityFragment = new FeedItemCompatibilityFragment();
+
+        settingsFragment = (SettingsFragment) fragmentManager.findFragmentByTag("settingsFragment");
+        if (settingsFragment == null) settingsFragment = new SettingsFragment();
+
+        // Login Dialog
+        zeeguuLoginDialog = (ZeeguuLoginDialog) fragmentManager.findFragmentByTag("zeeguuLoginDialog");
+        if (zeeguuLoginDialog == null) zeeguuLoginDialog = new ZeeguuLoginDialog();
+
+        // Layout
         setContentView(R.layout.activity_main);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
+        title = getTitle();
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        // Display Feed Overview
-        // TODO: Mark "Feed List" as active in the navigation drawer
-        onNavigationDrawerItemSelected(0);
 
-        connectionManager = new ZeeguuConnectionManager(new ZeeguuAccount(), this, feedItemFragment);
+        // Display Feed Overview
+        if (savedInstanceState == null) {
+            // TODO: Mark "Feed List" as active in the navigation drawer
+            onNavigationDrawerItemSelected(0);
+        }
+
+        connectionManager = new ZeeguuConnectionManager(this, feedItemFragment);
         connectionManager.getSessionId();
     }
 
@@ -74,18 +96,18 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         // update the main content by replacing fragments
         switch (position + 1) {
             case 1:
-                mTitle = getString(R.string.title_section1);
+                title = getString(R.string.title_section1);
                 switchFragment(feedOverviewFragment, "feedOverviewFragment");
                 break;
             case 2:
-                mTitle = getString(R.string.title_section2);
+                title = getString(R.string.title_section2);
                 if (currentApiVersion >= android.os.Build.VERSION_CODES.KITKAT)
                     switchFragment(feedItemFragment, "feedItemFragment");
                 else
                     switchFragment(feedItemCompatibilityFragment, "feedItemCompatibilityFragment");
                 break;
             case 3:
-                mTitle = getString(R.string.title_section3);
+                title = getString(R.string.title_section3);
                 switchFragment(settingsFragment, "settingsFragment");
                 break;
             case 4:
@@ -97,20 +119,36 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         }
     }
 
-    private void switchFragment(Fragment fragment, String currentFragment) {
+    private void switchFragment(Fragment fragment, String tag) {
         fragmentManager.beginTransaction()
-            .replace(R.id.container, fragment)
+            .replace(R.id.container, fragment, tag)
             .commit();
-        this.currentFragment = currentFragment;
+        currentFragment = tag;
     }
 
     public void restoreActionBar() {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
+        actionBar.setTitle(title);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        // Save UI state changes to the savedInstanceState.
+        // This bundle will be passed to onCreate if the process is
+        // killed and restarted.
+        savedInstanceState.putCharSequence("title", title);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        // Restore UI state from the savedInstanceState.
+        // This bundle has also been passed to onCreate.
+        title = savedInstanceState.getCharSequence("title");
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -204,6 +242,11 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         }
 
         super.onSupportActionModeFinished(mode);
+    }
+
+    public void showZeeguuLoginDialog(String title) {
+        zeeguuLoginDialog.setTitle(title);
+        zeeguuLoginDialog.show(fragmentManager, "zeeguuLoginDialog");
     }
 
     public FeedItemFragment getFeedItemFragment() {

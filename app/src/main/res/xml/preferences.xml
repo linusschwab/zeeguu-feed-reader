@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
+    <PreferenceCategory
+        android:title="@string/settings_zeeguu_title">
+        <Preference
+            android:key="pref_zeeguu_account"
+            android:title="@string/settings_zeguu_account_title"
+            android:summary="@string/settings_zeguu_account_summary" />
+        <CheckBoxPreference
+            android:key="pref_zeeguu_highlight_words"
+            android:title="@string/settings_zeguu_highlight_title"
+            android:summary="@string/settings_zeguu_highlight_summary"
+            android:defaultValue="true" />
+    </PreferenceCategory>
 </PreferenceScreen>

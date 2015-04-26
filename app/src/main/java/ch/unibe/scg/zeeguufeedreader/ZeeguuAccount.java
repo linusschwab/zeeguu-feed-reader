@@ -1,16 +1,30 @@
 package ch.unibe.scg.zeeguufeedreader;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
+
 public class ZeeguuAccount {
+
+    private SharedPreferences sharedPref;
+
     // User Information
-    private String email = "feed@reader.test";
-    private String password = "B22Ddvsqn4YEO9eEetJs";
+    private String email;
+    private String password;
     private String sessionID;
     private String languageNative;
     private String languageLearning;
 
+    public ZeeguuAccount(Activity activity) {
+        sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+        email = sharedPref.getString("pref_zeeguu_username", "");
+        password = sharedPref.getString("pref_zeeguu_password", "");
+    }
+
     /*
         Boolean Checks
     */
+    // TODO: Write tests!
     public boolean isUserLoggedIn() {
         return !(email == null || email.equals("")) && !(password == null || password.equals(""));
     }

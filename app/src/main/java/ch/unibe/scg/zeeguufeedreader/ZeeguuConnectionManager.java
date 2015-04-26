@@ -31,8 +31,8 @@ public class ZeeguuConnectionManager {
     private Activity activity;
     private FeedItemFragment feedItemFragment;
 
-    public ZeeguuConnectionManager(ZeeguuAccount account, Activity activity, FeedItemFragment feedItemFragment) {
-        this.account = account;
+    public ZeeguuConnectionManager(Activity activity, FeedItemFragment feedItemFragment) {
+        this.account = new ZeeguuAccount(activity);
         this.activity = activity;
         this.feedItemFragment = feedItemFragment;
 
@@ -61,8 +61,8 @@ public class ZeeguuConnectionManager {
 
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e("session_id", error.toString());
-                // TODO: Check if password is wrong (and show toast message or login prompt)
+                if (error.toString().equals("com.android.volley.AuthFailureError"));
+                    showLoginDialog();
             }
         }) {
 
@@ -82,22 +82,26 @@ public class ZeeguuConnectionManager {
      *
      *  @Precondition: user needs to be logged in and have a session id
      */
-    public void getTranslation(String input, String inputLanguageCode, String outputLanguageCode) {
-        boolean network = !isNetworkAvailable();
-        boolean string = !isInputValid(input);
+    public void translate(final String input, String inputLanguageCode, String outputLanguageCode) {
         if (!account.isUserLoggedIn())
             return; // TODO: Show Login prompt(?) (and get session ID)
-        else if (!isNetworkAvailable() || !isInputValid(input))
+        else if (!isNetworkAvailable()) {
+            feedItemFragment.setTranslation(activity.getString(R.string.no_internet_connection));
             return;
+        }
         else if (!account.isUserInSession()) {
             getSessionId();
             return;
         }
+        else if (!isInputValid(input))
+            return; // ignore
 
-        String urlTranslation = URL + "translate_from_to/" + Uri.encode(input.trim()) + "/" +
-                inputLanguageCode + "/" + outputLanguageCode + "?session=" + account.getSessionID();
+        // /translate/<from_lang_code>/<to_lang_code>
+        String urlTranslation = URL + "translate/" + inputLanguageCode + "/" + outputLanguageCode +
+                "?session=" + account.getSessionID();
 
-        StringRequest request = new StringRequest(Request.Method.GET,
+
+        StringRequest request = new StringRequest(Request.Method.POST,
                 urlTranslation, new Response.Listener<String>() {
 
             @Override
@@ -111,7 +115,18 @@ public class ZeeguuConnectionManager {
             public void onErrorResponse(VolleyError error) {
                 Log.e("translation", error.toString());
             }
-        });
+        }) {
+
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("word", Uri.encode(input.trim()));
+                params.put("url", "");
+                params.put("context", "");
+
+                return params;
+            }
+        };
 
         queue.add(request);
     }
@@ -171,5 +186,9 @@ public class ZeeguuConnectionManager {
 
     private boolean isInputValid(String input) {
         return !(input == null || input.trim().equals(""));
+    }
+
+    public void showLoginDialog() {
+
     }
 }

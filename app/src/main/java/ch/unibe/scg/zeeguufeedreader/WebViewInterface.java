@@ -1,9 +1,7 @@
 package ch.unibe.scg.zeeguufeedreader;
 
 import android.app.Activity;
-import android.text.Html;
 import android.webkit.JavascriptInterface;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class WebViewInterface {
@@ -23,6 +21,6 @@ public class WebViewInterface {
     @JavascriptInterface
     public void updateTranslation(final String selection) {
         MainActivity activity = (MainActivity) context;
-        activity.getConnectionManager().getTranslation(selection, "EN", "DE");
+        activity.getConnectionManager().translate(selection, "EN", "DE");
     }
 }

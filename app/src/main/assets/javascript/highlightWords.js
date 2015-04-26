@@ -21,8 +21,9 @@ function highlight_words(words) {
 
          */
             for (j = 0; j < words.length; j++) {
-                var wordExtractor = new RegExp('(\\s|"|>)+(' + words[j]+')(\\s|,|<|"|[.])+', 'gi');
-                var highlightedWord = '$1<span class="zeeguu-visited" other="$2">$2</span>$3';
+                var wordExtractor = new RegExp('((?:[\\s,"»«>]|^)+)(' + words[j].trim() + ')((?:[\\s,"»«:.<]|$)+)', 'gi');
+                var highlightedWord = '$1<span class="zeeguu-visited">$2</span>$3';
+
                 parent.innerHTML = parent.innerHTML.replace(wordExtractor, highlightedWord);
             }
     }

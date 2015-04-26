@@ -91,7 +91,10 @@ public class FeedItemFragment extends Fragment {
         String css = Utility.assetToString(activity, "css/style.css");
         String html = "<html><head><title>" + title + "</title><style>" + css + "</style></head><body>" + content + "</body></html>";
 
-        webView.loadData(html, "text/html", "utf-8");
+        if (savedInstanceState == null)
+            webView.loadData(html, "text/html", "utf-8");
+        else
+            webView.restoreState(savedInstanceState);
 
         return mainView;
     }
@@ -131,8 +134,14 @@ public class FeedItemFragment extends Fragment {
         main.getConnectionManager().contributeWithContext(selection, "EN", translation, "DE", title, url, context);
     }
 
-    public void setTranslation(String translation) {
-        translationBar.setText(Html.fromHtml("<h2>" + translation + "</h2>"));
+    public void setTranslation(final String translation) {
+        // UI changes must be done in the main thread
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                translationBar.setText(Html.fromHtml("<h2>" + translation + "</h2>"));
+            }
+        });
         this.translation = translation;
     }
 
@@ -177,5 +186,11 @@ public class FeedItemFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        webView.saveState(savedInstanceState);
     }
 }

@@ -1,8 +1,26 @@
 <resources>
     <string name="app_name">Zeeguu Feed Reader</string>
 
-    <string name="settings">Settings</string>
+    // General
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="cancel">Cancel</string>
+    <string name="signin">Sign in</string>
+    <string name="no_internet_connection">No internet connection</string>
 
+    // Settings
+    <string name="settings_zeeguu_title">Zeeguu</string>
+
+    <string name="settings_zeguu_account_title">Account</string>
+    <string name="settings_zeguu_account_summary">Not logged in</string>
+
+    <string name="settings_zeguu_highlight_title">Highlight words</string>
+    <string name="settings_zeguu_highlight_summary">Highlight the words you are currently learning in the text.</string>
+
+    // Login Dialog
+    <string name="login_zeeguu_title">Zeeguu Login</string>
+
+    // Navigation Drawer
     <string name="title_section1">Feed Overview</string>
     <string name="title_section2">Feed Item</string>
     <string name="title_section3">Settings</string>
@@ -11,6 +29,7 @@
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+
 
     <string name="action_example">Example action</string>
 
