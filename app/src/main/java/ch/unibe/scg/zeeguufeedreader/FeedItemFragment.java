@@ -76,6 +76,7 @@ public class FeedItemFragment extends Fragment {
                 view.evaluateJavascript(Utility.assetToString(activity, "javascript/highlightWords.js"), null);
                 view.evaluateJavascript(Utility.assetToString(activity, "javascript/extractContribution.js"), null);
                 view.evaluateJavascript(Utility.assetToString(activity, "javascript/extractContext.js"), null);
+                view.evaluateJavascript(Utility.assetToString(activity, "javascript/textSelection.js"), null);
             }
         });
 
@@ -83,7 +84,7 @@ public class FeedItemFragment extends Fragment {
         String content = "<h2>Title</h2>" +
                 "<p>This is <u>underlined</u> text. And \"this\" is a test phrase that needs to be long enough so that it does not fit on one line.</p>" +
                 "<p>This is a <a href=\"http://google.ch\">link</a>.</p>" +
-                "<p>Scrolling Test.</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
+                "<p>Scrolling<br/>Test.</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "Test";

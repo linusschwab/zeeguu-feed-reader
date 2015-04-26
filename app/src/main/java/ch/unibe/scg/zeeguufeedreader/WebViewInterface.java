@@ -19,8 +19,15 @@ public class WebViewInterface {
     }
 
     @JavascriptInterface
-    public void updateTranslation(final String selection) {
+    public void updateTranslation(String selection) {
         MainActivity activity = (MainActivity) context;
         activity.getConnectionManager().translate(selection, "EN", "DE");
+    }
+
+    // Method to debug selection
+    @JavascriptInterface
+    public void updateText(String selection) {
+        MainActivity activity = (MainActivity) context;
+        activity.getFeedItemFragment().setTranslation(selection);
     }
 }
