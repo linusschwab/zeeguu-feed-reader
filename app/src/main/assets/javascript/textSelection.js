@@ -1,10 +1,10 @@
 function getExtendedSelection() {
     var selection = getSelectionPosition()
 
-    var min = selection.selectionStart
-    var max = selection.selectionEnd
-    var text = selection.text
-    var inLoop
+    var min = selection.selectionStart;
+    var max = selection.selectionEnd;
+    var text = selection.text;
+    var inLoop;
 
     // Select complete word if partially selected (to the left side)
     if (min != 0 && min != text.length) {
@@ -13,7 +13,11 @@ function getExtendedSelection() {
 
         inLoop = false;
         while (min != 0
-                && !(current == " " || next == " ")) {
+                && !(current == " " || next == " ")
+                && !(current == "." || next == ".")
+                && !(current == "}" || next == "}")
+                && !(current == current.toUpperCase() && next == next.toLowerCase())) {
+            current = text.substring(min, min + 1);
             next = text.substring(min - 1, min);
             min -= 1;
             inLoop = true;
@@ -31,7 +35,9 @@ function getExtendedSelection() {
         while (max != text.length
                 && !(current == " " || next == " ")
                 && !(current == "." || next == ".")
-                && !(current == "," || next == ",")) {
+                && !(current == "," || next == ",")
+                && !(current == current.toLowerCase() && next == next.toUpperCase())) {
+            current = text.substring(max - 1, max);
             next = text.substring(max, max + 1);
             max += 1;
             inLoop = true;
@@ -93,13 +99,13 @@ function selectionOffset(node, offset) {
         if (node.parentNode.childNodes.length > 1) {
             // Find current node in the parent node
             for (i = 0; i < node.parentNode.childNodes.length; i++) {
-              if (node.isSameNode(node.parentNode.childNodes[i]))
-                nodePosition = i;
+                if (node.isSameNode(node.parentNode.childNodes[i]))
+                    nodePosition = i;
                 }
             // Calculate position of current node in parent node
             for (i = 0; i < nodePosition; i++) {
-              var childNode = node.parentNode.childNodes[i]
-              offset += childNode.textContent.length;
+                var childNode = node.parentNode.childNodes[i]
+                offset += childNode.textContent.length;
             }
         }
         node = node.parentNode;
