@@ -1,4 +1,5 @@
 document.addEventListener("selectionchange", function() {
-    Android.updateTranslation(getExtendedSelection());
-    //Android.updateText(getExtendedSelection());
+    if (window.getSelection().toString().trim() != "")
+        Android.updateTranslation(getExtendedSelection());
+        //Android.updateText(getExtendedSelection());
 }, false);

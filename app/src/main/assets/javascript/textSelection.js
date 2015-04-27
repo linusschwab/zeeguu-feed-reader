@@ -1,3 +1,84 @@
+function getContext() {
+    var selection = getSelectionPosition()
+
+    var min = selection.selectionStart;
+    var max = selection.selectionEnd;
+    var text = selection.text;
+    var inLoop;
+
+    // Select context (to the left side)
+    if (min != 0 && min != text.length) {
+        var current = text.substring(min, min + 1);
+        var next = text.substring(min - 1, min);
+
+        inLoop = false;
+        while (min != 0
+                && !(current == "." || next == ".")
+                && !(current == "}" || next == "}")
+                // Check if the end of the paragraph is reached
+                && !(((current == current.toUpperCase() && next == next.toLowerCase()) ||
+                     (!isNaN(current) && isNaN(next) && next == next.toLowerCase()))
+                     && !(!isNaN(current) && !isNaN(next))
+                     && !(current == " " || next == " ")
+                     && !(current == "," || next == ",")
+                     && !(current == ":" || next == ":")
+                     && !(current == "-" || next == "-")
+                     && !(current == "'" || next == "'")
+                     && !(current == "\"" || next == "\"")
+                     && !(current == "»" || next == "»")
+                     && !(current == "«" || next == "«"))) {
+            current = text.substring(min, min + 1);
+            next = text.substring(min - 1, min);
+            min -= 1;
+            inLoop = true;
+        }
+        if (inLoop && min != 0)
+            min += 1;
+    }
+
+    // Select context (to the right side)
+    if (max != 0 && max != text.length) {
+        var current = text.substring(max - 1, max);
+        var next = text.substring(max, max + 1);
+
+        inLoop = false;
+        while (max != text.length
+                && !(current == ".")
+                // Check if the end of the paragraph is reached
+                && !(((current == current.toLowerCase() && next == next.toUpperCase()) ||
+                     (!isNaN(current) && isNaN(next) && next == next.toUpperCase()))
+                     && !(!isNaN(current) && !isNaN(next))
+                     && !(current == " " || next == " ")
+                     && !(current == "," || next == ",")
+                     && !(current == ":" || next == ":")
+                     && !(current == "-" || next == "-")
+                     && !(current == "'" || next == "'")
+                     && !(current == "\"" || next == "\"")
+                     && !(current == "»" || next == "»")
+                     && !(current == "«" || next == "«")
+                     && !(next == "."))) {
+            current = text.substring(max - 1, max);
+            next = text.substring(max, max + 1);
+            max += 1;
+            inLoop = true;
+        }
+        if (inLoop && max != text.length)
+            max -=1;
+    }
+
+    var context = text.substring(min,max).trim();
+
+    // Debug information
+    //console.log(context);
+
+    return {
+        "term": getExtendedSelection(),
+        "context": context,
+        "title": document.title,
+        "url": document.URL
+    };
+}
+
 function getExtendedSelection() {
     var selection = getSelectionPosition()
 
@@ -46,7 +127,7 @@ function getExtendedSelection() {
             max -=1;
     }
 
-    var selectedWords = text.substring(min,max);
+    var selectedWords = text.substring(min,max).trim();
 
     // Debug information
     //console.log(selectedWords);

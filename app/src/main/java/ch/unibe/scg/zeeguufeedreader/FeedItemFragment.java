@@ -82,7 +82,7 @@ public class FeedItemFragment extends Fragment {
 
         // Load HTML
         String content = "<h2>Title</h2>" +
-                "<p>This is <u>underlined</u> text. And \"this\" is a test phrase that needs to be long enough so that it does not fit on one line.</p>" +
+                "<p>This is <u>underlined</u> text. And \"this\" is a test phrase, that needs to be long enough so that it does not fit on one line.</p>" +
                 "<p>This is a <a href=\"http://google.ch\">link</a>.</p>" +
                 "<p>Scrolling<br/>Test.</p>" + "<p>1800-Scrolling Test</p>" + "<p>12:00 Scrolling Test</p>" + "<p>16'00-Scrolling Test</p>" + "<p>Scrolling Test</p>" +
                 "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
@@ -102,7 +102,7 @@ public class FeedItemFragment extends Fragment {
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public void extractContextFromPage() {
-        webView.evaluateJavascript("extractContribution();", new ValueCallback<String>() {
+        webView.evaluateJavascript("getContext();", new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String value) {
                 JsonReader reader = new JsonReader(new StringReader(value));
