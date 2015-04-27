@@ -24,6 +24,7 @@ function getContext() {
                      && !(current == ":" || next == ":")
                      && !(current == "-" || next == "-")
                      && !(current == "'" || next == "'")
+                     && !(current == "/" || next == "/")
                      && !(current == "\"" || next == "\"")
                      && !(current == "»" || next == "»")
                      && !(current == "«" || next == "«"))) {
@@ -53,6 +54,7 @@ function getContext() {
                      && !(current == ":" || next == ":")
                      && !(current == "-" || next == "-")
                      && !(current == "'" || next == "'")
+                     && !(current == "/" || next == "/")
                      && !(current == "\"" || next == "\"")
                      && !(current == "»" || next == "»")
                      && !(current == "«" || next == "«")
@@ -163,13 +165,13 @@ function getSelectionPosition() {
     }
 
     // Debug information
-    //console.log(node.textContent.substring(selectionStart,selectionEnd));
+    //console.log($(node).text().substring(selectionStart,selectionEnd));
 
     return {
         "selection": selection,
         "selectionStart": selectionStart,
         "selectionEnd": selectionEnd,
-        "text": node.textContent
+        "text": $(node).text()
     };
 }
 
@@ -186,7 +188,7 @@ function selectionOffset(node, offset) {
             // Calculate position of current node in parent node
             for (i = 0; i < nodePosition; i++) {
                 var childNode = node.parentNode.childNodes[i]
-                offset += childNode.textContent.length;
+                offset += $(childNode).text().length;
             }
         }
         node = node.parentNode;
