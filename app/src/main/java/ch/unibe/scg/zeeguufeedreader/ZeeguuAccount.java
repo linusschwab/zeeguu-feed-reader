@@ -3,6 +3,7 @@ package ch.unibe.scg.zeeguufeedreader;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 public class ZeeguuAccount {
 
@@ -16,9 +17,51 @@ public class ZeeguuAccount {
     private String languageLearning;
 
     public ZeeguuAccount(Activity activity) {
-        sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
+    }
+
+    /**
+     *  Save login information in preferences if they are correct (if server sent sessionID)
+     */
+    public void saveLoginInformation() {
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("pref_zeeguu_username", email);
+        editor.putString("pref_zeeguu_password", password);
+        editor.putString("pref_zeeguu_session_id", sessionID);
+        editor.apply();
+    }
+
+    public void saveLanguages() {
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("pref_zeeguu_language_native", languageNative);
+        editor.putString("pref_zeeguu_language_learning", languageLearning);
+        editor.apply();
+    }
+
+    public void load() {
         email = sharedPref.getString("pref_zeeguu_username", "");
         password = sharedPref.getString("pref_zeeguu_password", "");
+        sessionID = sharedPref.getString("pref_zeeguu_session_id", "");
+        languageNative = sharedPref.getString("pref_zeeguu_language_native", "");
+        languageLearning = sharedPref.getString("pref_zeeguu_language_learning", "");
+    }
+
+    public void logout() {
+        // Delete preferences
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("pref_zeeguu_username", "");
+        editor.putString("pref_zeeguu_password", "");
+        editor.putString("pref_zeeguu_session_id", "");
+        editor.putString("pref_zeeguu_language_native", "");
+        editor.putString("pref_zeeguu_language_learning", "");
+        editor.apply();
+
+        // Delete variables
+        email = "";
+        password = "";
+        sessionID = "";
+        languageNative = "";
+        languageLearning = "";
     }
 
     /*
@@ -31,6 +74,10 @@ public class ZeeguuAccount {
 
     public boolean isUserInSession() {
         return !(sessionID == null || sessionID.equals(""));
+    }
+
+    public boolean isLanguageSet() {
+        return !(languageNative == null || languageNative.equals("")) && !(languageLearning == null || languageLearning.equals(""));
     }
 
     /*

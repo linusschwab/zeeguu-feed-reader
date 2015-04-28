@@ -2,20 +2,28 @@ package ch.unibe.scg.zeeguufeedreader;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
 import android.text.Html;
 import android.util.JsonReader;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -32,6 +40,10 @@ public class FeedItemFragment extends Fragment {
     private String context, title, url;
     private String selection, translation;
 
+    private SharedPreferences sharedPref;
+
+    private boolean browser;
+
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
      * initialize essential components of the fragment that you want to retain when the fragment
@@ -40,6 +52,15 @@ public class FeedItemFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Set custom action bar layout
+        setHasOptionsMenu(true);
+
+        activity = getActivity();
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
+
+        MainActivity main = (MainActivity) activity;
+        browser = main.isBrowserEnabled();
     }
 
     /**
@@ -53,11 +74,16 @@ public class FeedItemFragment extends Fragment {
         View mainView = inflater.inflate(R.layout.fragment_feed_item, container, false);
         translationBar = (TextView) mainView.findViewById(R.id.feed_item_translation);
         webView = (WebView) mainView.findViewById(R.id.feed_item_content);
-        activity = getActivity();
 
         // Enable Javascript
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        if (sharedPref.getBoolean("pref_browser_viewport", true)) {
+            webSettings.setLoadWithOverviewMode(true);
+            webSettings.setUseWideViewPort(true);
+        }
+        webSettings.setBuiltInZoomControls(true);
+        webSettings.setDisplayZoomControls(false);
         webView.addJavascriptInterface(new WebViewInterface(activity), "Android");
 
         // Force links and redirects to open in the WebView instead of in a browser, inject css and javascript
@@ -92,8 +118,19 @@ public class FeedItemFragment extends Fragment {
         String css = Utility.assetToString(activity, "css/style.css");
         String html = "<html><head><title>" + title + "</title><style>" + css + "</style></head><body>" + content + "</body></html>";
 
-        if (savedInstanceState == null)
-            webView.loadData(html, "text/html", "utf-8");
+        if (savedInstanceState == null) {
+            String url = sharedPref.getString("pref_browser_homepage", "http://zeeguu.unibe.ch");
+            if (browser && !url.equals("Feed Item")) {
+                if (url.equals(""))
+                    webView.loadUrl("http://zeeguu.unibe.ch");
+                else if (!url.contains("http://"))
+                    webView.loadUrl("http://" + url);
+                else
+                    webView.loadUrl(url);
+            }
+            else
+                webView.loadData(html, "text/html", "utf-8");
+        }
         else
             webView.restoreState(savedInstanceState);
 
@@ -131,8 +168,10 @@ public class FeedItemFragment extends Fragment {
     }
 
     public void submitContext() {
+        // Temporary Workaround
         MainActivity main = (MainActivity) activity;
-        main.getConnectionManager().contributeWithContext(selection, "EN", translation, "DE", title, url, context);
+        main.getConnectionManager().contributeWithContext(selection, sharedPref.getString("pref_zeeguu_language_learning", "EN")
+                , translation, sharedPref.getString("pref_zeeguu_language_native", "DE"), title, url, context);
     }
 
     public void setTranslation(final String translation) {
@@ -147,8 +186,8 @@ public class FeedItemFragment extends Fragment {
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    public void highlight() {
-        webView.evaluateJavascript("highlight_words([window.getSelection().toString()]);", null);
+    public void highlight(String word) {
+        webView.evaluateJavascript("highlight_words([\"" + word + "\"]);", null);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -193,5 +232,74 @@ public class FeedItemFragment extends Fragment {
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
         webView.saveState(savedInstanceState);
+    }
+
+    // Add action view for usability tests
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        final MainActivity main = (MainActivity) activity;
+
+        if (!main.getNavigationDrawerFragment().isDrawerOpen() && browser) {
+            menu.clear();
+            inflater.inflate(R.menu.browser, menu);
+
+            ActionBar actionBar = main.getSupportActionBar();
+            actionBar.setCustomView(R.layout.actionview_edittext);
+            actionBar.setDisplayShowCustomEnabled(true);
+
+            final EditText edittext = (EditText) actionBar.getCustomView().findViewById(R.id.url);
+            edittext.setOnKeyListener(new View.OnKeyListener() {
+                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    // If the event is a key-down event on the "enter" button
+                    if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                            (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                        // Perform action on key press
+                        String url = edittext.getText().toString();
+                        String google = "http://www.google.ch/#safe=off&q=";
+
+                        if (!url.contains("."))
+                            webView.loadUrl(google + Uri.encode(url));
+                        else if (!url.contains("http://"))
+                            webView.loadUrl("http://" + url);
+                        else
+                            webView.loadUrl(url);
+
+                        main.hideKeyboard();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (browser) {
+            if (id == R.id.action_refresh) {
+                webView.reload();
+                return true;
+            }
+            if (id == R.id.action_back) {
+                if (webView.canGoBack())
+                    webView.goBack();
+                return true;
+            }
+            if (id == R.id.action_forward) {
+                if (webView.canGoForward())
+                    webView.goForward();
+                return true;
+            }
+            if (id == R.id.action_unhighlight) {
+                unhighlight();
+                return true;
+            }
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

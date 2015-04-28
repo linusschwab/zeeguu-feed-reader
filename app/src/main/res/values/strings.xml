@@ -6,19 +6,28 @@
     <string name="password">Password</string>
     <string name="cancel">Cancel</string>
     <string name="signin">Sign in</string>
+    <string name="logout">Log out</string>
+    <string name="no_login">Not logged in</string>
     <string name="no_internet_connection">No internet connection</string>
 
     // Settings
     <string name="settings_zeeguu_title">Zeeguu</string>
-
     <string name="settings_zeguu_account_title">Account</string>
     <string name="settings_zeguu_account_summary">Not logged in</string>
-
+    <string name="settings_zeguu_account_login">Logged in as</string>
     <string name="settings_zeguu_highlight_title">Highlight words</string>
     <string name="settings_zeguu_highlight_summary">Highlight the words you are currently learning in the text.</string>
 
+    <string name="settings_browser_title">Browser</string>
+    <string name="settings_browser_homepage_title">Homepage</string>
+    <string name="settings_browser_homepage_summary">Set your home page</string>
+    <string name="settings_browser_viewport_title">Viewport</string>
+    <string name="settings_browser_viewport_summary">Enable wide viewport</string>
+
     // Login Dialog
     <string name="login_zeeguu_title">Zeeguu Login</string>
+    <string name="logout_zeeguu_title">Zeeguu Logout</string>
+    <string name="logout_zeeguu_confirmation">Do you really want to log out?</string>
 
     // Navigation Drawer
     <string name="title_section1">Feed Overview</string>
@@ -30,8 +39,13 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-
+    // Menu
     <string name="action_example">Example action</string>
 
     <string name="action_settings">Settings</string>
+    <string name="action_back">Back</string>
+    <string name="action_forward">Forward</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_unhighlight">Remove Highlight</string>
+
 </resources>

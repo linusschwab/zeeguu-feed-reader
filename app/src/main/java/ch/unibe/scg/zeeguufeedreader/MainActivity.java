@@ -2,6 +2,7 @@ package ch.unibe.scg.zeeguufeedreader;
 
 import android.annotation.TargetApi;
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
@@ -12,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.FeedItemCompatibilityFragment;
 
@@ -25,19 +27,19 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
-    private NavigationDrawerFragment mNavigationDrawerFragment;
+    private NavigationDrawerFragment navigationDrawerFragment;
 
     private FeedOverviewFragment feedOverviewFragment;
     private FeedItemFragment feedItemFragment;
     private FeedItemCompatibilityFragment feedItemCompatibilityFragment;
     private SettingsFragment settingsFragment;
 
-    private ZeeguuLoginDialog zeeguuLoginDialog;
-
     private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
 
     private ActionMode actionMode = null;
     private String currentFragment;
+
+    private boolean browser = true;
 
     private ZeeguuConnectionManager connectionManager;
 
@@ -63,19 +65,15 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         settingsFragment = (SettingsFragment) fragmentManager.findFragmentByTag("settingsFragment");
         if (settingsFragment == null) settingsFragment = new SettingsFragment();
 
-        // Login Dialog
-        zeeguuLoginDialog = (ZeeguuLoginDialog) fragmentManager.findFragmentByTag("zeeguuLoginDialog");
-        if (zeeguuLoginDialog == null) zeeguuLoginDialog = new ZeeguuLoginDialog();
-
         // Layout
         setContentView(R.layout.activity_main);
 
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
+        navigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         title = getTitle();
 
         // Set up the drawer.
-        mNavigationDrawerFragment.setUp(
+        navigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
@@ -84,38 +82,52 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         if (savedInstanceState == null) {
             // TODO: Mark "Feed List" as active in the navigation drawer
             onNavigationDrawerItemSelected(0);
+            navigationDrawerFragment.closeDrawer();
         }
 
         connectionManager = new ZeeguuConnectionManager(this, feedItemFragment);
-        connectionManager.getSessionId();
     }
 
     @Override
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
-        switch (position + 1) {
-            case 1:
-                title = getString(R.string.title_section1);
-                switchFragment(feedOverviewFragment, "feedOverviewFragment");
-                break;
-            case 2:
-                title = getString(R.string.title_section2);
-                if (currentApiVersion >= android.os.Build.VERSION_CODES.KITKAT)
+        if (browser) {
+            switch (position + 1) {
+                case 1:
+                    title = "Browser";
                     switchFragment(feedItemFragment, "feedItemFragment");
-                else
-                    switchFragment(feedItemCompatibilityFragment, "feedItemCompatibilityFragment");
-                break;
-            case 3:
-                title = getString(R.string.title_section3);
-                switchFragment(settingsFragment, "settingsFragment");
-                break;
-            case 4:
-                getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
-                break;
-            case 5:
-                getWindow().setStatusBarColor(getResources().getColor(R.color.black));
-                break;
+                    break;
+                case 2:
+                    title = "Settings";
+                    switchFragment(settingsFragment, "settingsFragment");
+                    break;
+            }
+        }
+        else {
+            switch (position + 1) {
+                case 1:
+                    title = getString(R.string.title_section1);
+                    switchFragment(feedOverviewFragment, "feedOverviewFragment");
+                    break;
+                case 2:
+                    title = getString(R.string.title_section2);
+                    if (currentApiVersion >= android.os.Build.VERSION_CODES.KITKAT)
+                        switchFragment(feedItemFragment, "feedItemFragment");
+                    else
+                        switchFragment(feedItemCompatibilityFragment, "feedItemCompatibilityFragment");
+                    break;
+                case 3:
+                    title = getString(R.string.title_section3);
+                    switchFragment(settingsFragment, "settingsFragment");
+                    break;
+                case 4:
+                    getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
+                    break;
+                case 5:
+                    getWindow().setStatusBarColor(getResources().getColor(R.color.black));
+                    break;
+            }
         }
     }
 
@@ -131,6 +143,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(title);
+        actionBar.setDisplayShowCustomEnabled(false);
     }
 
     @Override
@@ -152,16 +165,15 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (!mNavigationDrawerFragment.isDrawerOpen()) {
+        if (!navigationDrawerFragment.isDrawerOpen()) {
             // Only show items in the action bar relevant to this screen
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.main, menu);
+            getMenuInflater().inflate(R.menu.global, menu);
             restoreActionBar();
             return true;
         }
 
-        //Menu translationMenu = menu;
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -174,6 +186,8 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
 
         // noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            title = getString(R.string.title_section3);
+            switchFragment(settingsFragment, "settingsFragment");
             return true;
         }
 
@@ -194,7 +208,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
      */
     @Override
     public void onSupportActionModeStarted(ActionMode mode) {
-        if (actionMode == null && currentFragment.equals("feedItemFragment")) {
+        if (actionMode == null) {
             actionMode = mode;
             Menu menu = mode.getMenu();
             // Remove the default menu items (select all, copy, paste, search)
@@ -219,10 +233,6 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
                 feedItemFragment.extractContextFromPage();
                 actionMode.finish(); // Action picked, so close the CAB
                 break;
-            case R.id.action_highlight:
-                feedItemFragment.highlight();
-                actionMode.finish();
-                break;
             case R.id.action_unhighlight:
                 feedItemFragment.unhighlight();
                 actionMode.finish();
@@ -244,13 +254,25 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         super.onSupportActionModeFinished(mode);
     }
 
-    public void showZeeguuLoginDialog(String title) {
-        zeeguuLoginDialog.setTitle(title);
-        zeeguuLoginDialog.show(fragmentManager, "zeeguuLoginDialog");
+    public void hideKeyboard() {
+        // Check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
     }
 
     public FeedItemFragment getFeedItemFragment() {
         return feedItemFragment;
+    }
+
+    public NavigationDrawerFragment getNavigationDrawerFragment() {
+        return navigationDrawerFragment;
+    }
+
+    public boolean isBrowserEnabled() {
+        return browser;
     }
 
     public ZeeguuConnectionManager getConnectionManager() {

@@ -1,10 +1,10 @@
 package ch.unibe.scg.zeeguufeedreader;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 
 public class SettingsFragment extends PreferenceFragment {
@@ -14,7 +14,7 @@ public class SettingsFragment extends PreferenceFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences);
@@ -29,7 +29,10 @@ public class SettingsFragment extends PreferenceFragment {
 
         // Open Zeeguu login dialog
         if (preference.getKey().equals("pref_zeeguu_account")) {
-            main.showZeeguuLoginDialog(getString(R.string.login_zeeguu_title));
+            if (sharedPref.getString("pref_zeeguu_username", "").equals(""))
+                main.getConnectionManager().showLoginDialog(getString(R.string.login_zeeguu_title));
+            else
+                main.getConnectionManager().showLoginDialog(getString(R.string.logout_zeeguu_title));
         }
 
         return super.onPreferenceTreeClick(preferenceScreen, preference);
@@ -48,6 +51,9 @@ public class SettingsFragment extends PreferenceFragment {
     private void updateAccountSummary() {
         Preference zeeguuAccount = findPreference("pref_zeeguu_account");
         String text = sharedPref.getString("pref_zeeguu_username", "");
-        if (!text.equals("")) zeeguuAccount.setSummary("Logged in as " + text);
+        if (!text.equals("") && isAdded())
+            zeeguuAccount.setSummary(getString(R.string.settings_zeguu_account_login) + " " + text);
+        else
+            zeeguuAccount.setSummary(R.string.settings_zeguu_account_summary);
     }
 }

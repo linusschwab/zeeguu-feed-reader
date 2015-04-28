@@ -97,7 +97,21 @@ public class NavigationDrawerFragment extends Fragment {
                 selectItem(position);
             }
         });
-        mDrawerListView.setAdapter(new ArrayAdapter<String>(
+
+        // Temporary workaround
+        MainActivity main = (MainActivity) getActivity();
+
+        if (main.isBrowserEnabled())
+            mDrawerListView.setAdapter(new ArrayAdapter<String>(
+                    getActionBar().getThemedContext(),
+                    R.layout.list_item,
+                    R.id.text_list_item,
+                    new String[]{
+                            "Browser",
+                            "Settings",
+                    }));
+        else
+            mDrawerListView.setAdapter(new ArrayAdapter<String>(
                 getActionBar().getThemedContext(),
                 R.layout.list_item,
                 R.id.text_list_item,
@@ -108,6 +122,8 @@ public class NavigationDrawerFragment extends Fragment {
                         getString(R.string.title_section4),
                         getString(R.string.title_section5),
                 }));
+
+
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
@@ -265,6 +281,7 @@ public class NavigationDrawerFragment extends Fragment {
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setTitle(R.string.app_name);
+        actionBar.setDisplayShowCustomEnabled(false);
     }
 
     private ActionBar getActionBar() {
@@ -279,5 +296,9 @@ public class NavigationDrawerFragment extends Fragment {
          * Called when an item in the navigation drawer is selected.
          */
         void onNavigationDrawerItemSelected(int position);
+    }
+
+    public void closeDrawer() {
+        mDrawerLayout.closeDrawer(mFragmentContainerView);
     }
 }

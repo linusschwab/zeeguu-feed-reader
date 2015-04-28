@@ -12,4 +12,16 @@
             android:summary="@string/settings_zeguu_highlight_summary"
             android:defaultValue="true" />
     </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/settings_browser_title">
+        <EditTextPreference
+            android:key="pref_browser_homepage"
+            android:title="@string/settings_browser_homepage_title"
+            android:summary="@string/settings_browser_homepage_summary" />
+        <CheckBoxPreference
+            android:key="pref_browser_viewport"
+            android:title="@string/settings_browser_viewport_title"
+            android:summary="@string/settings_browser_viewport_summary"
+            android:defaultValue="true" />
+    </PreferenceCategory>
 </PreferenceScreen>

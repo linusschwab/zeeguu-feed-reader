@@ -1,10 +1,13 @@
 package ch.unibe.scg.zeeguufeedreader;
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -12,8 +15,12 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,24 +38,48 @@ public class ZeeguuConnectionManager {
     private Activity activity;
     private FeedItemFragment feedItemFragment;
 
+    private FragmentManager fragmentManager;
+    private ZeeguuLoginDialog zeeguuLoginDialog;
+    private SharedPreferences sharedPref;
+
+    private String selection, translation;
+
     public ZeeguuConnectionManager(Activity activity, FeedItemFragment feedItemFragment) {
         this.account = new ZeeguuAccount(activity);
         this.activity = activity;
         this.feedItemFragment = feedItemFragment;
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
+
+        // Login Dialog
+        fragmentManager = activity.getFragmentManager();
+        zeeguuLoginDialog = (ZeeguuLoginDialog) fragmentManager.findFragmentByTag("zeeguuLoginDialog");
+        if (zeeguuLoginDialog == null) zeeguuLoginDialog = new ZeeguuLoginDialog();
 
         queue = Volley.newRequestQueue(activity);
+
+        // Load user information
+        account.load();
+
+        // Get missing information from server
+        if (!account.isUserLoggedIn())
+            showLoginDialog(activity.getString(R.string.login_zeeguu_title));
+        else if (!account.isUserInSession())
+            getSessionId(account.getEmail(), account.getPassword());
+        else if (!account.isLanguageSet())
+            getUserLanguages();
     }
 
     /**
      *  Gets a session ID which is needed to use the API
-     *
-     *  @Precondition: user needs to be logged in
      */
-    public void getSessionId() {
-        if (!account.isUserLoggedIn() || !isNetworkAvailable())
-            return; // ignore here, just do nothing
+    public void getSessionId(String email, String password) {
+        if (!isNetworkAvailable())
+            return; // ignore here
 
-        String urlSessionID = URL + "session/" + account.getEmail();
+        account.setEmail(email);
+        account.setPassword(password);
+
+        String urlSessionID = URL + "session/" + email;
 
         StringRequest request = new StringRequest(Request.Method.POST,
                 urlSessionID, new Response.Listener<String>() {
@@ -56,13 +87,16 @@ public class ZeeguuConnectionManager {
             @Override
             public void onResponse(String response) {
                 account.setSessionID(response);
+                account.saveLoginInformation();
+                getUserLanguages();
             }
         }, new Response.ErrorListener() {
 
             @Override
             public void onErrorResponse(VolleyError error) {
-                if (error.toString().equals("com.android.volley.AuthFailureError"));
-                    showLoginDialog();
+                account.setEmail("");
+                account.setPassword("");
+                showLoginDialog("Wrong email or password");
             }
         }) {
 
@@ -83,23 +117,30 @@ public class ZeeguuConnectionManager {
      *  @Precondition: user needs to be logged in and have a session id
      */
     public void translate(final String input, String inputLanguageCode, String outputLanguageCode) {
-        if (!account.isUserLoggedIn())
-            return; // TODO: Show Login prompt(?) (and get session ID)
+        if (!account.isUserLoggedIn()) {
+            feedItemFragment.setTranslation(activity.getString(R.string.no_login));
+            return;
+        }
         else if (!isNetworkAvailable()) {
             feedItemFragment.setTranslation(activity.getString(R.string.no_internet_connection));
             return;
         }
         else if (!account.isUserInSession()) {
-            getSessionId();
+            getSessionId(account.getEmail(), account.getPassword());
             return;
         }
         else if (!isInputValid(input))
             return; // ignore
+        else if (!isDifferentSelection(input)) {
+            feedItemFragment.setTranslation(translation);
+            return;
+        }
+
+        selection = input;
 
         // /translate/<from_lang_code>/<to_lang_code>
         String urlTranslation = URL + "translate/" + inputLanguageCode + "/" + outputLanguageCode +
                 "?session=" + account.getSessionID();
-
 
         StringRequest request = new StringRequest(Request.Method.POST,
                 urlTranslation, new Response.Listener<String>() {
@@ -107,6 +148,7 @@ public class ZeeguuConnectionManager {
             @Override
             public void onResponse(String response) {
                 feedItemFragment.setTranslation(response);
+                translation = response;
             }
 
         }, new Response.ErrorListener() {
@@ -133,14 +175,19 @@ public class ZeeguuConnectionManager {
 
     public void contributeWithContext(String input, String inputLanguageCode, String translation, String translationLanguageCode,
                                       final String title, final String url, final String context) {
-        if (!account.isUserLoggedIn())
-            return; // TODO: Show Login prompt (and get session ID)
+        if (!account.isUserLoggedIn()) {
+            showLoginDialog(activity.getString(R.string.login_zeeguu_title));
+            return;
+        }
         else if (!isNetworkAvailable() || !isInputValid(input) || !isInputValid(translation))
             return;
         else if (!account.isUserInSession()) {
-            getSessionId();
+            getSessionId(account.getEmail(), account.getPassword());
             return;
         }
+
+        if (sharedPref.getBoolean("pref_zeeguu_highlight_words", true))
+            feedItemFragment.highlight(input);
 
         String urlContribution = URL + "contribute_with_context/" + inputLanguageCode + "/" + Uri.encode(input.trim()) + "/" +
                 translationLanguageCode + "/" + Uri.encode(translation) + "?session=" + account.getSessionID();
@@ -176,11 +223,46 @@ public class ZeeguuConnectionManager {
         queue.add(request);
     }
 
+    private void getUserLanguages() {
+        if (!account.isUserLoggedIn() || !isNetworkAvailable()) {
+            return;
+        }
+        else if (!account.isUserInSession()) {
+            getSessionId(account.getEmail(), account.getPassword());
+            return;
+        }
+
+        String urlLanguage = URL + "learned_and_native_language" + "?session=" + account.getSessionID();
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, urlLanguage,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            account.setLanguageNative(response.getString("native"));
+                            account.setLanguageLearning(response.getString("learned"));
+                            account.saveLanguages();
+                        }
+                        catch (JSONException error) {
+                            Log.e("get_user_language", error.toString());
+                        }
+                    }
+
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("get_user_language", error.toString());
+                    }
+                });
+
+        queue.add(request);
+    }
+
     public boolean isNetworkAvailable() {
         ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
-
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-
         return activeNetwork != null && activeNetwork.isConnected();
     }
 
@@ -188,7 +270,20 @@ public class ZeeguuConnectionManager {
         return !(input == null || input.trim().equals(""));
     }
 
-    public void showLoginDialog() {
+    private boolean isDifferentSelection(String input) {
+        return !(input.equals(selection));
+    }
 
+    public void showLoginDialog(String title) {
+        zeeguuLoginDialog.setTitle(title);
+        zeeguuLoginDialog.show(fragmentManager, "zeeguuLoginDialog");
+    }
+
+    public ZeeguuAccount getAccount() {
+        return account;
+    }
+
+    public void setAccount(ZeeguuAccount account) {
+        this.account = account;
     }
 }

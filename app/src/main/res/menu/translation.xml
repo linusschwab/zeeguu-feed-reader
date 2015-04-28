@@ -4,10 +4,4 @@
         android:orderInCategory="1" app:showAsAction="always"
         android:icon="@drawable/ic_action_bookmark"
         android:onClick="onContextualMenuItemClicked" />
-    <item android:id="@+id/action_highlight" android:title="Highlight"
-        android:orderInCategory="3" app:showAsAction="always"
-        android:onClick="onContextualMenuItemClicked" />
-    <item android:id="@+id/action_unhighlight" android:title="Remove"
-        android:orderInCategory="4" app:showAsAction="always"
-        android:onClick="onContextualMenuItemClicked" />
 </menu>
