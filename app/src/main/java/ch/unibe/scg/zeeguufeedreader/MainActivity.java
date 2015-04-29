@@ -33,6 +33,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
     private FeedItemFragment feedItemFragment;
     private FeedItemCompatibilityFragment feedItemCompatibilityFragment;
     private SettingsFragment settingsFragment;
+    private ZeeguuLoginDialog zeeguuLoginDialog;
 
     private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
 
@@ -65,6 +66,10 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         settingsFragment = (SettingsFragment) fragmentManager.findFragmentByTag("settingsFragment");
         if (settingsFragment == null) settingsFragment = new SettingsFragment();
 
+        // Login Dialog
+        zeeguuLoginDialog = (ZeeguuLoginDialog) fragmentManager.findFragmentByTag("zeeguuLoginDialog");
+        if (zeeguuLoginDialog == null) zeeguuLoginDialog = new ZeeguuLoginDialog();
+
         // Layout
         setContentView(R.layout.activity_main);
 
@@ -85,7 +90,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
             navigationDrawerFragment.closeDrawer();
         }
 
-        connectionManager = new ZeeguuConnectionManager(this, feedItemFragment);
+        connectionManager = new ZeeguuConnectionManager(this, feedItemFragment, zeeguuLoginDialog);
     }
 
     @Override
@@ -199,8 +204,9 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
      */
     @Override
     public void onBackPressed() {
-        if (feedItemFragment.goBack())
-            super.onBackPressed();
+        feedItemFragment.goBack();
+        //if (feedItemFragment.goBack())
+        //    super.onBackPressed();
     }
 
     /**

@@ -7,14 +7,20 @@
     <string name="cancel">Cancel</string>
     <string name="signin">Sign in</string>
     <string name="logout">Log out</string>
+    <string name="login_successful">Login successful</string>
     <string name="no_login">Not logged in</string>
     <string name="no_internet_connection">No internet connection</string>
+    <string name="error_language">Please set your language</string>
 
     // Settings
     <string name="settings_zeeguu_title">Zeeguu</string>
     <string name="settings_zeguu_account_title">Account</string>
     <string name="settings_zeguu_account_summary">Not logged in</string>
     <string name="settings_zeguu_account_login">Logged in as</string>
+    <string name="settings_zeguu_language_native_title">Native Language</string>
+    <string name="settings_zeguu_language_native_summary">Your native language</string>
+    <string name="settings_zeguu_language_learning_title">Learning Language</string>
+    <string name="settings_zeguu_language_learning_summary">The language you are currently learning</string>
     <string name="settings_zeguu_highlight_title">Highlight words</string>
     <string name="settings_zeguu_highlight_summary">Highlight the words you are currently learning in the text.</string>
 

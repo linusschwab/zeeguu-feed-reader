@@ -37,23 +37,19 @@ public class ZeeguuConnectionManager {
 
     private Activity activity;
     private FeedItemFragment feedItemFragment;
-
-    private FragmentManager fragmentManager;
     private ZeeguuLoginDialog zeeguuLoginDialog;
+
     private SharedPreferences sharedPref;
 
     private String selection, translation;
 
-    public ZeeguuConnectionManager(Activity activity, FeedItemFragment feedItemFragment) {
+    public ZeeguuConnectionManager(Activity activity, FeedItemFragment feedItemFragment,
+                                   ZeeguuLoginDialog zeeguuLoginDialog) {
         this.account = new ZeeguuAccount(activity);
         this.activity = activity;
         this.feedItemFragment = feedItemFragment;
+        this.zeeguuLoginDialog = zeeguuLoginDialog;
         sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
-
-        // Login Dialog
-        fragmentManager = activity.getFragmentManager();
-        zeeguuLoginDialog = (ZeeguuLoginDialog) fragmentManager.findFragmentByTag("zeeguuLoginDialog");
-        if (zeeguuLoginDialog == null) zeeguuLoginDialog = new ZeeguuLoginDialog();
 
         queue = Volley.newRequestQueue(activity);
 
@@ -88,6 +84,7 @@ public class ZeeguuConnectionManager {
             public void onResponse(String response) {
                 account.setSessionID(response);
                 account.saveLoginInformation();
+                Toast.makeText(activity, activity.getString(R.string.login_successful), Toast.LENGTH_SHORT).show();
                 getUserLanguages();
             }
         }, new Response.ErrorListener() {
@@ -131,10 +128,17 @@ public class ZeeguuConnectionManager {
         }
         else if (!isInputValid(input))
             return; // ignore
-        else if (!isDifferentSelection(input)) {
-            feedItemFragment.setTranslation(translation);
+        else if (isSameLanguage(inputLanguageCode, outputLanguageCode)) {
+            feedItemFragment.setTranslation(activity.getString(R.string.error_language));
             return;
         }
+        else if (isSameSelection(input)) {
+            if (translation != null)
+                feedItemFragment.setTranslation(translation);
+            return;
+        }
+
+
 
         selection = input;
 
@@ -147,7 +151,8 @@ public class ZeeguuConnectionManager {
 
             @Override
             public void onResponse(String response) {
-                feedItemFragment.setTranslation(response);
+                if (response != null)
+                    feedItemFragment.setTranslation(response);
                 translation = response;
             }
 
@@ -155,6 +160,7 @@ public class ZeeguuConnectionManager {
 
             @Override
             public void onErrorResponse(VolleyError error) {
+                // TODO: handle error responses
                 Log.e("translation", error.toString());
             }
         }) {
@@ -270,11 +276,16 @@ public class ZeeguuConnectionManager {
         return !(input == null || input.trim().equals(""));
     }
 
-    private boolean isDifferentSelection(String input) {
-        return !(input.equals(selection));
+    private boolean isSameSelection(String input) {
+        return input.equals(selection);
+    }
+
+    private boolean isSameLanguage(String inputLanguageCode, String translationLanguageCode) {
+        return inputLanguageCode.equals(translationLanguageCode);
     }
 
     public void showLoginDialog(String title) {
+        FragmentManager fragmentManager = activity.getFragmentManager();
         zeeguuLoginDialog.setTitle(title);
         zeeguuLoginDialog.show(fragmentManager, "zeeguuLoginDialog");
     }

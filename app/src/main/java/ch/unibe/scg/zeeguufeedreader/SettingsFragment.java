@@ -19,7 +19,9 @@ public class SettingsFragment extends PreferenceFragment {
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences);
 
-        updateAccountSummary();
+        updateAccount();
+        updateNativeLanguageSummary();
+        updateLearningLanguageSummary();
         createChangeListener();
     }
 
@@ -42,18 +44,49 @@ public class SettingsFragment extends PreferenceFragment {
         SharedPreferences.OnSharedPreferenceChangeListener listener =
                 new SharedPreferences.OnSharedPreferenceChangeListener() {
                     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                        updateAccountSummary();
+                        if (key.equals("pref_zeeguu_username"))
+                            updateAccount();
+                        else if (key.equals("pref_zeeguu_language_native"))
+                            updateNativeLanguageSummary();
+                        else if (key.equals("pref_zeeguu_language_learning"))
+                            updateLearningLanguageSummary();
                     }
                 };
         sharedPref.registerOnSharedPreferenceChangeListener(listener);
     }
 
-    private void updateAccountSummary() {
+    private void updateAccount() {
         Preference zeeguuAccount = findPreference("pref_zeeguu_account");
+        Preference languageNative = findPreference("pref_zeeguu_language_native");
+        Preference languageLearning = findPreference("pref_zeeguu_language_learning");
         String text = sharedPref.getString("pref_zeeguu_username", "");
-        if (!text.equals("") && isAdded())
+        if (!text.equals("") && isAdded()) {
             zeeguuAccount.setSummary(getString(R.string.settings_zeguu_account_login) + " " + text);
-        else
+            languageNative.setEnabled(true);
+            languageLearning.setEnabled(true);
+        }
+        else {
             zeeguuAccount.setSummary(R.string.settings_zeguu_account_summary);
+            languageNative.setEnabled(false);
+            languageLearning.setEnabled(false);
+        }
+    }
+
+    private void updateNativeLanguageSummary() {
+        Preference languageNative = findPreference("pref_zeeguu_language_native");
+        String text = sharedPref.getString("pref_zeeguu_language_native", "");
+        if (!text.equals("") && isAdded())
+            languageNative.setSummary(text);
+        else
+            languageNative.setSummary(R.string.settings_zeguu_language_native_summary);
+    }
+
+    private void updateLearningLanguageSummary() {
+        Preference languageLearning = findPreference("pref_zeeguu_language_learning");
+        String text = sharedPref.getString("pref_zeeguu_language_learning", "");
+        if (!text.equals("") && isAdded())
+            languageLearning.setSummary(text);
+        else
+            languageLearning.setSummary(R.string.settings_zeguu_language_learning_summary);
     }
 }
