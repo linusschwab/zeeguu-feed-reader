@@ -1,0 +1,3 @@
+[submodule "app/src/main/assets/javascript/common"]
+	path = app/src/main/assets/javascript/common
+	url = git@github.com:mircealungu/Zeeguu-CommonJS.git

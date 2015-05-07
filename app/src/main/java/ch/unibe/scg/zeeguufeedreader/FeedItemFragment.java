@@ -111,10 +111,10 @@ public class FeedItemFragment extends Fragment {
                 // javascript
                 view.evaluateJavascript(Utility.assetToString(activity, "javascript/jquery-2.1.3.min.js"), null);
                 view.evaluateJavascript(Utility.assetToString(activity, "javascript/selectionChangeListener.js"), null);
-                view.evaluateJavascript(Utility.assetToString(activity, "javascript/highlightWords.js"), null);
-                view.evaluateJavascript(Utility.assetToString(activity, "javascript/extractContribution.js"), null);
-                view.evaluateJavascript(Utility.assetToString(activity, "javascript/extractContext.js"), null);
-                view.evaluateJavascript(Utility.assetToString(activity, "javascript/textSelection.js"), null);
+                view.evaluateJavascript(Utility.assetToString(activity, "javascript/extract_contribution.js"), null);
+                view.evaluateJavascript(Utility.assetToString(activity, "javascript/common/highlight_words.js"), null);
+                view.evaluateJavascript(Utility.assetToString(activity, "javascript/common/extract_context.js"), null);
+                view.evaluateJavascript(Utility.assetToString(activity, "javascript/common/text_selection.js"), null);
             }
         });
 
@@ -209,12 +209,12 @@ public class FeedItemFragment extends Fragment {
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public void highlight(String word) {
-        webView.evaluateJavascript("highlight_words([\"" + word + "\"]);", null);
+        webView.evaluateJavascript("highlight_words_in_page([\"" + word + "\"]);", null);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public void unhighlight() {
-        webView.evaluateJavascript("unhighlight_words();", null);
+        webView.evaluateJavascript("unhighlight_words_in_page();", null);
     }
 
     public TextView getTranslationBar() {
