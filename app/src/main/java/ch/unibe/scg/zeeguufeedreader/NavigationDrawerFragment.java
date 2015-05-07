@@ -98,10 +98,7 @@ public class NavigationDrawerFragment extends Fragment {
             }
         });
 
-        // Temporary workaround
-        MainActivity main = (MainActivity) getActivity();
-
-        if (main.isBrowserEnabled())
+        if (mCallbacks.isBrowserEnabled())
             mDrawerListView.setAdapter(new ArrayAdapter<String>(
                     getActionBar().getThemedContext(),
                     R.layout.list_item,
@@ -296,6 +293,8 @@ public class NavigationDrawerFragment extends Fragment {
          * Called when an item in the navigation drawer is selected.
          */
         void onNavigationDrawerItemSelected(int position);
+        // Browser
+        boolean isBrowserEnabled();
     }
 
     public void closeDrawer() {

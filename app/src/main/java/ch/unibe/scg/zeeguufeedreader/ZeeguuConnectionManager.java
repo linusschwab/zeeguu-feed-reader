@@ -1,13 +1,10 @@
 package ch.unibe.scg.zeeguufeedreader;
 
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -34,22 +31,29 @@ public class ZeeguuConnectionManager {
     private RequestQueue queue;
 
     private ZeeguuAccount account;
-
     private Activity activity;
-    private FeedItemFragment feedItemFragment;
-    private ZeeguuLoginDialog zeeguuLoginDialog;
-
-    private SharedPreferences sharedPref;
-
     private String selection, translation;
+    private ZeeguuConnectionManagerCallbacks callback;
 
-    public ZeeguuConnectionManager(Activity activity, FeedItemFragment feedItemFragment,
-                                   ZeeguuLoginDialog zeeguuLoginDialog) {
+    /**
+     *  Callback interface that must be implemented by the container activity
+     */
+    public interface ZeeguuConnectionManagerCallbacks {
+        void showZeeguuLoginDialog(String title);
+        void setTranslation(String translation);
+        void highlight(String word);
+    }
+
+    public ZeeguuConnectionManager(Activity activity) {
         this.account = new ZeeguuAccount(activity);
         this.activity = activity;
-        this.feedItemFragment = feedItemFragment;
-        this.zeeguuLoginDialog = zeeguuLoginDialog;
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
+
+        // Make sure that the interface is implemented in the container activity
+        try {
+            callback = (ZeeguuConnectionManagerCallbacks) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Activity must implement ZeeguuConnectionManagerCallbacks");
+        }
 
         queue = Volley.newRequestQueue(activity);
 
@@ -58,7 +62,7 @@ public class ZeeguuConnectionManager {
 
         // Get missing information from server
         if (!account.isUserLoggedIn())
-            showLoginDialog(activity.getString(R.string.login_zeeguu_title));
+            callback.showZeeguuLoginDialog(activity.getString(R.string.login_zeeguu_title));
         else if (!account.isUserInSession())
             getSessionId(account.getEmail(), account.getPassword());
         else if (!account.isLanguageSet())
@@ -93,7 +97,7 @@ public class ZeeguuConnectionManager {
             public void onErrorResponse(VolleyError error) {
                 account.setEmail("");
                 account.setPassword("");
-                showLoginDialog("Wrong email or password");
+                callback.showZeeguuLoginDialog("Wrong email or password");
             }
         }) {
 
@@ -115,11 +119,11 @@ public class ZeeguuConnectionManager {
      */
     public void translate(final String input, String inputLanguageCode, String outputLanguageCode) {
         if (!account.isUserLoggedIn()) {
-            feedItemFragment.setTranslation(activity.getString(R.string.no_login));
+            callback.setTranslation(activity.getString(R.string.no_login));
             return;
         }
         else if (!isNetworkAvailable()) {
-            feedItemFragment.setTranslation(activity.getString(R.string.no_internet_connection));
+            callback.setTranslation(activity.getString(R.string.no_internet_connection));
             return;
         }
         else if (!account.isUserInSession()) {
@@ -129,16 +133,14 @@ public class ZeeguuConnectionManager {
         else if (!isInputValid(input))
             return; // ignore
         else if (isSameLanguage(inputLanguageCode, outputLanguageCode)) {
-            feedItemFragment.setTranslation(activity.getString(R.string.error_language));
+            callback.setTranslation(activity.getString(R.string.error_language));
             return;
         }
         else if (isSameSelection(input)) {
             if (translation != null)
-                feedItemFragment.setTranslation(translation);
+                callback.setTranslation(translation);
             return;
         }
-
-
 
         selection = input;
 
@@ -152,7 +154,7 @@ public class ZeeguuConnectionManager {
             @Override
             public void onResponse(String response) {
                 if (response != null)
-                    feedItemFragment.setTranslation(response);
+                    callback.setTranslation(response);
                 translation = response;
             }
 
@@ -182,7 +184,7 @@ public class ZeeguuConnectionManager {
     public void contributeWithContext(String input, String inputLanguageCode, String translation, String translationLanguageCode,
                                       final String title, final String url, final String context) {
         if (!account.isUserLoggedIn()) {
-            showLoginDialog(activity.getString(R.string.login_zeeguu_title));
+            callback.showZeeguuLoginDialog(activity.getString(R.string.login_zeeguu_title));
             return;
         }
         else if (!isNetworkAvailable() || !isInputValid(input) || !isInputValid(translation))
@@ -192,8 +194,7 @@ public class ZeeguuConnectionManager {
             return;
         }
 
-        if (sharedPref.getBoolean("pref_zeeguu_highlight_words", true))
-            feedItemFragment.highlight(input);
+        callback.highlight(input);
 
         String urlContribution = URL + "contribute_with_context/" + inputLanguageCode + "/" + Uri.encode(input.trim()) + "/" +
                 translationLanguageCode + "/" + Uri.encode(translation) + "?session=" + account.getSessionID();
@@ -266,6 +267,8 @@ public class ZeeguuConnectionManager {
         queue.add(request);
     }
 
+    // Boolean Checks
+    // TODO: Write tests!
     public boolean isNetworkAvailable() {
         ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
@@ -284,12 +287,7 @@ public class ZeeguuConnectionManager {
         return inputLanguageCode.equals(translationLanguageCode);
     }
 
-    public void showLoginDialog(String title) {
-        FragmentManager fragmentManager = activity.getFragmentManager();
-        zeeguuLoginDialog.setTitle(title);
-        zeeguuLoginDialog.show(fragmentManager, "zeeguuLoginDialog");
-    }
-
+    // Getters and Setters
     public ZeeguuAccount getAccount() {
         return account;
     }

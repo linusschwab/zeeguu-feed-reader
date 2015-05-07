@@ -1,5 +1,6 @@
 package ch.unibe.scg.zeeguufeedreader;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -10,6 +11,14 @@ import android.preference.PreferenceScreen;
 public class SettingsFragment extends PreferenceFragment {
 
     private SharedPreferences sharedPref;
+    private SettingsCallbacks callback;
+
+    /**
+     *  Callback interface that must be implemented by the container activity
+     */
+    public interface SettingsCallbacks {
+        void showZeeguuLoginDialog(String title);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -26,15 +35,25 @@ public class SettingsFragment extends PreferenceFragment {
     }
 
     @Override
-    public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
-        MainActivity main = (MainActivity) getActivity();
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
 
+        // Make sure that the interface is implemented in the container activity
+        try {
+            callback = (SettingsCallbacks) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Activity must implement SettingsCallbacks");
+        }
+    }
+
+    @Override
+    public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
         // Open Zeeguu login dialog
         if (preference.getKey().equals("pref_zeeguu_account")) {
             if (sharedPref.getString("pref_zeeguu_username", "").equals(""))
-                main.getConnectionManager().showLoginDialog(getString(R.string.login_zeeguu_title));
+                callback.showZeeguuLoginDialog(getString(R.string.login_zeeguu_title));
             else
-                main.getConnectionManager().showLoginDialog(getString(R.string.logout_zeeguu_title));
+                callback.showZeeguuLoginDialog(getString(R.string.logout_zeeguu_title));
         }
 
         return super.onPreferenceTreeClick(preferenceScreen, preference);

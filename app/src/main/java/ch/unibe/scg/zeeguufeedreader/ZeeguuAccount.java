@@ -64,9 +64,7 @@ public class ZeeguuAccount {
         languageLearning = "";
     }
 
-    /*
-        Boolean Checks
-    */
+    // Boolean Checks
     // TODO: Write tests!
     public boolean isUserLoggedIn() {
         return !(email == null || email.equals("")) && !(password == null || password.equals(""));
@@ -80,9 +78,7 @@ public class ZeeguuAccount {
         return !(languageNative == null || languageNative.equals("")) && !(languageLearning == null || languageLearning.equals(""));
     }
 
-    /*
-        Getter and Setter
-    */
+    // Getters and Setters
     public String getEmail() {
         return email;
     }

@@ -1,26 +1,32 @@
 package ch.unibe.scg.zeeguufeedreader;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
 public class ZeeguuLoginDialog extends DialogFragment {
 
-    private SharedPreferences sharedPref;
     private String title = "";
 
     private EditText usernameEditText;
     private EditText passwordEditText;
 
     private ZeeguuConnectionManager connectionManager;
+    private ZeeguuLoginDialogCallbacks callback;
+
+    /**
+     *  Callback interface that must be implemented by the container activity
+     */
+    public interface ZeeguuLoginDialogCallbacks {
+        ZeeguuConnectionManager getConnectionManager();
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -31,8 +37,6 @@ public class ZeeguuLoginDialog extends DialogFragment {
 
         usernameEditText = (EditText) mainView.findViewById(R.id.username);
         passwordEditText = (EditText) mainView.findViewById(R.id.password);
-
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         if (savedInstanceState != null) {
             usernameEditText.setText(savedInstanceState.getString("username"));
@@ -49,10 +53,7 @@ public class ZeeguuLoginDialog extends DialogFragment {
         else
             button = getActivity().getString(R.string.signin);
 
-
-        // Temporary workaround
-        MainActivity main = (MainActivity) getActivity();
-        connectionManager = main.getConnectionManager();
+        connectionManager = callback.getConnectionManager();
 
         builder.setMessage(title);
         builder.setView(mainView)
@@ -76,6 +77,18 @@ public class ZeeguuLoginDialog extends DialogFragment {
                 });
         // Create the AlertDialog object and return it
         return builder.create();
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // Make sure that the interface is implemented in the container activity
+        try {
+            callback = (ZeeguuLoginDialogCallbacks) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Activity must implement ZeeguuLoginDialogCallbacks");
+        }
     }
 
     @Override

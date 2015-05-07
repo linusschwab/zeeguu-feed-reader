@@ -41,8 +41,22 @@ public class FeedItemFragment extends Fragment {
     private String selection, translation;
 
     private SharedPreferences sharedPref;
-
     private boolean browser;
+
+    private FeedItemCallbacks callback;
+
+    /**
+     *  Callback interface that must be implemented by the container activity
+     */
+    public interface FeedItemCallbacks {
+        void hideKeyboard();
+        ZeeguuConnectionManager getConnectionManager();
+
+        // Browser
+        boolean isBrowserEnabled();
+        NavigationDrawerFragment getNavigationDrawerFragment();
+        ActionBar getSupportActionBar();
+    }
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -52,15 +66,13 @@ public class FeedItemFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        activity = getActivity();
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
 
         // Set custom action bar layout
         setHasOptionsMenu(true);
 
-        activity = getActivity();
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
-
-        MainActivity main = (MainActivity) activity;
-        browser = main.isBrowserEnabled();
+        browser = callback.isBrowserEnabled();
     }
 
     /**
@@ -137,6 +149,18 @@ public class FeedItemFragment extends Fragment {
         return mainView;
     }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // Make sure that the interface is implemented in the container activity
+        try {
+            callback = (FeedItemCallbacks) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Activity must implement FeedItemCallbacks");
+        }
+    }
+
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public void extractContextFromPage() {
         webView.evaluateJavascript("getContext();", new ValueCallback<String>() {
@@ -168,9 +192,7 @@ public class FeedItemFragment extends Fragment {
     }
 
     public void submitContext() {
-        // Temporary Workaround
-        MainActivity main = (MainActivity) activity;
-        main.getConnectionManager().contributeWithContext(selection, sharedPref.getString("pref_zeeguu_language_learning", "EN")
+        callback.getConnectionManager().contributeWithContext(selection, sharedPref.getString("pref_zeeguu_language_learning", "EN")
                 , translation, sharedPref.getString("pref_zeeguu_language_native", "DE"), title, url, context);
     }
 
@@ -237,13 +259,11 @@ public class FeedItemFragment extends Fragment {
     // Add action view for usability tests
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        final MainActivity main = (MainActivity) activity;
-
-        if (!main.getNavigationDrawerFragment().isDrawerOpen() && browser) {
+        if (!callback.getNavigationDrawerFragment().isDrawerOpen() && browser) {
             menu.clear();
             inflater.inflate(R.menu.browser, menu);
 
-            ActionBar actionBar = main.getSupportActionBar();
+            ActionBar actionBar = callback.getSupportActionBar();
             actionBar.setCustomView(R.layout.actionview_edittext);
             actionBar.setDisplayShowCustomEnabled(true);
 
@@ -264,7 +284,7 @@ public class FeedItemFragment extends Fragment {
                         else
                             webView.loadUrl(url);
 
-                        main.hideKeyboard();
+                        callback.hideKeyboard();
                         return true;
                     }
                     return false;
