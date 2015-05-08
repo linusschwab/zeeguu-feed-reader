@@ -1,17 +1,6 @@
 <resources>
     <string name="app_name">Zeeguu Feed Reader</string>
 
-    // General
-    <string name="username">Username</string>
-    <string name="password">Password</string>
-    <string name="cancel">Cancel</string>
-    <string name="signin">Sign in</string>
-    <string name="logout">Log out</string>
-    <string name="login_successful">Login successful</string>
-    <string name="no_login">Not logged in</string>
-    <string name="no_internet_connection">No internet connection</string>
-    <string name="error_language">Please set your language</string>
-
     // Settings
     <string name="settings_zeeguu_title">Zeeguu</string>
     <string name="settings_zeguu_account_title">Account</string>
@@ -29,11 +18,6 @@
     <string name="settings_browser_homepage_summary">Set your home page</string>
     <string name="settings_browser_viewport_title">Viewport</string>
     <string name="settings_browser_viewport_summary">Enable wide viewport</string>
-
-    // Login Dialog
-    <string name="login_zeeguu_title">Zeeguu Login</string>
-    <string name="logout_zeeguu_title">Zeeguu Logout</string>
-    <string name="logout_zeeguu_confirmation">Do you really want to log out?</string>
 
     // Navigation Drawer
     <string name="title_section1">Feed Overview</string>

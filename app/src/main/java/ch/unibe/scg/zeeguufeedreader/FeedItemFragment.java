@@ -28,7 +28,8 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.io.StringReader;
 
-import ch.unibe.scg.zeeguulibrary.ZeeguuConnectionManager;
+import ch.unibe.zeeguulibrary.ZeeguuConnectionManager;
+
 
 /**
  *  Fragment to display a single article from a feed

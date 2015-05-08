@@ -6,7 +6,7 @@ import android.preference.PreferenceManager;
 import android.webkit.JavascriptInterface;
 import android.widget.Toast;
 
-import ch.unibe.scg.zeeguulibrary.ZeeguuConnectionManager;
+import ch.unibe.zeeguulibrary.ZeeguuConnectionManager;
 
 public class WebViewInterface {
     private Activity context;
