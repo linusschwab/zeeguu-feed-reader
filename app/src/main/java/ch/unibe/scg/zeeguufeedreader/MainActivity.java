@@ -18,6 +18,8 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
 import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.FeedItemCompatibilityFragment;
+import ch.unibe.scg.zeeguulibrary.ZeeguuConnectionManager;
+import ch.unibe.scg.zeeguulibrary.ZeeguuLoginDialog;
 
 /**
  *  Activity to display and switch between the fragments
@@ -313,7 +315,7 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     @Override
-    public void setTranslation(String translation) {
+    public void setTranslation(String translation, boolean isErrorMessage) {
         feedItemFragment.setTranslation(translation);
     }
 
