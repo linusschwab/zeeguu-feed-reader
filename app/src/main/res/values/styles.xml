@@ -2,7 +2,9 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+        <!-- EditText -->
+        <item name="colorControlActivated">@color/zeeguu_red</item>
+        <!-- <item name="colorControlHighlight">@color/red</item> -->
 
         <!-- colorPrimary is used for the default action bar background -->
         <item name="colorPrimary">@color/red</item>

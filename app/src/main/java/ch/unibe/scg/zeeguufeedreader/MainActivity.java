@@ -6,31 +6,36 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.app.FragmentManager;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.FeedItemCompatibilityFragment;
-import ch.unibe.zeeguulibrary.ZeeguuConnectionManager;
-import ch.unibe.zeeguulibrary.ZeeguuLoginDialog;
+import ch.unibe.zeeguulibrary.Core.ZeeguuAccount;
+import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
+import ch.unibe.zeeguulibrary.Dialogs.ZeeguuDialogCallbacks;
+import ch.unibe.zeeguulibrary.Dialogs.ZeeguuLoginDialog;
+import ch.unibe.zeeguulibrary.Dialogs.ZeeguuLogoutDialog;
 
 /**
  *  Activity to display and switch between the fragments
  */
-public class MainActivity extends ActionBarActivity implements
+public class MainActivity extends AppCompatActivity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks,
         WebViewInterface.WebViewInterfaceCallbacks,
         FeedItemFragment.FeedItemCallbacks,
         SettingsFragment.SettingsCallbacks,
-        ZeeguuLoginDialog.ZeeguuLoginDialogCallbacks,
-        ZeeguuConnectionManager.ZeeguuConnectionManagerCallbacks {
+        ZeeguuConnectionManager.ZeeguuConnectionManagerCallbacks,
+        ZeeguuAccount.ZeeguuAccountCallbacks,
+        ZeeguuDialogCallbacks {
 
     private FragmentManager fragmentManager = getFragmentManager();
 
@@ -42,6 +47,7 @@ public class MainActivity extends ActionBarActivity implements
     private FeedItemCompatibilityFragment feedItemCompatibilityFragment;
     private SettingsFragment settingsFragment;
     private ZeeguuLoginDialog zeeguuLoginDialog;
+    private ZeeguuLogoutDialog zeeguuLogoutDialog;
 
     private SharedPreferences sharedPref;
     private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
@@ -61,7 +67,6 @@ public class MainActivity extends ActionBarActivity implements
         super.onCreate(savedInstanceState);
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
-
         // Initialize UI fragments
         feedOverviewFragment = (FeedOverviewFragment) fragmentManager.findFragmentByTag("feedOverview");
         if (feedOverviewFragment == null) feedOverviewFragment = new FeedOverviewFragment();
@@ -78,6 +83,9 @@ public class MainActivity extends ActionBarActivity implements
         // Login Dialog
         zeeguuLoginDialog = (ZeeguuLoginDialog) fragmentManager.findFragmentByTag("zeeguuLoginDialog");
         if (zeeguuLoginDialog == null) zeeguuLoginDialog = new ZeeguuLoginDialog();
+
+        zeeguuLogoutDialog = (ZeeguuLogoutDialog) fragmentManager.findFragmentByTag("zeeguuLogoutDialog");
+        if (zeeguuLogoutDialog == null) zeeguuLogoutDialog = new ZeeguuLogoutDialog();
 
         // Data fragment
         dataFragment = (DataFragment) fragmentManager.findFragmentByTag("data");
@@ -103,9 +111,7 @@ public class MainActivity extends ActionBarActivity implements
 
         // Display Feed Overview
         if (savedInstanceState == null) {
-            // TODO: Mark "Feed List" as active in the navigation drawer
-            onNavigationDrawerItemSelected(0);
-            navigationDrawerFragment.closeDrawer();
+            navigationDrawerFragment.selectItem(0);
         }
     }
 
@@ -309,13 +315,36 @@ public class MainActivity extends ActionBarActivity implements
 
     // ZeeguuConnectionManager interface methods
     @Override
-    public void showZeeguuLoginDialog(String title) {
-        zeeguuLoginDialog.setTitle(title);
+    public void showZeeguuLoginDialog(String message, String email) {
+        zeeguuLoginDialog.setMessage(message);
+        zeeguuLoginDialog.setEmail(email);
         zeeguuLoginDialog.show(fragmentManager, "zeeguuLoginDialog");
     }
 
+    public void showZeeguuLogoutDialog() {
+        zeeguuLogoutDialog.show(fragmentManager, "zeeguuLogoutDialog");
+    }
+
     @Override
-    public void setTranslation(String translation, boolean isErrorMessage) {
+    public void showZeeguuCreateAccountDialog(String recallUsername, String recallEmail) {
+
+    }
+
+    @Override
+    public void displayMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void displayErrorMessage(String error, boolean isToast) {
+        if (isToast)
+            Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+        else
+            feedItemFragment.setTranslation(error);
+    }
+
+    @Override
+    public void setTranslation(String translation) {
         feedItemFragment.setTranslation(translation);
     }
 
@@ -323,5 +352,10 @@ public class MainActivity extends ActionBarActivity implements
     public void highlight(String word) {
         if (sharedPref.getBoolean("pref_zeeguu_highlight_words", true))
             feedItemFragment.highlight(word);
+    }
+
+    @Override
+    public void notifyDataChanged() {
+
     }
 }

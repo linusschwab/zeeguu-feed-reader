@@ -28,8 +28,7 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.io.StringReader;
 
-import ch.unibe.zeeguulibrary.ZeeguuConnectionManager;
-
+import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
 
 /**
  *  Fragment to display a single article from a feed
@@ -195,7 +194,7 @@ public class FeedItemFragment extends Fragment {
     }
 
     public void submitContext() {
-        callback.getConnectionManager().contributeWithContext(selection, sharedPref.getString("pref_zeeguu_language_learning", "EN")
+        callback.getConnectionManager().bookmarkWithContext(selection, sharedPref.getString("pref_zeeguu_language_learning", "EN")
                 , translation, sharedPref.getString("pref_zeeguu_language_native", "DE"), title, url, context);
     }
 

@@ -3,7 +3,7 @@ package ch.unibe.scg.zeeguufeedreader;
 import android.app.Fragment;
 import android.os.Bundle;
 
-import ch.unibe.zeeguulibrary.ZeeguuConnectionManager;
+import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
 
 public class DataFragment extends Fragment {
     // Stored data

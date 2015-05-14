@@ -17,7 +17,8 @@ public class SettingsFragment extends PreferenceFragment {
      *  Callback interface that must be implemented by the container activity
      */
     public interface SettingsCallbacks {
-        void showZeeguuLoginDialog(String title);
+        void showZeeguuLoginDialog(String title, String email);
+        void showZeeguuLogoutDialog();
     }
 
     @Override
@@ -50,10 +51,10 @@ public class SettingsFragment extends PreferenceFragment {
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
         // Open Zeeguu login dialog
         if (preference.getKey().equals("pref_zeeguu_account")) {
-            if (sharedPref.getString("pref_zeeguu_username", "").equals(""))
-                callback.showZeeguuLoginDialog(getString(R.string.login_zeeguu_title));
+            if (sharedPref.getString("pref_zeeguu_email", "").equals(""))
+                callback.showZeeguuLoginDialog("", "");
             else
-                callback.showZeeguuLoginDialog(getString(R.string.logout_zeeguu_title));
+                callback.showZeeguuLogoutDialog();
         }
 
         return super.onPreferenceTreeClick(preferenceScreen, preference);
@@ -63,7 +64,7 @@ public class SettingsFragment extends PreferenceFragment {
         SharedPreferences.OnSharedPreferenceChangeListener listener =
                 new SharedPreferences.OnSharedPreferenceChangeListener() {
                     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                        if (key.equals("pref_zeeguu_username"))
+                        if (key.equals("pref_zeeguu_email"))
                             updateAccount();
                         else if (key.equals("pref_zeeguu_language_native"))
                             updateNativeLanguageSummary();
@@ -78,7 +79,7 @@ public class SettingsFragment extends PreferenceFragment {
         Preference zeeguuAccount = findPreference("pref_zeeguu_account");
         Preference languageNative = findPreference("pref_zeeguu_language_native");
         Preference languageLearning = findPreference("pref_zeeguu_language_learning");
-        String text = sharedPref.getString("pref_zeeguu_username", "");
+        String text = sharedPref.getString("pref_zeeguu_email", "");
         if (!text.equals("") && isAdded()) {
             zeeguuAccount.setSummary(getString(R.string.settings_zeguu_account_login) + " " + text);
             languageNative.setEnabled(true);
