@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <ch.unibe.scg.zeeguufeedreader.PreferenceCategoryCustom
+    <ch.unibe.scg.zeeguufeedreader.Preferences.PreferenceCategoryCustom
         android:title="@string/settings_zeeguu_title">
         <Preference
             android:key="pref_zeeguu_account"
@@ -19,8 +19,8 @@
             android:title="@string/settings_zeguu_highlight_title"
             android:summary="@string/settings_zeguu_highlight_summary"
             android:defaultValue="true" />
-    </ch.unibe.scg.zeeguufeedreader.PreferenceCategoryCustom>
-    <ch.unibe.scg.zeeguufeedreader.PreferenceCategoryCustom
+    </ch.unibe.scg.zeeguufeedreader.Preferences.PreferenceCategoryCustom>
+    <ch.unibe.scg.zeeguufeedreader.Preferences.PreferenceCategoryCustom
         android:title="@string/settings_browser_title">
         <EditTextPreference
             android:key="pref_browser_homepage"
@@ -31,5 +31,5 @@
             android:title="@string/settings_browser_viewport_title"
             android:summary="@string/settings_browser_viewport_summary"
             android:defaultValue="true" />
-    </ch.unibe.scg.zeeguufeedreader.PreferenceCategoryCustom>
+    </ch.unibe.scg.zeeguufeedreader.Preferences.PreferenceCategoryCustom>
 </PreferenceScreen>

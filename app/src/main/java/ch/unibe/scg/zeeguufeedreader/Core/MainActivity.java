@@ -1,4 +1,4 @@
-package ch.unibe.scg.zeeguufeedreader;
+package ch.unibe.scg.zeeguufeedreader.Core;
 
 import android.annotation.TargetApi;
 import android.app.Fragment;
@@ -19,6 +19,11 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.FeedItemCompatibilityFragment;
+import ch.unibe.scg.zeeguufeedreader.FeedItem.FeedItemFragment;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.FeedOverviewFragment;
+import ch.unibe.scg.zeeguufeedreader.R;
+import ch.unibe.scg.zeeguufeedreader.Preferences.SettingsFragment;
+import ch.unibe.scg.zeeguufeedreader.FeedItem.WebViewInterface;
 import ch.unibe.zeeguulibrary.Core.ZeeguuAccount;
 import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
 import ch.unibe.zeeguulibrary.Dialogs.ZeeguuCreateAccountDialog;

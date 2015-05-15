@@ -1,4 +1,4 @@
-package ch.unibe.scg.zeeguufeedreader;
+package ch.unibe.scg.zeeguufeedreader.Preferences;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -7,6 +7,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import ch.unibe.scg.zeeguufeedreader.R;
 
 public class PreferenceCategoryCustom extends PreferenceCategory {
     public PreferenceCategoryCustom(Context context) {

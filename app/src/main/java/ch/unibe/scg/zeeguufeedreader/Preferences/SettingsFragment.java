@@ -1,4 +1,4 @@
-package ch.unibe.scg.zeeguufeedreader;
+package ch.unibe.scg.zeeguufeedreader.Preferences;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -9,6 +9,8 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.widget.TextView;
+
+import ch.unibe.scg.zeeguufeedreader.R;
 
 public class SettingsFragment extends PreferenceFragment {
 

@@ -1,4 +1,4 @@
-package ch.unibe.scg.zeeguufeedreader;
+package ch.unibe.scg.zeeguufeedreader.FeedItem;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -28,6 +28,9 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.io.StringReader;
 
+import ch.unibe.scg.zeeguufeedreader.Core.NavigationDrawerFragment;
+import ch.unibe.scg.zeeguufeedreader.Core.Utility;
+import ch.unibe.scg.zeeguufeedreader.R;
 import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
 
 /**

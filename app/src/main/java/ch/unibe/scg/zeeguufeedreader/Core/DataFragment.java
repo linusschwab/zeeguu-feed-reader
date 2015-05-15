@@ -1,4 +1,4 @@
-package ch.unibe.scg.zeeguufeedreader;
+package ch.unibe.scg.zeeguufeedreader.Core;
 
 import android.app.Fragment;
 import android.os.Bundle;

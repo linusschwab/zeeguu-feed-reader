@@ -1,4 +1,4 @@
-package ch.unibe.scg.zeeguufeedreader;
+package ch.unibe.scg.zeeguufeedreader.Core;
 
 import android.app.Activity;
 import android.util.Log;
