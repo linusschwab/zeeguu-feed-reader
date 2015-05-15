@@ -19,4 +19,9 @@
     <color name="blue">#0000FF</color>
     <color name="navy">#000080</color>
     <color name="black">#000000</color>
+
+    <!-- App Theme Colors -->
+    <color name="status_bar_gray">#36464D</color>
+    <color name="action_bar_gray">#505A64</color>
+    <color name="accent_color_red">#BB2546</color>
 </resources>

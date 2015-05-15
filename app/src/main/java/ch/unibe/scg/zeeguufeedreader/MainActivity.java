@@ -21,6 +21,7 @@ import android.widget.Toast;
 import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.FeedItemCompatibilityFragment;
 import ch.unibe.zeeguulibrary.Core.ZeeguuAccount;
 import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
+import ch.unibe.zeeguulibrary.Dialogs.ZeeguuCreateAccountDialog;
 import ch.unibe.zeeguulibrary.Dialogs.ZeeguuDialogCallbacks;
 import ch.unibe.zeeguulibrary.Dialogs.ZeeguuLoginDialog;
 import ch.unibe.zeeguulibrary.Dialogs.ZeeguuLogoutDialog;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements
     private SettingsFragment settingsFragment;
     private ZeeguuLoginDialog zeeguuLoginDialog;
     private ZeeguuLogoutDialog zeeguuLogoutDialog;
+    private ZeeguuCreateAccountDialog zeeguuCreateAccountDialog;
 
     private SharedPreferences sharedPref;
     private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
@@ -80,12 +82,15 @@ public class MainActivity extends AppCompatActivity implements
         settingsFragment = (SettingsFragment) fragmentManager.findFragmentByTag("settings");
         if (settingsFragment == null) settingsFragment = new SettingsFragment();
 
-        // Login Dialog
+        // Dialogs
         zeeguuLoginDialog = (ZeeguuLoginDialog) fragmentManager.findFragmentByTag("zeeguuLoginDialog");
         if (zeeguuLoginDialog == null) zeeguuLoginDialog = new ZeeguuLoginDialog();
 
         zeeguuLogoutDialog = (ZeeguuLogoutDialog) fragmentManager.findFragmentByTag("zeeguuLogoutDialog");
         if (zeeguuLogoutDialog == null) zeeguuLogoutDialog = new ZeeguuLogoutDialog();
+
+        zeeguuCreateAccountDialog = (ZeeguuCreateAccountDialog) fragmentManager.findFragmentByTag("zeeguuCreateAccountDialog");
+        if (zeeguuCreateAccountDialog == null) zeeguuCreateAccountDialog = new ZeeguuCreateAccountDialog();
 
         // Data fragment
         dataFragment = (DataFragment) fragmentManager.findFragmentByTag("data");
@@ -313,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements
         return dataFragment.getConnectionManager();
     }
 
-    // ZeeguuConnectionManager interface methods
+    // Zeeguu interface methods
     @Override
     public void showZeeguuLoginDialog(String message, String email) {
         zeeguuLoginDialog.setMessage(message);
@@ -325,9 +330,11 @@ public class MainActivity extends AppCompatActivity implements
         zeeguuLogoutDialog.show(fragmentManager, "zeeguuLogoutDialog");
     }
 
-    @Override
-    public void showZeeguuCreateAccountDialog(String recallUsername, String recallEmail) {
-
+    public void showZeeguuCreateAccountDialog(String message, String username, String email) {
+        zeeguuCreateAccountDialog.setMessage(message);
+        zeeguuCreateAccountDialog.setUsername(username);
+        zeeguuCreateAccountDialog.setEmail(email);
+        zeeguuCreateAccountDialog.show(fragmentManager, "zeeguuCreateAccountDialog");
     }
 
     @Override

@@ -18,7 +18,8 @@
         android:textIsSelectable="false"
         android:ellipsize="end"
         android:singleLine="true"
-        android:background="@color/gray"
+        android:textColor="@color/white"
+        android:background="@color/action_bar_gray"
         android:visibility="gone" />
 
 </RelativeLayout>
