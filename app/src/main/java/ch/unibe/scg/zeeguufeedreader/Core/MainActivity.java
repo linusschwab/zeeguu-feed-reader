@@ -73,6 +73,17 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        restoreDataFragment();
+
+        // Dialogs
+        zeeguuLoginDialog = (ZeeguuLoginDialog) fragmentManager.findFragmentByTag("zeeguuLoginDialog");
+        if (zeeguuLoginDialog == null) zeeguuLoginDialog = new ZeeguuLoginDialog();
+
+        zeeguuLogoutDialog = (ZeeguuLogoutDialog) fragmentManager.findFragmentByTag("zeeguuLogoutDialog");
+        if (zeeguuLogoutDialog == null) zeeguuLogoutDialog = new ZeeguuLogoutDialog();
+
+        zeeguuCreateAccountDialog = (ZeeguuCreateAccountDialog) fragmentManager.findFragmentByTag("zeeguuCreateAccountDialog");
+        if (zeeguuCreateAccountDialog == null) zeeguuCreateAccountDialog = new ZeeguuCreateAccountDialog();
 
         // Initialize UI fragments
         feedOverviewFragment = (FeedOverviewFragment) fragmentManager.findFragmentByTag("feedOverview");
@@ -87,25 +98,8 @@ public class MainActivity extends AppCompatActivity implements
         settingsFragment = (SettingsFragment) fragmentManager.findFragmentByTag("settings");
         if (settingsFragment == null) settingsFragment = new SettingsFragment();
 
-        // Dialogs
-        zeeguuLoginDialog = (ZeeguuLoginDialog) fragmentManager.findFragmentByTag("zeeguuLoginDialog");
-        if (zeeguuLoginDialog == null) zeeguuLoginDialog = new ZeeguuLoginDialog();
-
-        zeeguuLogoutDialog = (ZeeguuLogoutDialog) fragmentManager.findFragmentByTag("zeeguuLogoutDialog");
-        if (zeeguuLogoutDialog == null) zeeguuLogoutDialog = new ZeeguuLogoutDialog();
-
-        zeeguuCreateAccountDialog = (ZeeguuCreateAccountDialog) fragmentManager.findFragmentByTag("zeeguuCreateAccountDialog");
-        if (zeeguuCreateAccountDialog == null) zeeguuCreateAccountDialog = new ZeeguuCreateAccountDialog();
-
         // Data fragment
-        dataFragment = (DataFragment) fragmentManager.findFragmentByTag("data");
-        if (dataFragment == null) {
-            // Add the fragment
-            dataFragment = new DataFragment();
-            addFragment(dataFragment, "data");
-            // Create objects, store in data fragment
-            dataFragment.setConnectionManager(new ZeeguuConnectionManager(this));
-        }
+        createDataFragment();
 
         // Layout
         setContentView(R.layout.activity_main);
@@ -123,6 +117,21 @@ public class MainActivity extends AppCompatActivity implements
         if (savedInstanceState == null) {
             navigationDrawerFragment.selectItem(0);
         }
+    }
+
+    private void createDataFragment() {
+        if (dataFragment == null) {
+            // Add the fragment
+            dataFragment = new DataFragment();
+            addFragment(dataFragment, "data");
+            // Create objects, store in data fragment
+            dataFragment.setConnectionManager(new ZeeguuConnectionManager(this));
+        }
+    }
+
+    private void restoreDataFragment() {
+        dataFragment = (DataFragment) fragmentManager.findFragmentByTag("data");
+        if (dataFragment != null) dataFragment.onRestore(this);
     }
 
     @Override
@@ -348,6 +357,16 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void notifyDataChanged(boolean myWordsChanged) {
+
+    }
+
+    @Override
+    public void bookmarkWord(String bookmarkID) {
+
+    }
+
+    @Override
     public void displayErrorMessage(String error, boolean isToast) {
         if (isToast)
             Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
@@ -364,10 +383,5 @@ public class MainActivity extends AppCompatActivity implements
     public void highlight(String word) {
         if (sharedPref.getBoolean("pref_zeeguu_highlight_words", true))
             feedItemFragment.highlight(word);
-    }
-
-    @Override
-    public void notifyDataChanged() {
-
     }
 }

@@ -71,13 +71,9 @@ public class FeedItemFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        activity = getActivity();
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
 
         // Set custom action bar layout
         setHasOptionsMenu(true);
-
-        browser = callback.isBrowserEnabled();
     }
 
     /**
@@ -91,6 +87,19 @@ public class FeedItemFragment extends Fragment {
         View mainView = inflater.inflate(R.layout.fragment_feed_item, container, false);
         translationBar = (TextView) mainView.findViewById(R.id.feed_item_translation);
         webView = (WebView) mainView.findViewById(R.id.feed_item_content);
+
+        return mainView;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        // TODO: save translationBar state etc. on screen rotation
+
+        activity = getActivity();
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
+        browser = callback.isBrowserEnabled();
 
         // Enable Javascript
         WebSettings webSettings = webView.getSettings();
@@ -150,8 +159,6 @@ public class FeedItemFragment extends Fragment {
         }
         else
             webView.restoreState(savedInstanceState);
-
-        return mainView;
     }
 
     @Override
