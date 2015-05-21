@@ -6,14 +6,18 @@
             android:key="pref_zeeguu_account"
             android:title="@string/settings_zeguu_account_title"
             android:summary="@string/settings_zeguu_account_summary" />
-        <Preference
+        <ListPreference
             android:key="pref_zeeguu_language_native"
             android:title="@string/settings_zeguu_language_native_title"
-            android:summary="@string/settings_zeguu_language_native_summary" />
-        <Preference
+            android:summary="@string/settings_zeguu_language_native_summary"
+            android:entries="@array/zeeguu_languages_entries"
+            android:entryValues="@array/zeeguu_language_entry_values" />
+        <ListPreference
             android:key="pref_zeeguu_language_learning"
             android:title="@string/settings_zeguu_language_learning_title"
-            android:summary="@string/settings_zeguu_language_learning_summary" />
+            android:summary="@string/settings_zeguu_language_learning_summary"
+            android:entries="@array/zeeguu_languages_entries"
+            android:entryValues="@array/zeeguu_language_entry_values" />
         <CheckBoxPreference
             android:key="pref_zeeguu_highlight_words"
             android:title="@string/settings_zeguu_highlight_title"

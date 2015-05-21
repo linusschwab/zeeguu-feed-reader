@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import ch.unibe.scg.zeeguufeedreader.FeedItem.TranslationActionMode;
 import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.FeedItemCompatibilityFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedItem.FeedItemFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.FeedOverviewFragment;
@@ -56,10 +57,12 @@ public class MainActivity extends AppCompatActivity implements
     private ZeeguuLogoutDialog zeeguuLogoutDialog;
     private ZeeguuCreateAccountDialog zeeguuCreateAccountDialog;
 
+    private ActionMode actionMode;
+    private TranslationActionMode translationActionMode;
+
     private SharedPreferences sharedPref;
     private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
 
-    private ActionMode actionMode = null;
     private String currentFragment;
 
     private boolean browser = true;
@@ -97,6 +100,9 @@ public class MainActivity extends AppCompatActivity implements
 
         settingsFragment = (SettingsFragment) fragmentManager.findFragmentByTag("settings");
         if (settingsFragment == null) settingsFragment = new SettingsFragment();
+
+        // Action Mode
+        translationActionMode = new TranslationActionMode(feedItemFragment);
 
         // Data fragment
         createDataFragment();
@@ -256,55 +262,34 @@ public class MainActivity extends AppCompatActivity implements
         //    super.onBackPressed();
     }
 
-    /**
-     *  Custom action mode for webview text selection
-     */
     @Override
     public void onSupportActionModeStarted(ActionMode mode) {
-        if (actionMode == null && currentFragment.equals("feedItem")) {
-            actionMode = mode;
-            Menu menu = mode.getMenu();
-            // Remove the default menu items (select all, copy, paste, search)
-            menu.clear();
+        actionMode = mode;
 
-            // Remove menu items individually:
-            // menu.removeItem(android.R.id.[id_of_item_to_remove])
-
-            // Inflate menu items
-            mode.getMenuInflater().inflate(R.menu.translation, menu);
-
-            // Show translation bar
-            feedItemFragment.getTranslationBar().setVisibility(View.VISIBLE);
+        if (currentFragment.equals("feedItem")) {
+            translationActionMode.onPrepareActionMode(mode, mode.getMenu());
+            translationActionMode.onCreateActionMode(mode, mode.getMenu());
         }
 
         super.onSupportActionModeStarted(mode);
-    }
-
-    public void onContextualMenuItemClicked(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_bookmark:
-                feedItemFragment.extractContextFromPage();
-                actionMode.finish(); // Action picked, so close the CAB
-                break;
-            case R.id.action_unhighlight:
-                feedItemFragment.unhighlight();
-                actionMode.finish();
-                break;
-            default:
-                break;
-        }
     }
 
     @Override
     public void onSupportActionModeFinished(ActionMode mode) {
         actionMode = null;
 
-        if (currentFragment.equals("feedItem")) {
-            // Hide translation bar
-            feedItemFragment.getTranslationBar().setVisibility(View.GONE);
-        }
+        if (currentFragment.equals("feedItem"))
+            translationActionMode.onDestroyActionMode(mode);
 
         super.onSupportActionModeFinished(mode);
+    }
+
+    public void onActionItemClicked(MenuItem item) {
+        // Handle custom action mode clicks
+        if (actionMode != null) {
+            if (currentFragment.equals("feedItem"))
+                translationActionMode.onActionItemClicked(actionMode, item);
+        }
     }
 
     public void hideKeyboard() {

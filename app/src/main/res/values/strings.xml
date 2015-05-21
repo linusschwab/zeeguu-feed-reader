@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Zeeguu Feed Reader</string>
 
-    // Settings
+    <!-- Settings -->
     <string name="settings_zeeguu_title">Zeeguu</string>
     <string name="settings_zeguu_account_title">Account</string>
     <string name="settings_zeguu_account_summary">Not logged in</string>
@@ -19,7 +19,7 @@
     <string name="settings_browser_viewport_title">Viewport</string>
     <string name="settings_browser_viewport_summary">Enable wide viewport</string>
 
-    // Navigation Drawer
+    <!-- Navigation Drawer -->
     <string name="title_section1">Feed Overview</string>
     <string name="title_section2">Feed Item</string>
     <string name="title_section3">Settings</string>
@@ -29,7 +29,7 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    // Menu
+    <!-- Menu -->
     <string name="action_example">Example action</string>
 
     <string name="action_settings">Settings</string>
@@ -37,5 +37,20 @@
     <string name="action_forward">Forward</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_unhighlight">Remove Highlight</string>
+
+    <!-- Language arrays -->
+    <string-array name="zeeguu_languages_entries">
+        <item>English</item>
+        <item>German</item>
+        <item>French</item>
+        <item>Italian</item>
+    </string-array>
+
+    <string-array name="zeeguu_language_entry_values">
+        <item>en</item>
+        <item>de</item>
+        <item>fr</item>
+        <item>it</item>
+    </string-array>
 
 </resources>

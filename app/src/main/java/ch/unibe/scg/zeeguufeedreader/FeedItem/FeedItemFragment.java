@@ -94,14 +94,32 @@ public class FeedItemFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        // TODO: save translationBar state etc. on screen rotation
-
         activity = getActivity();
         sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
+
+        // For usability tests
         browser = callback.isBrowserEnabled();
 
-        // Enable Javascript
+        prepareWebView();
+
+        if (savedInstanceState == null) {
+            String url = sharedPref.getString("pref_browser_homepage", "http://zeeguu.unibe.ch");
+            if (browser && !url.equals("Feed Item")) {
+                if (url.equals(""))
+                    webView.loadUrl("http://zeeguu.unibe.ch");
+                else if (!url.contains("http://"))
+                    webView.loadUrl("http://" + url);
+                else
+                    webView.loadUrl(url);
+            }
+            else
+                webView.loadData(loadTestHtml(), "text/html", "utf-8");
+        } else {
+            webView.restoreState(savedInstanceState);
+        }
+    }
+
+    private void prepareWebView() {
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         if (sharedPref.getBoolean("pref_browser_viewport", true)) {
@@ -131,8 +149,9 @@ public class FeedItemFragment extends Fragment {
                 view.evaluateJavascript(Utility.assetToString(activity, "javascript/common/text_selection.js"), null);
             }
         });
+    }
 
-        // Load HTML
+    private String loadTestHtml() {
         String content = "<h2>Title</h2>" +
                 "<p>This is <u>underlined</u> text. And \"this\" is a test phrase, that needs to be long enough so that it does not fit on one line.</p>" +
                 "<p>This is a <a href=\"http://google.ch\">link</a>.</p>" +
@@ -142,23 +161,8 @@ public class FeedItemFragment extends Fragment {
                 "Test";
         String title = "Feed Item";
         String css = Utility.assetToString(activity, "css/style.css");
-        String html = "<html><head><title>" + title + "</title><style>" + css + "</style></head><body>" + content + "</body></html>";
 
-        if (savedInstanceState == null) {
-            String url = sharedPref.getString("pref_browser_homepage", "http://zeeguu.unibe.ch");
-            if (browser && !url.equals("Feed Item")) {
-                if (url.equals(""))
-                    webView.loadUrl("http://zeeguu.unibe.ch");
-                else if (!url.contains("http://"))
-                    webView.loadUrl("http://" + url);
-                else
-                    webView.loadUrl(url);
-            }
-            else
-                webView.loadData(html, "text/html", "utf-8");
-        }
-        else
-            webView.restoreState(savedInstanceState);
+        return "<html><head><title>" + title + "</title><style>" + css + "</style></head><body>" + content + "</body></html>";
     }
 
     @Override
@@ -229,14 +233,6 @@ public class FeedItemFragment extends Fragment {
         webView.evaluateJavascript("unhighlight_words_in_page();", null);
     }
 
-    public TextView getTranslationBar() {
-        return translationBar;
-    }
-
-    public WebView getWebView() {
-        return webView;
-    }
-
     /**
      * Allow to use the Android back button to navigate back in the WebView
      */
@@ -266,6 +262,84 @@ public class FeedItemFragment extends Fragment {
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
         webView.saveState(savedInstanceState);
+        savedInstanceState.putString("translation", translation);
+    }
+
+    // Getters/Setters
+    public TextView getTranslationBar() {
+        return translationBar;
+    }
+
+    public void setTranslationBar(TextView translationBar) {
+        this.translationBar = translationBar;
+    }
+
+    public WebView getWebView() {
+        return webView;
+    }
+
+    public void setWebView(WebView webView) {
+        this.webView = webView;
+    }
+
+    public String getContext() {
+        return context;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getSelection() {
+        return selection;
+    }
+
+    public void setSelection(String selection) {
+        this.selection = selection;
+    }
+
+    public String getTranslation() {
+        return translation;
+    }
+
+    public SharedPreferences getSharedPref() {
+        return sharedPref;
+    }
+
+    public void setSharedPref(SharedPreferences sharedPref) {
+        this.sharedPref = sharedPref;
+    }
+
+    public boolean isBrowser() {
+        return browser;
+    }
+
+    public void setBrowser(boolean browser) {
+        this.browser = browser;
+    }
+
+    public FeedItemCallbacks getCallback() {
+        return callback;
+    }
+
+    public void setCallback(FeedItemCallbacks callback) {
+        this.callback = callback;
     }
 
     // Add action view for usability tests
