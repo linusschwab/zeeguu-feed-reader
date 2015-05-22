@@ -31,6 +31,7 @@ import ch.unibe.zeeguulibrary.Dialogs.ZeeguuCreateAccountDialog;
 import ch.unibe.zeeguulibrary.Dialogs.ZeeguuDialogCallbacks;
 import ch.unibe.zeeguulibrary.Dialogs.ZeeguuLoginDialog;
 import ch.unibe.zeeguulibrary.Dialogs.ZeeguuLogoutDialog;
+import ch.unibe.zeeguulibrary.MyWords.FragmentMyWords;
 
 /**
  *  Activity to display and switch between the fragments
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks,
         WebViewInterface.WebViewInterfaceCallbacks,
         FeedItemFragment.FeedItemCallbacks,
+        FragmentMyWords.ZeeguuFragmentMyWordsCallbacks,
         SettingsFragment.SettingsCallbacks,
         ZeeguuConnectionManager.ZeeguuConnectionManagerCallbacks,
         ZeeguuAccount.ZeeguuAccountCallbacks,
@@ -53,6 +55,9 @@ public class MainActivity extends AppCompatActivity implements
     private FeedItemFragment feedItemFragment;
     private FeedItemCompatibilityFragment feedItemCompatibilityFragment;
     private SettingsFragment settingsFragment;
+    private FragmentMyWords myWordsFragment;
+
+    // Dialogs
     private ZeeguuLoginDialog zeeguuLoginDialog;
     private ZeeguuLogoutDialog zeeguuLogoutDialog;
     private ZeeguuCreateAccountDialog zeeguuCreateAccountDialog;
@@ -97,6 +102,9 @@ public class MainActivity extends AppCompatActivity implements
 
         feedItemCompatibilityFragment = (FeedItemCompatibilityFragment) fragmentManager.findFragmentByTag("feedItemCompatibility");
         if (feedItemCompatibilityFragment == null) feedItemCompatibilityFragment = new FeedItemCompatibilityFragment();
+
+        myWordsFragment = (FragmentMyWords) fragmentManager.findFragmentByTag("myWords");
+        if (myWordsFragment == null) myWordsFragment = new FragmentMyWords();
 
         settingsFragment = (SettingsFragment) fragmentManager.findFragmentByTag("settings");
         if (settingsFragment == null) settingsFragment = new SettingsFragment();
@@ -151,7 +159,11 @@ public class MainActivity extends AppCompatActivity implements
                     switchFragment(feedItemFragment, "feedItem");
                     break;
                 case 2:
-                    title = "Settings";
+                    title = getString(R.string.title_myWords);
+                    switchFragment(myWordsFragment, "myWords");
+                    break;
+                case 3:
+                    title = getString(R.string.title_settings);
                     switchFragment(settingsFragment, "settings");
                     break;
             }
@@ -159,24 +171,28 @@ public class MainActivity extends AppCompatActivity implements
         else {
             switch (position + 1) {
                 case 1:
-                    title = getString(R.string.title_section1);
+                    title = getString(R.string.title_feedOverview);
                     switchFragment(feedOverviewFragment, "feedOverview");
                     break;
                 case 2:
-                    title = getString(R.string.title_section2);
+                    title = getString(R.string.title_feedItem);
                     if (currentApiVersion >= android.os.Build.VERSION_CODES.KITKAT)
                         switchFragment(feedItemFragment, "feedItem");
                     else
                         switchFragment(feedItemCompatibilityFragment, "feedItemCompatibility");
                     break;
                 case 3:
-                    title = getString(R.string.title_section3);
-                    switchFragment(settingsFragment, "settings");
+                    title = getString(R.string.title_myWords);
+                    switchFragment(myWordsFragment, "myWords");
                     break;
                 case 4:
-                    getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
+                    title = getString(R.string.title_settings);
+                    switchFragment(settingsFragment, "settings");
                     break;
                 case 5:
+                    getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
+                    break;
+                case 6:
                     getWindow().setStatusBarColor(getResources().getColor(R.color.black));
                     break;
             }
@@ -244,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            title = getString(R.string.title_section3);
+            title = getString(R.string.title_settings);
             switchFragment(settingsFragment, "settings");
             return true;
         }
@@ -343,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void notifyDataChanged(boolean myWordsChanged) {
-
+        myWordsFragment.notifyDataSetChanged(myWordsChanged);
     }
 
     @Override

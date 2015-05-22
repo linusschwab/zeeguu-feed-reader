@@ -1,6 +1,5 @@
 package ch.unibe.scg.zeeguufeedreader.Core;
 
-import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;
 import android.support.v7.app.ActionBar;
 import android.app.Fragment;
@@ -108,7 +107,8 @@ public class NavigationDrawerFragment extends Fragment {
                     R.id.text_list_item,
                     new String[]{
                             "Browser",
-                            "Settings",
+                            getString(R.string.title_myWords),
+                            getString(R.string.title_settings),
                     }));
         else
             mDrawerListView.setAdapter(new ArrayAdapter<String>(
@@ -116,11 +116,12 @@ public class NavigationDrawerFragment extends Fragment {
                 R.layout.list_item,
                 R.id.text_list_item,
                 new String[]{
-                        getString(R.string.title_section1),
-                        getString(R.string.title_section2),
-                        getString(R.string.title_section3),
-                        getString(R.string.title_section4),
-                        getString(R.string.title_section5),
+                        getString(R.string.title_feedOverview),
+                        getString(R.string.title_feedItem),
+                        getString(R.string.title_myWords),
+                        getString(R.string.title_settings),
+                        getString(R.string.title_red),
+                        getString(R.string.title_black),
                 }));
 
 

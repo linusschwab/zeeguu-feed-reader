@@ -20,11 +20,12 @@
     <string name="settings_browser_viewport_summary">Enable wide viewport</string>
 
     <!-- Navigation Drawer -->
-    <string name="title_section1">Feed Overview</string>
-    <string name="title_section2">Feed Item</string>
-    <string name="title_section3">Settings</string>
-    <string name="title_section4">Red Status Bar</string>
-    <string name="title_section5">Black Status Bar</string>
+    <string name="title_feedOverview">Feed Overview</string>
+    <string name="title_feedItem">Feed Item</string>
+    <string name="title_myWords">My Words</string>
+    <string name="title_settings">Settings</string>
+    <string name="title_red">Red Status Bar</string>
+    <string name="title_black">Black Status Bar</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
