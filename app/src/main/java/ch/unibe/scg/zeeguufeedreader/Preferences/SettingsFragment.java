@@ -41,9 +41,9 @@ public class SettingsFragment extends PreferenceFragment {
         languageNative = findPreference("pref_zeeguu_language_native");
         languageLearning = findPreference("pref_zeeguu_language_learning");
 
-        updateAccount();
         updateNativeLanguage();
         updateLearningLanguage();
+        updateAccount();
 
         createChangeListener();
     }
@@ -89,7 +89,6 @@ public class SettingsFragment extends PreferenceFragment {
     }
 
     private void updateAccount() {
-
         String text = sharedPref.getString("pref_zeeguu_email", "");
         if (!text.equals("") && isAdded()) {
             zeeguuAccount.setSummary(getString(R.string.settings_zeguu_account_login) + " " + text);
