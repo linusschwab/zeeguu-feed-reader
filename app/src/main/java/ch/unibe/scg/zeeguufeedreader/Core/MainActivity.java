@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements
             dataFragment = new DataFragment();
             addFragment(dataFragment, "data");
             // Create objects, store in data fragment
-            dataFragment.setConnectionManager(new ZeeguuConnectionManager(this));
+            //dataFragment.setConnectionManager(this);
         }
     }
 

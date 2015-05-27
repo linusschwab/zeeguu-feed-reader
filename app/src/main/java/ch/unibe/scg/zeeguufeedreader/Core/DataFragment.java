@@ -18,6 +18,12 @@ public class DataFragment extends Fragment {
         setRetainInstance(true);
     }
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        connectionManager = new ZeeguuConnectionManager(getActivity());
+    }
+
     public void onRestore(Activity activity) {
         connectionManager.onRestore(activity);
     }
