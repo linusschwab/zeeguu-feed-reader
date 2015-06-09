@@ -18,29 +18,32 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
-import ch.unibe.scg.zeeguufeedreader.FeedItem.TranslationActionMode;
+import ch.unibe.zeeguulibrary.WebView.BrowserFragment;
+import ch.unibe.zeeguulibrary.WebView.ZeeguuTranslationActionMode;
+import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.FeedItemCompatibilityFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedItem.FeedItemFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.FeedOverviewFragment;
 import ch.unibe.scg.zeeguufeedreader.R;
 import ch.unibe.scg.zeeguufeedreader.Preferences.SettingsFragment;
-import ch.unibe.scg.zeeguufeedreader.FeedItem.WebViewInterface;
+import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewInterface;
 import ch.unibe.zeeguulibrary.Core.ZeeguuAccount;
 import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
 import ch.unibe.zeeguulibrary.Dialogs.ZeeguuCreateAccountDialog;
 import ch.unibe.zeeguulibrary.Dialogs.ZeeguuDialogCallbacks;
 import ch.unibe.zeeguulibrary.Dialogs.ZeeguuLoginDialog;
 import ch.unibe.zeeguulibrary.Dialogs.ZeeguuLogoutDialog;
-import ch.unibe.zeeguulibrary.MyWords.FragmentMyWords;
+import ch.unibe.zeeguulibrary.MyWords.MyWordsFragment;
 
 /**
  *  Activity to display and switch between the fragments
  */
 public class MainActivity extends AppCompatActivity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks,
-        WebViewInterface.WebViewInterfaceCallbacks,
-        FeedItemFragment.FeedItemCallbacks,
-        FragmentMyWords.ZeeguuFragmentMyWordsCallbacks,
+        ZeeguuWebViewInterface.ZeeguuWebViewInterfaceCallbacks,
+        ZeeguuWebViewFragment.ZeeguuWebViewCallbacks,
+        BrowserFragment.BrowserCallbacks,
+        MyWordsFragment.ZeeguuFragmentMyWordsCallbacks,
         SettingsFragment.SettingsCallbacks,
         ZeeguuConnectionManager.ZeeguuConnectionManagerCallbacks,
         ZeeguuAccount.ZeeguuAccountCallbacks,
@@ -53,9 +56,10 @@ public class MainActivity extends AppCompatActivity implements
     private NavigationDrawerFragment navigationDrawerFragment;
     private FeedOverviewFragment feedOverviewFragment;
     private FeedItemFragment feedItemFragment;
+    private BrowserFragment browserFragment;
     private FeedItemCompatibilityFragment feedItemCompatibilityFragment;
     private SettingsFragment settingsFragment;
-    private FragmentMyWords myWordsFragment;
+    private MyWordsFragment myWordsFragment;
 
     // Dialogs
     private ZeeguuLoginDialog zeeguuLoginDialog;
@@ -63,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements
     private ZeeguuCreateAccountDialog zeeguuCreateAccountDialog;
 
     private ActionMode actionMode;
-    private TranslationActionMode translationActionMode;
+    private ZeeguuTranslationActionMode translationActionMode;
 
     private SharedPreferences sharedPref;
     private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
@@ -100,17 +104,23 @@ public class MainActivity extends AppCompatActivity implements
         feedItemFragment = (FeedItemFragment) fragmentManager.findFragmentByTag("feedItem");
         if (feedItemFragment == null) feedItemFragment = new FeedItemFragment();
 
+        browserFragment = (BrowserFragment) fragmentManager.findFragmentByTag("browser");
+        if (browserFragment == null) browserFragment = new BrowserFragment();
+
         feedItemCompatibilityFragment = (FeedItemCompatibilityFragment) fragmentManager.findFragmentByTag("feedItemCompatibility");
         if (feedItemCompatibilityFragment == null) feedItemCompatibilityFragment = new FeedItemCompatibilityFragment();
 
-        myWordsFragment = (FragmentMyWords) fragmentManager.findFragmentByTag("myWords");
-        if (myWordsFragment == null) myWordsFragment = new FragmentMyWords();
+        myWordsFragment = (MyWordsFragment) fragmentManager.findFragmentByTag("myWords");
+        if (myWordsFragment == null) myWordsFragment = new MyWordsFragment();
 
         settingsFragment = (SettingsFragment) fragmentManager.findFragmentByTag("settings");
         if (settingsFragment == null) settingsFragment = new SettingsFragment();
 
         // Action Mode
-        translationActionMode = new TranslationActionMode(feedItemFragment);
+        if (browser)
+            translationActionMode = new ZeeguuTranslationActionMode(browserFragment);
+        else
+            translationActionMode = new ZeeguuTranslationActionMode(feedItemFragment);
 
         // Data fragment
         createDataFragment();
@@ -156,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements
             switch (position + 1) {
                 case 1:
                     title = "Browser";
-                    switchFragment(feedItemFragment, "feedItem");
+                    switchFragment(browserFragment, "browser");
                     break;
                 case 2:
                     title = getString(R.string.title_myWords);
@@ -274,6 +284,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onBackPressed() {
         feedItemFragment.goBack();
+        browserFragment.goBack();
         //if (feedItemFragment.goBack())
         //    super.onBackPressed();
     }
@@ -282,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onSupportActionModeStarted(ActionMode mode) {
         actionMode = mode;
 
-        if (currentFragment.equals("feedItem")) {
+        if (currentFragment.equals("feedItem") || currentFragment.equals("browser")) {
             translationActionMode.onPrepareActionMode(mode, mode.getMenu());
             translationActionMode.onCreateActionMode(mode, mode.getMenu());
         }
@@ -294,7 +305,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onSupportActionModeFinished(ActionMode mode) {
         actionMode = null;
 
-        if (currentFragment.equals("feedItem"))
+        if (currentFragment.equals("feedItem") || currentFragment.equals("browser"))
             translationActionMode.onDestroyActionMode(mode);
 
         super.onSupportActionModeFinished(mode);
@@ -303,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onActionItemClicked(MenuItem item) {
         // Handle custom action mode clicks
         if (actionMode != null) {
-            if (currentFragment.equals("feedItem"))
+            if (currentFragment.equals("feedItem") || currentFragment.equals("browser"))
                 translationActionMode.onActionItemClicked(actionMode, item);
         }
     }
@@ -317,8 +328,11 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public FeedItemFragment getFeedItemFragment() {
-        return feedItemFragment;
+    public ZeeguuWebViewFragment getWebViewFragment() {
+        if (browser)
+            return browserFragment;
+        else
+            return feedItemFragment;
     }
 
     public NavigationDrawerFragment getNavigationDrawerFragment() {
@@ -363,6 +377,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void notifyLanguageChanged(boolean isLanguageFrom) {
+
+    }
+
+    @Override
     public void bookmarkWord(String bookmarkID) {
 
     }
@@ -371,18 +390,30 @@ public class MainActivity extends AppCompatActivity implements
     public void displayErrorMessage(String error, boolean isToast) {
         if (isToast)
             Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
-        else
-            feedItemFragment.setTranslation(error);
+        else {
+            if (browser)
+                browserFragment.setTranslation(error);
+            else
+                feedItemFragment.setTranslation(error);
+        }
     }
 
     @Override
     public void setTranslation(String translation) {
-        feedItemFragment.setTranslation(translation);
+        if (browser)
+            browserFragment.setTranslation(translation);
+        else
+            feedItemFragment.setTranslation(translation);
+
     }
 
     @Override
     public void highlight(String word) {
-        if (sharedPref.getBoolean("pref_zeeguu_highlight_words", true))
-            feedItemFragment.highlight(word);
+        if (sharedPref.getBoolean("pref_zeeguu_highlight_words", true)) {
+            if (browser)
+                browserFragment.highlight(word);
+            else
+                feedItemFragment.highlight(word);
+        }
     }
 }
