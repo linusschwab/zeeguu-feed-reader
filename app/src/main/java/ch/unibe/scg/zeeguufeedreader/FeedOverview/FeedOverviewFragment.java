@@ -1,11 +1,15 @@
 package ch.unibe.scg.zeeguufeedreader.FeedOverview;
 
+import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
+
+import java.util.ArrayList;
 
 import ch.unibe.scg.zeeguufeedreader.R;
 
@@ -14,7 +18,8 @@ import ch.unibe.scg.zeeguufeedreader.R;
  */
 public class FeedOverviewFragment extends Fragment {
 
-    private ExpandableListView mExpandableListView;
+    private ExpandableListView expandableListView;
+    private FeedOverviewListAdapter adapter;
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -24,6 +29,8 @@ public class FeedOverviewFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
     }
 
     /**
@@ -36,9 +43,24 @@ public class FeedOverviewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View mainView = (View) inflater.inflate(R.layout.fragment_feed_overview, container, false);
-        mExpandableListView = (ExpandableListView) mainView.findViewById(R.id.main_list_view);
+        expandableListView = (ExpandableListView) mainView.findViewById(R.id.main_list_view);
 
         return mainView;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        Category category = new Category("Test", 123);
+        Feed feed = new Feed("Test Feed", 11);
+        category.addFeed(feed);
+        
+        ArrayList<Category> list = new ArrayList<>();
+        list.add(category);
+
+        adapter = new FeedOverviewListAdapter(getActivity(), list);
+        expandableListView.setAdapter(adapter);
     }
 
     /**

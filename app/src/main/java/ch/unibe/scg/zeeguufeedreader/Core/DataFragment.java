@@ -25,7 +25,11 @@ public class DataFragment extends Fragment {
     }
 
     public void onRestore(Activity activity) {
-        connectionManager.onRestore(activity);
+        // ConnectionManager
+        if (connectionManager != null)
+            connectionManager.onRestore(activity);
+        else
+            connectionManager = new ZeeguuConnectionManager(activity);
     }
 
     // Getters and Setters

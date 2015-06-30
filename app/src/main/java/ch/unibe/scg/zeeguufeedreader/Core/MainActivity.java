@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private String currentFragment;
 
-    private boolean browser = true;
+    private boolean browser = false;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -369,6 +369,11 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void displayMessage(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void openUrlInBrowser(String URL) {
+
     }
 
     @Override
