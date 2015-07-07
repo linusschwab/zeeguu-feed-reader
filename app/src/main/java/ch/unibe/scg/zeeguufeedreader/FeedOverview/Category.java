@@ -42,7 +42,14 @@ public class Category {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        holder.name.setText(name);
+        // Expanded/Collapsed icon
+        if (isExpanded)
+            holder.icon.setImageResource(R.drawable.ic_action_collapse);
+        else
+            holder.icon.setImageResource(R.drawable.ic_action_expand);
+
+        // Name and unread count
+        holder.name.setText(name.toUpperCase());
         // TODO: calculate unread count
         holder.unread.setText("0");
 
