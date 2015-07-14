@@ -1,4 +1,4 @@
-package ch.unibe.scg.zeeguufeedreader.FeedItem;
+package ch.unibe.scg.zeeguufeedreader.FeedEntry;
 
 import android.os.Bundle;
 
@@ -8,7 +8,7 @@ import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
 /**
  *  Fragment to display a single article from a feed
  */
-public class FeedItemFragment extends ZeeguuWebViewFragment {
+public class FeedEntryFragment extends ZeeguuWebViewFragment {
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should

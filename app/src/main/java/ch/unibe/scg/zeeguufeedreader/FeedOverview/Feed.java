@@ -6,12 +6,18 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
+import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.R;
 
 public class Feed {
 
     private final String name;
     private final long id;
+
+    private ArrayList<FeedEntry> entries;
+    private int unreadCount;
 
     public Feed(String name, long id) {
         this.name = name;
@@ -48,6 +54,18 @@ public class Feed {
 
     public long getId() {
         return id;
+    }
+
+    public void addEntry(FeedEntry entry) {
+        entries.add(entry);
+    }
+
+    public ArrayList<FeedEntry> getEntries() {
+        return entries;
+    }
+
+    public void setEntries(ArrayList<FeedEntry> entries) {
+        this.entries = entries;
     }
 
     // View Holder, see: https://developer.android.com/training/improving-layouts/smooth-scrolling.html#ViewHolder

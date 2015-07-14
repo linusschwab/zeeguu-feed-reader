@@ -1,4 +1,4 @@
-package ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility;
+package ch.unibe.scg.zeeguufeedreader.FeedEntry.Compatibility;
 
 import android.os.Bundle;
 import android.app.Fragment;
@@ -14,7 +14,7 @@ import ch.unibe.scg.zeeguufeedreader.R;
 /**
  *  Fragment to display a single article from a feed
  */
-public class FeedItemCompatibilityFragment extends Fragment {
+public class FeedEntryCompatibilityFragment extends Fragment {
 
     private TextViewSelection textView;
     private TextView translationBar;

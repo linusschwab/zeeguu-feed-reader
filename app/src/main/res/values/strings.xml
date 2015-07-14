@@ -21,7 +21,8 @@
 
     <!-- Navigation Drawer -->
     <string name="title_feedOverview">Feed Overview</string>
-    <string name="title_feedItem">Feed Item</string>
+    <string name="title_feedEntryList">Feed Entry List</string>
+    <string name="title_feedEntry">Feed Entry</string>
     <string name="title_myWords">My Words</string>
     <string name="title_settings">Settings</string>
     <string name="title_red">Red Status Bar</string>

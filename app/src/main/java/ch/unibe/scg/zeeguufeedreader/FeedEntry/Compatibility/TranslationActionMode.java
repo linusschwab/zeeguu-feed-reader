@@ -1,4 +1,4 @@
-package ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility;
+package ch.unibe.scg.zeeguufeedreader.FeedEntry.Compatibility;
 
 import android.app.Activity;
 import android.text.Html;

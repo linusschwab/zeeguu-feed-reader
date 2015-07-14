@@ -13,7 +13,7 @@
         android:scrollbars="vertical"
         android:fillViewport="true" >
 
-        <ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.TextViewSelection
+        <ch.unibe.scg.zeeguufeedreader.FeedEntry.Compatibility.TextViewSelection
             android:id="@+id/feed_item_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -18,11 +18,12 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
 import ch.unibe.zeeguulibrary.WebView.BrowserFragment;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuTranslationActionMode;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
-import ch.unibe.scg.zeeguufeedreader.FeedItemCompatibility.FeedItemCompatibilityFragment;
-import ch.unibe.scg.zeeguufeedreader.FeedItem.FeedItemFragment;
+import ch.unibe.scg.zeeguufeedreader.FeedEntry.Compatibility.FeedEntryCompatibilityFragment;
+import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.FeedOverviewFragment;
 import ch.unibe.scg.zeeguufeedreader.R;
 import ch.unibe.scg.zeeguufeedreader.Preferences.SettingsFragment;
@@ -55,9 +56,10 @@ public class MainActivity extends AppCompatActivity implements
     private DataFragment dataFragment;
     private NavigationDrawerFragment navigationDrawerFragment;
     private FeedOverviewFragment feedOverviewFragment;
-    private FeedItemFragment feedItemFragment;
+    private FeedEntryListFragment feedEntryListFragment;
+    private FeedEntryFragment feedEntryFragment;
     private BrowserFragment browserFragment;
-    private FeedItemCompatibilityFragment feedItemCompatibilityFragment;
+    private FeedEntryCompatibilityFragment feedEntryCompatibilityFragment;
     private SettingsFragment settingsFragment;
     private MyWordsFragment myWordsFragment;
 
@@ -101,14 +103,17 @@ public class MainActivity extends AppCompatActivity implements
         feedOverviewFragment = (FeedOverviewFragment) fragmentManager.findFragmentByTag("feedOverview");
         if (feedOverviewFragment == null) feedOverviewFragment = new FeedOverviewFragment();
 
-        feedItemFragment = (FeedItemFragment) fragmentManager.findFragmentByTag("feedItem");
-        if (feedItemFragment == null) feedItemFragment = new FeedItemFragment();
+        feedEntryListFragment = (FeedEntryListFragment) fragmentManager.findFragmentByTag("feedEntryList");
+        if (feedEntryListFragment == null) feedEntryListFragment = new FeedEntryListFragment();
+
+        feedEntryFragment = (FeedEntryFragment) fragmentManager.findFragmentByTag("feedEntry");
+        if (feedEntryFragment == null) feedEntryFragment = new FeedEntryFragment();
 
         browserFragment = (BrowserFragment) fragmentManager.findFragmentByTag("browser");
         if (browserFragment == null) browserFragment = new BrowserFragment();
 
-        feedItemCompatibilityFragment = (FeedItemCompatibilityFragment) fragmentManager.findFragmentByTag("feedItemCompatibility");
-        if (feedItemCompatibilityFragment == null) feedItemCompatibilityFragment = new FeedItemCompatibilityFragment();
+        feedEntryCompatibilityFragment = (FeedEntryCompatibilityFragment) fragmentManager.findFragmentByTag("feedItemCompatibility");
+        if (feedEntryCompatibilityFragment == null) feedEntryCompatibilityFragment = new FeedEntryCompatibilityFragment();
 
         myWordsFragment = (MyWordsFragment) fragmentManager.findFragmentByTag("myWords");
         if (myWordsFragment == null) myWordsFragment = new MyWordsFragment();
@@ -120,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements
         if (browser)
             translationActionMode = new ZeeguuTranslationActionMode(browserFragment);
         else
-            translationActionMode = new ZeeguuTranslationActionMode(feedItemFragment);
+            translationActionMode = new ZeeguuTranslationActionMode(feedEntryFragment);
 
         // Data fragment
         createDataFragment();
@@ -185,24 +190,28 @@ public class MainActivity extends AppCompatActivity implements
                     switchFragment(feedOverviewFragment, "feedOverview");
                     break;
                 case 2:
-                    title = getString(R.string.title_feedItem);
-                    if (currentApiVersion >= android.os.Build.VERSION_CODES.KITKAT)
-                        switchFragment(feedItemFragment, "feedItem");
-                    else
-                        switchFragment(feedItemCompatibilityFragment, "feedItemCompatibility");
+                    title = getString(R.string.title_feedEntryList);
+                    switchFragment(feedEntryListFragment, "feedEntryList");
                     break;
                 case 3:
+                    title = getString(R.string.title_feedEntry);
+                    if (currentApiVersion >= android.os.Build.VERSION_CODES.KITKAT)
+                        switchFragment(feedEntryFragment, "feedEntry");
+                    else
+                        switchFragment(feedEntryCompatibilityFragment, "feedEntryCompatibility");
+                    break;
+                case 4:
                     title = getString(R.string.title_myWords);
                     switchFragment(myWordsFragment, "myWords");
                     break;
-                case 4:
+                case 5:
                     title = getString(R.string.title_settings);
                     switchFragment(settingsFragment, "settings");
                     break;
-                case 5:
+                case 6:
                     getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
                     break;
-                case 6:
+                case 7:
                     getWindow().setStatusBarColor(getResources().getColor(R.color.black));
                     break;
             }
@@ -283,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements
      */
     @Override
     public void onBackPressed() {
-        feedItemFragment.goBack();
+        feedEntryFragment.goBack();
         browserFragment.goBack();
         //if (feedItemFragment.goBack())
         //    super.onBackPressed();
@@ -293,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onSupportActionModeStarted(ActionMode mode) {
         actionMode = mode;
 
-        if (currentFragment.equals("feedItem") || currentFragment.equals("browser")) {
+        if (currentFragment.equals("feedEntry") || currentFragment.equals("browser")) {
             translationActionMode.onPrepareActionMode(mode, mode.getMenu());
             translationActionMode.onCreateActionMode(mode, mode.getMenu());
         }
@@ -305,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onSupportActionModeFinished(ActionMode mode) {
         actionMode = null;
 
-        if (currentFragment.equals("feedItem") || currentFragment.equals("browser"))
+        if (currentFragment.equals("feedEntry") || currentFragment.equals("browser"))
             translationActionMode.onDestroyActionMode(mode);
 
         super.onSupportActionModeFinished(mode);
@@ -314,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onActionItemClicked(MenuItem item) {
         // Handle custom action mode clicks
         if (actionMode != null) {
-            if (currentFragment.equals("feedItem") || currentFragment.equals("browser"))
+            if (currentFragment.equals("feedEntry") || currentFragment.equals("browser"))
                 translationActionMode.onActionItemClicked(actionMode, item);
         }
     }
@@ -332,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements
         if (browser)
             return browserFragment;
         else
-            return feedItemFragment;
+            return feedEntryFragment;
     }
 
     public NavigationDrawerFragment getNavigationDrawerFragment() {
@@ -399,7 +408,7 @@ public class MainActivity extends AppCompatActivity implements
             if (browser)
                 browserFragment.setTranslation(error);
             else
-                feedItemFragment.setTranslation(error);
+                feedEntryFragment.setTranslation(error);
         }
     }
 
@@ -408,7 +417,7 @@ public class MainActivity extends AppCompatActivity implements
         if (browser)
             browserFragment.setTranslation(translation);
         else
-            feedItemFragment.setTranslation(translation);
+            feedEntryFragment.setTranslation(translation);
 
     }
 
@@ -418,7 +427,7 @@ public class MainActivity extends AppCompatActivity implements
             if (browser)
                 browserFragment.highlight(word);
             else
-                feedItemFragment.highlight(word);
+                feedEntryFragment.highlight(word);
         }
     }
 }

@@ -8,9 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.R;
 
 /**
@@ -29,8 +31,6 @@ public class FeedOverviewFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
     }
 
     /**
@@ -43,7 +43,16 @@ public class FeedOverviewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View mainView = (View) inflater.inflate(R.layout.fragment_feed_overview, container, false);
-        expandableListView = (ExpandableListView) mainView.findViewById(R.id.main_list_view);
+        expandableListView = (ExpandableListView) mainView.findViewById(R.id.feed_overview_listview);
+
+        expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View view, int groupPosition, int childPosition, long id) {
+                Feed feed = (Feed) adapter.getChild(groupPosition, childPosition);
+                Toast.makeText(getActivity(), feed.getName(), Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
 
         return mainView;
     }
@@ -61,7 +70,9 @@ public class FeedOverviewFragment extends Fragment {
     private ArrayList<Category> createTestList() {
         Category category1 = new Category("Test", 123);
         Feed feed11 = new Feed("Test Feed", 11);
+        feed11.setEntries(createTestFeedEntries());
         Feed feed12 = new Feed("Test Feed 2", 12);
+        feed12.setEntries(createTestFeedEntries());
         category1.addFeed(feed11);
         category1.addFeed(feed12);
 
@@ -85,6 +96,24 @@ public class FeedOverviewFragment extends Fragment {
         list.add(category1);
         list.add(category2);
         list.add(category3);
+
+        return list;
+    }
+
+    private ArrayList<FeedEntry> createTestFeedEntries() {
+        FeedEntry test1 = new FeedEntry("Test", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 101);
+        FeedEntry test2 = new FeedEntry("Test", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 102);
+        FeedEntry test3 = new FeedEntry("Test", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 103);
+        FeedEntry test4 = new FeedEntry("Test", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 104);
+        FeedEntry test5 = new FeedEntry("Test", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 105);
+
+        ArrayList<FeedEntry> list = new ArrayList<>();
+
+        list.add(test1);
+        list.add(test2);
+        list.add(test3);
+        list.add(test4);
+        list.add(test5);
 
         return list;
     }

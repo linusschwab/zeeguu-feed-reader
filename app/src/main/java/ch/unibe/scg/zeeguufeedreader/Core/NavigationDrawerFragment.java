@@ -117,7 +117,8 @@ public class NavigationDrawerFragment extends Fragment {
                 R.id.text_list_item,
                 new String[]{
                         getString(R.string.title_feedOverview),
-                        getString(R.string.title_feedItem),
+                        getString(R.string.title_feedEntryList),
+                        getString(R.string.title_feedEntry),
                         getString(R.string.title_myWords),
                         getString(R.string.title_settings),
                         getString(R.string.title_red),
