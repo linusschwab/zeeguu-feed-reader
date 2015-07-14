@@ -1,10 +1,15 @@
 package ch.unibe.scg.zeeguufeedreader.FeedEntryList;
 
+import android.app.Activity;
 import android.app.Fragment;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -17,7 +22,18 @@ public class FeedEntryListFragment extends Fragment {
     private ListView listView;
     private FeedEntryListAdapter adapter;
 
-    private ArrayList<FeedEntry> list;
+    // TODO: display error message if empty
+    private ArrayList<FeedEntry> list = new ArrayList<>();
+
+    private FeedEntryListCallbacks callback;
+
+    /**
+     *  Callback interface that must be implemented by the container activity
+     */
+    public interface FeedEntryListCallbacks {
+        void setActionBar(String title, boolean displayBackButton, int statusBarColor, int actionBarColor);
+        void resetActionBar();
+    }
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -56,6 +72,18 @@ public class FeedEntryListFragment extends Fragment {
         this.list = entries;
     }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // Make sure that the interface is implemented in the container activity
+        try {
+            callback = (FeedEntryListCallbacks) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Activity must implement FeedEntryListCallbacks");
+        }
+    }
+
     /**
      * The system calls this method as the first indication that the user is leaving the fragment
      * (though it does not always mean the fragment is being destroyed). This is usually where you
@@ -65,5 +93,16 @@ public class FeedEntryListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+
+        callback.resetActionBar();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // TODO: set title from feed/category
+        callback.setActionBar(getString(R.string.title_feedEntryList), true,
+                getResources().getColor(R.color.darkred), getResources().getColor(R.color.red));
     }
 }

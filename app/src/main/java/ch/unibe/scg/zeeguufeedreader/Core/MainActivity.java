@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
@@ -18,6 +19,9 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
+import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
 import ch.unibe.zeeguulibrary.WebView.BrowserFragment;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuTranslationActionMode;
@@ -41,11 +45,13 @@ import ch.unibe.zeeguulibrary.MyWords.MyWordsFragment;
  */
 public class MainActivity extends AppCompatActivity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks,
-        ZeeguuWebViewInterface.ZeeguuWebViewInterfaceCallbacks,
-        ZeeguuWebViewFragment.ZeeguuWebViewCallbacks,
+        SettingsFragment.SettingsCallbacks,
+        FeedOverviewFragment.FeedOverviewCallbacks,
+        FeedEntryListFragment.FeedEntryListCallbacks,
         BrowserFragment.BrowserCallbacks,
         MyWordsFragment.ZeeguuFragmentMyWordsCallbacks,
-        SettingsFragment.SettingsCallbacks,
+        ZeeguuWebViewInterface.ZeeguuWebViewInterfaceCallbacks,
+        ZeeguuWebViewFragment.ZeeguuWebViewCallbacks,
         ZeeguuConnectionManager.ZeeguuConnectionManagerCallbacks,
         ZeeguuAccount.ZeeguuAccountCallbacks,
         ZeeguuDialogCallbacks {
@@ -164,7 +170,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
         if (browser) {
@@ -186,33 +191,22 @@ public class MainActivity extends AppCompatActivity implements
         else {
             switch (position + 1) {
                 case 1:
-                    title = getString(R.string.title_feedOverview);
                     switchFragment(feedOverviewFragment, "feedOverview");
                     break;
                 case 2:
-                    title = getString(R.string.title_feedEntryList);
-                    switchFragment(feedEntryListFragment, "feedEntryList");
-                    break;
-                case 3:
                     title = getString(R.string.title_feedEntry);
                     if (currentApiVersion >= android.os.Build.VERSION_CODES.KITKAT)
                         switchFragment(feedEntryFragment, "feedEntry");
                     else
                         switchFragment(feedEntryCompatibilityFragment, "feedEntryCompatibility");
                     break;
-                case 4:
+                case 3:
                     title = getString(R.string.title_myWords);
                     switchFragment(myWordsFragment, "myWords");
                     break;
-                case 5:
+                case 4:
                     title = getString(R.string.title_settings);
                     switchFragment(settingsFragment, "settings");
-                    break;
-                case 6:
-                    getWindow().setStatusBarColor(getResources().getColor(R.color.darkred));
-                    break;
-                case 7:
-                    getWindow().setStatusBarColor(getResources().getColor(R.color.black));
                     break;
             }
         }
@@ -227,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements
     private void switchFragment(Fragment fragment, String tag) {
         fragmentManager.beginTransaction()
             .replace(R.id.container, fragment, tag)
+            .addToBackStack(tag)
             .commit();
         currentFragment = tag;
     }
@@ -237,6 +232,8 @@ public class MainActivity extends AppCompatActivity implements
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(title);
         actionBar.setDisplayShowCustomEnabled(false);
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -277,7 +274,10 @@ public class MainActivity extends AppCompatActivity implements
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        // noinspection SimplifiableIfStatement
+        // Back button
+        if (id == android.R.id.home) {
+            onBackPressed();
+        }
         if (id == R.id.action_settings) {
             title = getString(R.string.title_settings);
             switchFragment(settingsFragment, "settings");
@@ -292,10 +292,12 @@ public class MainActivity extends AppCompatActivity implements
      */
     @Override
     public void onBackPressed() {
-        feedEntryFragment.goBack();
         browserFragment.goBack();
-        //if (feedItemFragment.goBack())
-        //    super.onBackPressed();
+
+        if (feedEntryFragment.goBack() && fragmentManager.getBackStackEntryCount() > 1)
+            fragmentManager.popBackStack();
+
+        //super.onBackPressed();
     }
 
     @Override
@@ -429,5 +431,44 @@ public class MainActivity extends AppCompatActivity implements
             else
                 feedEntryFragment.highlight(word);
         }
+    }
+
+    @Override
+    public void displayFeedEntryList(ArrayList<FeedEntry> entries) {
+        feedEntryListFragment.setEntries(entries);
+        switchFragment(feedEntryListFragment, "feedEntryList");
+    }
+
+    /**
+     * Set the content, color and style of the action bar for this fragment
+     */
+    @Override
+    public void setActionBar(String title, boolean displayBackButton, int statusBarColor, int actionBarColor) {
+        ActionBar actionBar = getSupportActionBar();
+
+        // Title
+        if (!title.equals("")) {
+            this.title = title;
+            actionBar.setTitle(title);
+        }
+
+        // Display back arrow
+        if (displayBackButton)
+            navigationDrawerFragment.displayDrawerToggle(false);
+        else
+            navigationDrawerFragment.displayDrawerToggle(true);
+
+        // Set color
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            getWindow().setStatusBarColor(statusBarColor);
+        actionBar.setBackgroundDrawable(new ColorDrawable(actionBarColor));
+    }
+
+    @Override
+    public void resetActionBar() {
+        // Use default colors
+        setActionBar("", false,
+                getResources().getColor(R.color.status_bar_gray),
+                getResources().getColor(R.color.action_bar_gray));
     }
 }

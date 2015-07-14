@@ -16,7 +16,7 @@ public class Feed {
     private final String name;
     private final long id;
 
-    private ArrayList<FeedEntry> entries;
+    private ArrayList<FeedEntry> entries = new ArrayList<>();
     private int unreadCount;
 
     public Feed(String name, long id) {

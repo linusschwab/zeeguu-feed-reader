@@ -1,11 +1,16 @@
 package ch.unibe.scg.zeeguufeedreader.FeedOverview;
 
+import android.app.Activity;
 import android.database.DataSetObserver;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
@@ -22,6 +27,15 @@ public class FeedOverviewFragment extends Fragment {
 
     private ExpandableListView expandableListView;
     private FeedOverviewListAdapter adapter;
+
+    private FeedOverviewCallbacks callback;
+
+    /**
+     *  Callback interface that must be implemented by the container activity
+     */
+    public interface FeedOverviewCallbacks {
+        void displayFeedEntryList(ArrayList<FeedEntry> entries);
+    }
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -49,7 +63,7 @@ public class FeedOverviewFragment extends Fragment {
             @Override
             public boolean onChildClick(ExpandableListView parent, View view, int groupPosition, int childPosition, long id) {
                 Feed feed = (Feed) adapter.getChild(groupPosition, childPosition);
-                Toast.makeText(getActivity(), feed.getName(), Toast.LENGTH_SHORT).show();
+                callback.displayFeedEntryList(feed.getEntries());
                 return true;
             }
         });
@@ -118,6 +132,18 @@ public class FeedOverviewFragment extends Fragment {
         return list;
     }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // Make sure that the interface is implemented in the container activity
+        try {
+            callback = (FeedOverviewCallbacks) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Activity must implement FeedOverviewCallbacks");
+        }
+    }
+
     /**
      * The system calls this method as the first indication that the user is leaving the fragment
      * (though it does not always mean the fragment is being destroyed). This is usually where you
@@ -127,5 +153,10 @@ public class FeedOverviewFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 }
