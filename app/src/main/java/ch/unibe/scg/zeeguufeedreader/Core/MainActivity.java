@@ -88,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence title;
+    private CharSequence titleOld;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -191,6 +192,7 @@ public class MainActivity extends AppCompatActivity implements
         else {
             switch (position + 1) {
                 case 1:
+                    title = getString(R.string.title_feedOverview);
                     switchFragment(feedOverviewFragment, "feedOverview");
                     break;
                 case 2:
@@ -448,6 +450,8 @@ public class MainActivity extends AppCompatActivity implements
 
         // Title
         if (!title.equals("")) {
+            // Save old title for back button
+            titleOld = this.title;
             this.title = title;
             actionBar.setTitle(title);
         }
@@ -467,7 +471,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void resetActionBar() {
         // Use default colors
-        setActionBar("", false,
+        setActionBar(titleOld.toString(), false,
                 getResources().getColor(R.color.status_bar_gray),
                 getResources().getColor(R.color.action_bar_gray));
     }
