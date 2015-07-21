@@ -94,6 +94,13 @@ public class FeedEntryListFragment extends Fragment {
     public void onPause() {
         super.onPause();
 
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
         callback.resetActionBar();
     }
 

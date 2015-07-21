@@ -23,7 +23,6 @@ import java.util.ArrayList;
 
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
-import ch.unibe.zeeguulibrary.WebView.BrowserFragment;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuTranslationActionMode;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.Compatibility.FeedEntryCompatibilityFragment;
@@ -48,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements
         SettingsFragment.SettingsCallbacks,
         FeedOverviewFragment.FeedOverviewCallbacks,
         FeedEntryListFragment.FeedEntryListCallbacks,
-        BrowserFragment.BrowserCallbacks,
         MyWordsFragment.ZeeguuFragmentMyWordsCallbacks,
         ZeeguuWebViewInterface.ZeeguuWebViewInterfaceCallbacks,
         ZeeguuWebViewFragment.ZeeguuWebViewCallbacks,
@@ -64,7 +62,6 @@ public class MainActivity extends AppCompatActivity implements
     private FeedOverviewFragment feedOverviewFragment;
     private FeedEntryListFragment feedEntryListFragment;
     private FeedEntryFragment feedEntryFragment;
-    private BrowserFragment browserFragment;
     private FeedEntryCompatibilityFragment feedEntryCompatibilityFragment;
     private SettingsFragment settingsFragment;
     private MyWordsFragment myWordsFragment;
@@ -81,8 +78,6 @@ public class MainActivity extends AppCompatActivity implements
     private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
 
     private String currentFragment;
-
-    private boolean browser = false;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -116,9 +111,6 @@ public class MainActivity extends AppCompatActivity implements
         feedEntryFragment = (FeedEntryFragment) fragmentManager.findFragmentByTag("feedEntry");
         if (feedEntryFragment == null) feedEntryFragment = new FeedEntryFragment();
 
-        browserFragment = (BrowserFragment) fragmentManager.findFragmentByTag("browser");
-        if (browserFragment == null) browserFragment = new BrowserFragment();
-
         feedEntryCompatibilityFragment = (FeedEntryCompatibilityFragment) fragmentManager.findFragmentByTag("feedItemCompatibility");
         if (feedEntryCompatibilityFragment == null) feedEntryCompatibilityFragment = new FeedEntryCompatibilityFragment();
 
@@ -129,10 +121,7 @@ public class MainActivity extends AppCompatActivity implements
         if (settingsFragment == null) settingsFragment = new SettingsFragment();
 
         // Action Mode
-        if (browser)
-            translationActionMode = new ZeeguuTranslationActionMode(browserFragment);
-        else
-            translationActionMode = new ZeeguuTranslationActionMode(feedEntryFragment);
+        translationActionMode = new ZeeguuTranslationActionMode(feedEntryFragment);
 
         // Data fragment
         createDataFragment();
@@ -172,45 +161,27 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        // update the main content by replacing fragments
-        if (browser) {
-            switch (position + 1) {
-                case 1:
-                    title = "Browser";
-                    switchFragment(browserFragment, "browser");
-                    break;
-                case 2:
-                    title = getString(R.string.title_myWords);
-                    switchFragment(myWordsFragment, "myWords");
-                    break;
-                case 3:
-                    title = getString(R.string.title_settings);
-                    switchFragment(settingsFragment, "settings");
-                    break;
-            }
-        }
-        else {
-            switch (position + 1) {
-                case 1:
-                    title = getString(R.string.title_feedOverview);
-                    switchFragment(feedOverviewFragment, "feedOverview");
-                    break;
-                case 2:
-                    title = getString(R.string.title_feedEntry);
-                    if (currentApiVersion >= android.os.Build.VERSION_CODES.KITKAT)
-                        switchFragment(feedEntryFragment, "feedEntry");
-                    else
-                        switchFragment(feedEntryCompatibilityFragment, "feedEntryCompatibility");
-                    break;
-                case 3:
-                    title = getString(R.string.title_myWords);
-                    switchFragment(myWordsFragment, "myWords");
-                    break;
-                case 4:
-                    title = getString(R.string.title_settings);
-                    switchFragment(settingsFragment, "settings");
-                    break;
-            }
+        // Update the main content by replacing fragments
+        switch (position + 1) {
+            case 1:
+                title = getString(R.string.title_feedOverview);
+                switchFragment(feedOverviewFragment, "feedOverview");
+                break;
+            case 2:
+                title = getString(R.string.title_feedEntry);
+                if (currentApiVersion >= android.os.Build.VERSION_CODES.KITKAT)
+                    switchFragment(feedEntryFragment, "feedEntry");
+                else
+                    switchFragment(feedEntryCompatibilityFragment, "feedEntryCompatibility");
+                break;
+            case 3:
+                title = getString(R.string.title_myWords);
+                switchFragment(myWordsFragment, "myWords");
+                break;
+            case 4:
+                title = getString(R.string.title_settings);
+                switchFragment(settingsFragment, "settings");
+                break;
         }
     }
 
@@ -223,19 +194,65 @@ public class MainActivity extends AppCompatActivity implements
     private void switchFragment(Fragment fragment, String tag) {
         fragmentManager.beginTransaction()
             .replace(R.id.container, fragment, tag)
-            .addToBackStack(tag)
             .commit();
+        currentFragment = tag;
+    }
+
+    private void switchFragmentBackstack(Fragment fragment, String tag) {
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, fragment, tag)
+                .addToBackStack(tag)
+                .commit();
         currentFragment = tag;
     }
 
     public void restoreActionBar() {
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+        if (actionBar == null)
+            return;
+
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(title);
         actionBar.setDisplayShowCustomEnabled(false);
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
+    }
+
+    /**
+     * Set the content, color and style of the action bar for this fragment
+     */
+    @Override
+    public void setActionBar(String title, boolean displayBackButton, int statusBarColor, int actionBarColor) {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar == null)
+            return;
+
+        // Title
+        if (!title.equals("")) {
+            // Save old title for back button
+            titleOld = this.title;
+            this.title = title;
+            actionBar.setTitle(title);
+        }
+
+        // Display back arrow
+        if (displayBackButton)
+            navigationDrawerFragment.displayDrawerToggle(false);
+        else
+            navigationDrawerFragment.displayDrawerToggle(true);
+
+        // Set color
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            getWindow().setStatusBarColor(statusBarColor);
+        actionBar.setBackgroundDrawable(new ColorDrawable(actionBarColor));
+    }
+
+    @Override
+    public void resetActionBar() {
+        // Use default colors
+        setActionBar(titleOld.toString(), false,
+                getResources().getColor(R.color.status_bar_gray),
+                getResources().getColor(R.color.action_bar_gray));
     }
 
     @Override
@@ -294,10 +311,12 @@ public class MainActivity extends AppCompatActivity implements
      */
     @Override
     public void onBackPressed() {
-        browserFragment.goBack();
 
-        if (feedEntryFragment.goBack() && fragmentManager.getBackStackEntryCount() > 1)
+        if (feedEntryFragment.goBack() && fragmentManager.getBackStackEntryCount() > 0)
             fragmentManager.popBackStack();
+
+        if (navigationDrawerFragment.isDrawerOpen())
+            navigationDrawerFragment.closeDrawer();
 
         //super.onBackPressed();
     }
@@ -306,7 +325,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onSupportActionModeStarted(ActionMode mode) {
         actionMode = mode;
 
-        if (currentFragment.equals("feedEntry") || currentFragment.equals("browser")) {
+        if (currentFragment.equals("feedEntry")) {
             translationActionMode.onPrepareActionMode(mode, mode.getMenu());
             translationActionMode.onCreateActionMode(mode, mode.getMenu());
         }
@@ -318,7 +337,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onSupportActionModeFinished(ActionMode mode) {
         actionMode = null;
 
-        if (currentFragment.equals("feedEntry") || currentFragment.equals("browser"))
+        if (currentFragment.equals("feedEntry"))
             translationActionMode.onDestroyActionMode(mode);
 
         super.onSupportActionModeFinished(mode);
@@ -327,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onActionItemClicked(MenuItem item) {
         // Handle custom action mode clicks
         if (actionMode != null) {
-            if (currentFragment.equals("feedEntry") || currentFragment.equals("browser"))
+            if (currentFragment.equals("feedEntry"))
                 translationActionMode.onActionItemClicked(actionMode, item);
         }
     }
@@ -342,18 +361,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public ZeeguuWebViewFragment getWebViewFragment() {
-        if (browser)
-            return browserFragment;
-        else
-            return feedEntryFragment;
+        return feedEntryFragment;
     }
 
     public NavigationDrawerFragment getNavigationDrawerFragment() {
         return navigationDrawerFragment;
-    }
-
-    public boolean isBrowserEnabled() {
-        return browser;
     }
 
     public ZeeguuConnectionManager getConnectionManager() {
@@ -409,70 +421,25 @@ public class MainActivity extends AppCompatActivity implements
         if (isToast)
             Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
         else {
-            if (browser)
-                browserFragment.setTranslation(error);
-            else
-                feedEntryFragment.setTranslation(error);
+            feedEntryFragment.setTranslation(error);
         }
     }
 
     @Override
     public void setTranslation(String translation) {
-        if (browser)
-            browserFragment.setTranslation(translation);
-        else
-            feedEntryFragment.setTranslation(translation);
-
+        feedEntryFragment.setTranslation(translation);
     }
 
     @Override
     public void highlight(String word) {
         if (sharedPref.getBoolean("pref_zeeguu_highlight_words", true)) {
-            if (browser)
-                browserFragment.highlight(word);
-            else
-                feedEntryFragment.highlight(word);
+            feedEntryFragment.highlight(word);
         }
     }
 
     @Override
     public void displayFeedEntryList(ArrayList<FeedEntry> entries) {
         feedEntryListFragment.setEntries(entries);
-        switchFragment(feedEntryListFragment, "feedEntryList");
-    }
-
-    /**
-     * Set the content, color and style of the action bar for this fragment
-     */
-    @Override
-    public void setActionBar(String title, boolean displayBackButton, int statusBarColor, int actionBarColor) {
-        ActionBar actionBar = getSupportActionBar();
-
-        // Title
-        if (!title.equals("")) {
-            // Save old title for back button
-            titleOld = this.title;
-            this.title = title;
-            actionBar.setTitle(title);
-        }
-
-        // Display back arrow
-        if (displayBackButton)
-            navigationDrawerFragment.displayDrawerToggle(false);
-        else
-            navigationDrawerFragment.displayDrawerToggle(true);
-
-        // Set color
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            getWindow().setStatusBarColor(statusBarColor);
-        actionBar.setBackgroundDrawable(new ColorDrawable(actionBarColor));
-    }
-
-    @Override
-    public void resetActionBar() {
-        // Use default colors
-        setActionBar(titleOld.toString(), false,
-                getResources().getColor(R.color.status_bar_gray),
-                getResources().getColor(R.color.action_bar_gray));
+        switchFragmentBackstack(feedEntryListFragment, "feedEntryList");
     }
 }

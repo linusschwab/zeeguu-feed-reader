@@ -26,11 +26,11 @@ public class Category {
     }
 
     View getView(LayoutInflater inflater, View convertView, ViewGroup parent) {
-        ViewHolder holder;
+        CategoryViewHolder holder;
 
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.category, null);
-            holder = new ViewHolder();
+            holder = new CategoryViewHolder();
 
             holder.icon = (ImageView) convertView.findViewById(R.id.category_icon);
             holder.name = (TextView) convertView.findViewById(R.id.category_name);
@@ -39,7 +39,7 @@ public class Category {
             convertView.setTag(holder);
         }
         else {
-            holder = (ViewHolder) convertView.getTag();
+            holder = (CategoryViewHolder) convertView.getTag();
         }
 
         // Expanded/Collapsed icon
@@ -95,7 +95,7 @@ public class Category {
     }
 
     // View Holder, see: https://developer.android.com/training/improving-layouts/smooth-scrolling.html#ViewHolder
-    static class ViewHolder {
+    static class CategoryViewHolder {
         ImageView icon;
         TextView name;
         TextView unread;

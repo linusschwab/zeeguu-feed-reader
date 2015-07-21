@@ -29,11 +29,11 @@ public class FeedEntry {
     }
 
     public View getView(LayoutInflater inflater, View convertView, ViewGroup parent) {
-        ViewHolder holder;
+        FeedEntryViewHolder holder;
 
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.feed_entry, null);
-            holder = new ViewHolder();
+            holder = new FeedEntryViewHolder();
 
             holder.favicon = (ImageView) convertView.findViewById(R.id.feed_entry_favicon);
             holder.published = (TextView) convertView.findViewById(R.id.feed_entry_published);
@@ -43,7 +43,7 @@ public class FeedEntry {
             convertView.setTag(holder);
         }
         else {
-            holder = (ViewHolder) convertView.getTag();
+            holder = (FeedEntryViewHolder) convertView.getTag();
         }
 
         holder.published.setText("" + published);
@@ -62,7 +62,7 @@ public class FeedEntry {
     }
 
     // View Holder, see: https://developer.android.com/training/improving-layouts/smooth-scrolling.html#ViewHolder
-    static class ViewHolder {
+    static class FeedEntryViewHolder {
         ImageView favicon;
         TextView published;
         TextView title;

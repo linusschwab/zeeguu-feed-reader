@@ -100,27 +100,16 @@ public class NavigationDrawerFragment extends Fragment {
             }
         });
 
-        if (mCallbacks.isBrowserEnabled())
-            mDrawerListView.setAdapter(new ArrayAdapter<String>(
-                    getActionBar().getThemedContext(),
-                    R.layout.list_item,
-                    R.id.text_list_item,
-                    new String[]{
-                            "Browser",
-                            getString(R.string.title_myWords),
-                            getString(R.string.title_settings),
-                    }));
-        else
-            mDrawerListView.setAdapter(new ArrayAdapter<String>(
-                getActionBar().getThemedContext(),
-                R.layout.list_item,
-                R.id.text_list_item,
-                new String[]{
-                        getString(R.string.title_feedOverview),
-                        getString(R.string.title_feedEntry),
-                        getString(R.string.title_myWords),
-                        getString(R.string.title_settings),
-                }));
+        mDrawerListView.setAdapter(new ArrayAdapter<String>(
+            getActionBar().getThemedContext(),
+            R.layout.list_item,
+            R.id.text_list_item,
+            new String[]{
+                    getString(R.string.title_feedOverview),
+                    getString(R.string.title_feedEntry),
+                    getString(R.string.title_myWords),
+                    getString(R.string.title_settings),
+            }));
 
 
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
@@ -295,8 +284,6 @@ public class NavigationDrawerFragment extends Fragment {
          * Called when an item in the navigation drawer is selected.
          */
         void onNavigationDrawerItemSelected(int position);
-        // Browser
-        boolean isBrowserEnabled();
     }
 
     public void closeDrawer() {

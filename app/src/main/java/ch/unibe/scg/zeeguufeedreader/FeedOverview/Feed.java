@@ -25,11 +25,11 @@ public class Feed {
     }
 
     public View getView(LayoutInflater inflater, View convertView, ViewGroup parent) {
-        ViewHolder holder;
+        FeedViewHolder holder;
 
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.feed, null);
-            holder = new ViewHolder();
+            holder = new FeedViewHolder();
 
             holder.favicon = (ImageView) convertView.findViewById(R.id.feed_favicon);
             holder.name = (TextView) convertView.findViewById(R.id.feed_name);
@@ -38,7 +38,7 @@ public class Feed {
             convertView.setTag(holder);
         }
         else {
-            holder = (ViewHolder) convertView.getTag();
+            holder = (FeedViewHolder) convertView.getTag();
         }
 
         holder.name.setText(name);
@@ -69,7 +69,7 @@ public class Feed {
     }
 
     // View Holder, see: https://developer.android.com/training/improving-layouts/smooth-scrolling.html#ViewHolder
-    static class ViewHolder {
+    static class FeedViewHolder {
         ImageView favicon;
         TextView name;
         TextView unread;
