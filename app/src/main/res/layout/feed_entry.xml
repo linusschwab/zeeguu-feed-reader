@@ -34,6 +34,8 @@
             android:layout_below="@+id/feed_entry_published"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
             android:textSize="18sp"/>
 
         <TextView
@@ -41,6 +43,7 @@
             android:layout_below="@+id/feed_entry_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
             android:textColor="@color/gray"
             android:textSize="14sp"/>
 

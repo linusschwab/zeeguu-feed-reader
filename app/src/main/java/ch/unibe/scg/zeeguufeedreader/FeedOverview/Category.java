@@ -50,10 +50,18 @@ public class Category {
 
         // Name and unread count
         holder.name.setText(name.toUpperCase());
-        // TODO: calculate unread count
-        holder.unread.setText("0");
+        holder.unread.setText("" + unreadCount);
 
         return convertView;
+    }
+
+    private int calculateUnreadCount() {
+        unreadCount = 0;
+        for (Feed feed:feeds) {
+            unreadCount += feed.getUnreadCount();
+        }
+
+        return unreadCount;
     }
 
     public String getName() {
@@ -67,10 +75,14 @@ public class Category {
     // Feeds
     public void addFeed(Feed feed) {
         feeds.add(feed);
+        calculateUnreadCount();
     }
 
     public Feed removeFeed(int position) {
-        return feeds.remove(position);
+        Feed feed = feeds.remove(position);
+        calculateUnreadCount();
+
+        return feed;
     }
 
     public Feed getFeed(int position) {

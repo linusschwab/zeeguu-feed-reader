@@ -10,6 +10,8 @@ import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
  */
 public class FeedEntryFragment extends ZeeguuWebViewFragment {
 
+    private FeedEntry entry;
+
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
      * initialize essential components of the fragment that you want to retain when the fragment
@@ -28,23 +30,25 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
         super.onActivityCreated(savedInstanceState);
 
         if (savedInstanceState == null) {
-            webView.loadData(loadTestHtml(), "text/html", "utf-8");
+            webView.loadData(loadHtml(), "text/html", "utf-8");
         } else {
             webView.restoreState(savedInstanceState);
         }
     }
 
-    private String loadTestHtml() {
-        String content = "<h2>Title</h2>" +
-                "<p>This is <u>underlined</u> text. And \"this\" is a test phrase, that needs to be long enough so that it does not fit on one line.</p>" +
-                "<p>This is a <a href=\"http://google.ch\">link</a>.</p>" +
-                "<p>Scrolling<br/>Test.</p>" + "<p>1800-Scrolling Test</p>" + "<p>12:00 Scrolling Test</p>" + "<p>16'00-Scrolling Test</p>" + "<p>Scrolling Test</p>" +
-                "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
-                "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
-                "Test";
-        String title = "Feed Item";
+    private String loadHtml() {
+        String title = entry.getTitle();
+        String content = entry.getContent();
         String css = Utility.assetToString(getActivity(), "css/style.css");
 
-        return "<html><head><title>" + title + "</title><style>" + css + "</style></head><body>" + content + "</body></html>";
+        if (title != null && content != null)
+            return "<html><head><title>" + title + "</title><style>" + css + "</style></head><body>" + content + "</body></html>";
+        else
+            return "";
+    }
+
+    public void setEntry(FeedEntry entry) {
+        this.entry = entry;
     }
 }
+

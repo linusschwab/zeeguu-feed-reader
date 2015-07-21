@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -33,6 +34,8 @@ public class FeedEntryListFragment extends Fragment {
     public interface FeedEntryListCallbacks {
         void setActionBar(String title, boolean displayBackButton, int statusBarColor, int actionBarColor);
         void resetActionBar();
+
+        void displayFeedEntry(FeedEntry entry);
     }
 
     /**
@@ -56,6 +59,14 @@ public class FeedEntryListFragment extends Fragment {
         // Inflate the layout for this fragment
         View mainView = (View) inflater.inflate(R.layout.fragment_feed_entry_list, container, false);
         listView = (ListView) mainView.findViewById(R.id.feed_entry_listview);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                FeedEntry entry = (FeedEntry) adapter.getItem(position);
+                callback.displayFeedEntry(entry);
+            }
+        });
 
         return mainView;
     }

@@ -15,6 +15,7 @@ public class Feed {
 
     private final String name;
     private final long id;
+    private String color;
 
     private ArrayList<FeedEntry> entries = new ArrayList<>();
     private int unreadCount;
@@ -42,10 +43,19 @@ public class Feed {
         }
 
         holder.name.setText(name);
-        // TODO: calculate unread count
-        holder.unread.setText("0");
+        holder.unread.setText("" + unreadCount);
 
         return convertView;
+    }
+
+    private int calculateUnreadCount() {
+        unreadCount = 0;
+        for (FeedEntry entry:entries) {
+            if (entry.isUnread())
+                unreadCount++;
+        }
+
+        return unreadCount;
     }
 
     public String getName() {
@@ -58,6 +68,7 @@ public class Feed {
 
     public void addEntry(FeedEntry entry) {
         entries.add(entry);
+        calculateUnreadCount();
     }
 
     public ArrayList<FeedEntry> getEntries() {
@@ -66,6 +77,23 @@ public class Feed {
 
     public void setEntries(ArrayList<FeedEntry> entries) {
         this.entries = entries;
+        calculateUnreadCount();
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public int getUnreadCount() {
+        return unreadCount;
+    }
+
+    public void setUnreadCount(int unreadCount) {
+        this.unreadCount = unreadCount;
     }
 
     // View Holder, see: https://developer.android.com/training/improving-layouts/smooth-scrolling.html#ViewHolder

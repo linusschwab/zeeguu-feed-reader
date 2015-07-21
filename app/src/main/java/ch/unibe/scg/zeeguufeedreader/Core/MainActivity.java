@@ -442,4 +442,10 @@ public class MainActivity extends AppCompatActivity implements
         feedEntryListFragment.setEntries(entries);
         switchFragmentBackstack(feedEntryListFragment, "feedEntryList");
     }
+
+    @Override
+    public void displayFeedEntry(FeedEntry entry) {
+        feedEntryFragment.setEntry(entry);
+        switchFragmentBackstack(feedEntryFragment, "feedEntry");
+    }
 }

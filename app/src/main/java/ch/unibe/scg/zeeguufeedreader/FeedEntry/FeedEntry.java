@@ -16,15 +16,16 @@ public class FeedEntry {
     private String content;
     private String url;
     private String author;
-    private int published;
-    private boolean unread;
+    private int date;
 
-    public FeedEntry(String title, String content, String url, String author, int published, long id) {
+    private boolean unread = true;
+
+    public FeedEntry(String title, String content, String url, String author, int date, long id) {
         this.title = title;
         this.content = content;
         this.url = url;
         this.author = author;
-        this.published = published;
+        this.date = date;
         this.id = id;
     }
 
@@ -46,7 +47,7 @@ public class FeedEntry {
             holder = (FeedEntryViewHolder) convertView.getTag();
         }
 
-        holder.published.setText("" + published);
+        holder.published.setText("" + date);
         holder.title.setText(title);
         holder.summary.setText(content);
 
@@ -59,6 +60,46 @@ public class FeedEntry {
 
     public long getId() {
         return id;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public int getDate() {
+        return date;
+    }
+
+    public void setDate(int date) {
+        this.date = date;
+    }
+
+    public boolean isUnread() {
+        return unread;
+    }
+
+    public void setUnread(boolean unread) {
+        this.unread = unread;
     }
 
     // View Holder, see: https://developer.android.com/training/improving-layouts/smooth-scrolling.html#ViewHolder
