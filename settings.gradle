@@ -1,1 +1,1 @@
-include ':app', ':zeeguulibrary', ':volley'
+include ':app', ':libraries:volley', ':libraries:zeeguulibrary'

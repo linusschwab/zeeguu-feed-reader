@@ -1,28 +1,37 @@
 package ch.unibe.scg.zeeguufeedreader.Core;
 
-import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
+import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBar;
 import android.app.FragmentManager;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Toast;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
-import java.util.ArrayList;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuTranslationActionMode;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.Compatibility.FeedEntryCompatibilityFragment;
@@ -43,7 +52,6 @@ import ch.unibe.zeeguulibrary.MyWords.MyWordsFragment;
  *  Activity to display and switch between the fragments
  */
 public class MainActivity extends AppCompatActivity implements
-        NavigationDrawerFragment.NavigationDrawerCallbacks,
         SettingsFragment.SettingsCallbacks,
         FeedOverviewFragment.FeedOverviewCallbacks,
         FeedEntryListFragment.FeedEntryListCallbacks,
@@ -54,11 +62,19 @@ public class MainActivity extends AppCompatActivity implements
         ZeeguuAccount.ZeeguuAccountCallbacks,
         ZeeguuDialogCallbacks {
 
+    // Navigation
+    private Toolbar toolbar;
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle drawerToggle;
+    private RelativeLayout statusBarBackground;
+    private NavigationView navigationView;
+    private SlidingUpPanelLayout panel;
+    private FrameLayout contentFrame;
+
     private FragmentManager fragmentManager = getFragmentManager();
 
     // Fragments
     private DataFragment dataFragment;
-    private NavigationDrawerFragment navigationDrawerFragment;
     private FeedOverviewFragment feedOverviewFragment;
     private FeedEntryListFragment feedEntryListFragment;
     private FeedEntryFragment feedEntryFragment;
@@ -71,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements
     private ZeeguuLogoutDialog zeeguuLogoutDialog;
     private ZeeguuCreateAccountDialog zeeguuCreateAccountDialog;
 
+    // Action Mode
     private ActionMode actionMode;
     private ZeeguuTranslationActionMode translationActionMode;
 
@@ -79,9 +96,6 @@ public class MainActivity extends AppCompatActivity implements
 
     private String currentFragment;
 
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
     private CharSequence title;
     private CharSequence titleOld;
 
@@ -128,20 +142,78 @@ public class MainActivity extends AppCompatActivity implements
 
         // Layout
         setContentView(R.layout.activity_main);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        navigationView = (NavigationView) findViewById(R.id.navigation_view);
+        statusBarBackground = (RelativeLayout) findViewById(R.id.status_bar_background);
+        panel = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
+        contentFrame = (FrameLayout) findViewById(R.id.container);
 
-        navigationDrawerFragment = (NavigationDrawerFragment)
-                getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        title = getTitle();
-
-        // Set up the drawer.
-        navigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
+        setUpToolbar();
+        setUpNavigationDrawer(navigationView);
 
         // Display Feed Overview
         if (savedInstanceState == null) {
-            navigationDrawerFragment.selectItem(0);
+            switchFragment(feedOverviewFragment, "feedOverview");
+            setTitle(getString(R.string.title_feedOverview));
         }
+    }
+
+    private void setUpToolbar() {
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            toolbar.setTitle(title);
+            setSupportActionBar(toolbar);
+
+        }
+    }
+
+    private void setUpNavigationDrawer(NavigationView navigationView) {
+        ActionBar actionBar = getSupportActionBar();
+
+        if (toolbar != null && actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+
+            drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar,
+                    R.string.navigation_drawer_open,  R.string.navigation_drawer_close);
+            drawerLayout.setDrawerListener(drawerToggle);
+
+            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (drawerToggle.isDrawerIndicatorEnabled())
+                        drawerLayout.openDrawer(GravityCompat.START);
+                    else
+                        onBackPressed();
+                }
+            });
+        }
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+                selectDrawerItem(menuItem);
+                return true;
+            }
+        });
+    }
+
+    private void selectDrawerItem(MenuItem menuItem) {
+        // Update the main content by replacing fragments
+        switch (menuItem.getItemId()) {
+            case R.id.navigation_item_1:
+                switchFragment(feedOverviewFragment, "feedOverview");
+                break;
+            case R.id.navigation_item_2:
+                switchFragment(myWordsFragment, "myWords");
+                break;
+            case R.id.navigation_item_3:
+                switchFragment(settingsFragment, "settings");
+                break;
+        }
+
+        menuItem.setChecked(true);
+        setTitle(menuItem.getTitle());
+        drawerLayout.closeDrawers();
     }
 
     private void createDataFragment() {
@@ -157,32 +229,6 @@ public class MainActivity extends AppCompatActivity implements
     private void restoreDataFragment() {
         dataFragment = (DataFragment) fragmentManager.findFragmentByTag("data");
         if (dataFragment != null) dataFragment.onRestore(this);
-    }
-
-    @Override
-    public void onNavigationDrawerItemSelected(int position) {
-        // Update the main content by replacing fragments
-        switch (position + 1) {
-            case 1:
-                title = getString(R.string.title_feedOverview);
-                switchFragment(feedOverviewFragment, "feedOverview");
-                break;
-            case 2:
-                title = getString(R.string.title_feedEntry);
-                if (currentApiVersion >= android.os.Build.VERSION_CODES.KITKAT)
-                    switchFragment(feedEntryFragment, "feedEntry");
-                else
-                    switchFragment(feedEntryCompatibilityFragment, "feedEntryCompatibility");
-                break;
-            case 3:
-                title = getString(R.string.title_myWords);
-                switchFragment(myWordsFragment, "myWords");
-                break;
-            case 4:
-                title = getString(R.string.title_settings);
-                switchFragment(settingsFragment, "settings");
-                break;
-        }
     }
 
     private void addFragment(Fragment fragment, String tag) {
@@ -206,53 +252,31 @@ public class MainActivity extends AppCompatActivity implements
         currentFragment = tag;
     }
 
-    public void restoreActionBar() {
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar == null)
-            return;
-
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(title);
-        actionBar.setDisplayShowCustomEnabled(false);
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
-    }
-
     /**
      * Set the content, color and style of the action bar for this fragment
      */
     @Override
-    public void setActionBar(String title, boolean displayBackButton, int statusBarColor, int actionBarColor) {
+    public void setActionBar(boolean displayBackButton, int color) {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar == null)
             return;
 
-        // Title
-        if (!title.equals("")) {
-            // Save old title for back button
-            titleOld = this.title;
-            this.title = title;
-            actionBar.setTitle(title);
-        }
-
         // Display back arrow
-        if (displayBackButton)
-            navigationDrawerFragment.displayDrawerToggle(false);
-        else
-            navigationDrawerFragment.displayDrawerToggle(true);
+        drawerToggle.setDrawerIndicatorEnabled(!displayBackButton);
 
         // Set color
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            getWindow().setStatusBarColor(statusBarColor);
-        actionBar.setBackgroundDrawable(new ColorDrawable(actionBarColor));
+        if (color != 0) {
+            // TODO: Check compatibility with older Android versions
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                statusBarBackground.setBackgroundColor(color);
+            actionBar.setBackgroundDrawable(new ColorDrawable(color));
+        }
     }
 
     @Override
     public void resetActionBar() {
         // Use default colors
-        setActionBar(titleOld.toString(), false,
-                getResources().getColor(R.color.status_bar_gray),
-                getResources().getColor(R.color.action_bar_gray));
+        setActionBar(false, getResources().getColor(R.color.action_bar_gray));
     }
 
     @Override
@@ -274,16 +298,16 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (!navigationDrawerFragment.isDrawerOpen()) {
+        //if (!navigationDrawerFragment.isDrawerOpen()) {
             // Only show items in the action bar relevant to this screen
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.global, menu);
-            restoreActionBar();
+        getMenuInflater().inflate(R.menu.global, menu);
+            //restoreActionBar();
             return true;
-        }
+        //}
 
-        return super.onCreateOptionsMenu(menu);
+        //return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -293,10 +317,12 @@ public class MainActivity extends AppCompatActivity implements
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        // Back button
-        if (id == android.R.id.home) {
-            onBackPressed();
+        // Drawer Toggle
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
         }
+
+        // TODO: Remove settings from menu
         if (id == R.id.action_settings) {
             title = getString(R.string.title_settings);
             switchFragment(settingsFragment, "settings");
@@ -312,13 +338,24 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onBackPressed() {
 
-        if (feedEntryFragment.goBack() && fragmentManager.getBackStackEntryCount() > 0)
+        if (titleOld != null) {
+            setTitle(titleOld);
+            titleOld = null;
+        }
+
+        if (panel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
+            panel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+            return;
+        }
+
+        if (drawerLayout.isDrawerOpen(navigationView)) {
+            drawerLayout.closeDrawers();
+            return;
+        }
+
+        // TODO: feedEntryFragment.goBack() (Make sure that this only applies to web pages and not feed entries)
+        if (fragmentManager.getBackStackEntryCount() > 0)
             fragmentManager.popBackStack();
-
-        if (navigationDrawerFragment.isDrawerOpen())
-            navigationDrawerFragment.closeDrawer();
-
-        //super.onBackPressed();
     }
 
     @Override
@@ -351,6 +388,20 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        drawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Pass any configuration change to the drawer toggles
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
     public void hideKeyboard() {
         // Check if no view has focus:
         View view = this.getCurrentFocus();
@@ -362,10 +413,6 @@ public class MainActivity extends AppCompatActivity implements
 
     public ZeeguuWebViewFragment getWebViewFragment() {
         return feedEntryFragment;
-    }
-
-    public NavigationDrawerFragment getNavigationDrawerFragment() {
-        return navigationDrawerFragment;
     }
 
     public ZeeguuConnectionManager getConnectionManager() {
@@ -393,7 +440,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void displayMessage(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        Snackbar.make(contentFrame, message, Snackbar.LENGTH_SHORT).show();
     }
 
     @Override
@@ -419,7 +466,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void displayErrorMessage(String error, boolean isToast) {
         if (isToast)
-            Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+            Snackbar.make(contentFrame, error, Snackbar.LENGTH_SHORT).show();
         else {
             feedEntryFragment.setTranslation(error);
         }
@@ -438,14 +485,60 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void displayFeedEntryList(ArrayList<FeedEntry> entries) {
-        feedEntryListFragment.setEntries(entries);
+    public void displayFeedEntryList(Feed feed) {
+        feedEntryListFragment.setFeed(feed);
         switchFragmentBackstack(feedEntryListFragment, "feedEntryList");
+
+        titleOld = title;
+        setTitle(feed.getName());
+
+        // Show panel
+        panel.setPanelHeight((int) Utility.dpToPx(this, 68));
+        panel.setShadowHeight((int) Utility.dpToPx(this, 4));
+
+        // Load fragment
+        if (!feedEntryFragment.isAdded() && !feed.getEntries().isEmpty()) {
+            FeedEntry entry = feed.getEntries().get(0);
+            feedEntryFragment.setEntry(entry);
+
+            TextView panel_title = (TextView) findViewById(R.id.panel_title);
+            panel_title.setText(entry.getTitle());
+
+            Thread thread = new Thread(backgroundThread);
+            thread.start();
+        }
     }
 
     @Override
     public void displayFeedEntry(FeedEntry entry) {
         feedEntryFragment.setEntry(entry);
-        switchFragmentBackstack(feedEntryFragment, "feedEntry");
+
+        panel.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
     }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        this.title = title;
+        super.setTitle(title);
+    }
+
+    Runnable backgroundThread = new Runnable() {
+        @Override
+        public void run() {
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+
+            // TODO: Temporary workaround
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            fragmentManager.beginTransaction()
+                    .replace(R.id.panel, feedEntryFragment, "feedEntry")
+                    .commit();
+            // TODO: Find better solution (for example check if panel is expanded)
+            currentFragment = "feedEntry";
+        }
+    };
 }

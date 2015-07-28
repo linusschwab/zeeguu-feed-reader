@@ -34,7 +34,7 @@ public class FeedOverviewFragment extends Fragment {
      *  Callback interface that must be implemented by the container activity
      */
     public interface FeedOverviewCallbacks {
-        void displayFeedEntryList(ArrayList<FeedEntry> entries);
+        void displayFeedEntryList(Feed feed);
     }
 
     /**
@@ -63,7 +63,7 @@ public class FeedOverviewFragment extends Fragment {
             @Override
             public boolean onChildClick(ExpandableListView parent, View view, int groupPosition, int childPosition, long id) {
                 Feed feed = (Feed) adapter.getChild(groupPosition, childPosition);
-                callback.displayFeedEntryList(feed.getEntries());
+                callback.displayFeedEntryList(feed);
                 return true;
             }
         });
@@ -84,8 +84,10 @@ public class FeedOverviewFragment extends Fragment {
     private ArrayList<Category> createTestList() {
         Category category1 = new Category("Test", 123);
         Feed feed11 = new Feed("Test Feed", 11);
+        feed11.setColor(getResources().getColor(R.color.darkred));
         feed11.setEntries(createTestFeedEntries());
         Feed feed12 = new Feed("Test Feed 2", 12);
+        feed12.setColor(getResources().getColor(R.color.navy));
         feed12.setEntries(createTestFeedEntries());
         category1.addFeed(feed11);
         category1.addFeed(feed12);
@@ -115,13 +117,11 @@ public class FeedOverviewFragment extends Fragment {
     }
 
     private ArrayList<FeedEntry> createTestFeedEntries() {
-        FeedEntry test1 = new FeedEntry("Test", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 101);
-        test1.setContent(createTestContent());
-        FeedEntry test2 = new FeedEntry("Test", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 102);
-        test2.setContent(createTestContent());
-        FeedEntry test3 = new FeedEntry("Test", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 103);
-        FeedEntry test4 = new FeedEntry("Test", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 104);
-        FeedEntry test5 = new FeedEntry("Test", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 105);
+        FeedEntry test1 = new FeedEntry("Test", createTestContent(), "", "Author", 11112015, 101);
+        FeedEntry test2 = new FeedEntry("Test Hallo", createTestContent(), "", "Author", 11112015, 102);
+        FeedEntry test3 = new FeedEntry("Test Hi", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 103);
+        FeedEntry test4 = new FeedEntry("Test 123", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 104);
+        FeedEntry test5 = new FeedEntry("Test Entry", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 105);
 
         ArrayList<FeedEntry> list = new ArrayList<>();
 
@@ -135,13 +135,12 @@ public class FeedOverviewFragment extends Fragment {
     }
 
     private String createTestContent() {
-        String content = "<h2>Title</h2>" +
-                "<p>This is <u>underlined</u> text. And \"this\" is a test phrase, that needs to be long enough so that it does not fit on one line.</p>" +
-                "<p>This is a <a href=\"http://google.ch\">link</a>.</p>" +
-                "<p>Scrolling<br/>Test.</p>" + "<p>1800-Scrolling Test</p>" + "<p>12:00 Scrolling Test</p>" + "<p>16'00-Scrolling Test</p>" + "<p>Scrolling Test</p>" +
-                "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
-                "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
-                "Test";
+        String content =    "<p>This is <u>underlined</u> text. And \"this\" is a test phrase, that needs to be long enough so that it does not fit on one line.</p>" +
+                            "<p>This is a <a href=\"http://google.ch\">link</a>.</p>" +
+                            "<p>Scrolling<br/>Test.</p>" + "<p>1800-Scrolling Test</p>" + "<p>12:00 Scrolling Test</p>" + "<p>16'00-Scrolling Test</p>" + "<p>Scrolling Test</p>" +
+                            "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
+                            "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
+                            "Test";
 
         return content;
     }

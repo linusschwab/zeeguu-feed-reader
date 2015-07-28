@@ -1,25 +1,95 @@
-<!-- A DrawerLayout is intended to be used as the top-level content view using match_parent for both width and height to consume the full space available. -->
-<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:id="@+id/drawer_layout"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    tools:context=".MainActivity">
+<android.support.v4.widget.DrawerLayout
+    android:id="@+id/drawer_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <!-- As the main content view, the view below consumes the entire
-         space available using match_parent in both dimensions. -->
-    <FrameLayout android:id="@+id/container" android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        <!-- Status bar background (transparency color workaround) -->
+        <RelativeLayout
+            android:id="@+id/status_bar_background"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/status_bar_height"
+            android:background="@color/action_bar_gray"/>
 
-    <!-- android:layout_gravity="start" tells DrawerLayout to treat
-         this as a sliding drawer on the left side for left-to-right
-         languages and on the right side for right-to-left languages.
-         If you're not building against API 17 or higher, use
-         android:layout_gravity="left" instead. -->
-    <!-- The drawer is given a fixed width in dp and extends the full height of
-         the container. -->
-    <fragment android:id="@+id/navigation_drawer"
-        android:layout_width="@dimen/navigation_drawer_width" android:layout_height="match_parent"
+        <com.sothree.slidinguppanel.SlidingUpPanelLayout
+            xmlns:sothree="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/sliding_layout"
+            android:layout_below="@+id/status_bar"
+            android:paddingTop="@dimen/status_bar_height"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="bottom"
+            sothree:umanoPanelHeight="0dp"
+            sothree:umanoShadowHeight="0.1dp">
+
+            <!-- Main content view with the action bar -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <include layout="@layout/toolbar" />
+
+                <!-- Container for the main fragment-->
+                <FrameLayout
+                    android:id="@+id/container"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="?attr/actionBarSize"
+                    android:background="@android:color/background_light" />
+
+            </RelativeLayout>
+
+            <!-- Sliding panel -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <!-- Sliding panel header -->
+                <RelativeLayout
+                    android:id="@+id/panel_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="68dp"
+                    android:background="@color/white">
+
+                    <ImageView
+                        android:id="@+id/panel_favicon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginRight="12dp"
+                        android:layout_marginEnd="12dp" />
+
+                    <TextView
+                        android:id="@+id/panel_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_toRightOf="@+id/panel_favicon"
+                        android:layout_toEndOf="@+id/panel_favicon"
+                        android:textSize="18sp"/>
+
+                </RelativeLayout>
+
+                <!-- Container for the sliding fragment-->
+                <FrameLayout
+                    android:id="@+id/panel"
+                    android:layout_below="@+id/panel_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </RelativeLayout>
+
+        </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+
+    <!-- Navigation drawer -->
+    <android.support.design.widget.NavigationView
+        android:id="@+id/navigation_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:name="ch.unibe.scg.zeeguufeedreader.Core.NavigationDrawerFragment"
-        tools:layout="@layout/fragment_navigation_drawer" />
+        app:headerLayout="@layout/drawer_header"
+        app:menu="@menu/drawer"/>
 
 </android.support.v4.widget.DrawerLayout>
+

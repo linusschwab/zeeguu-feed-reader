@@ -2,6 +2,10 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Action Bar overlay for sliding panel -->
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="windowActionBarOverlay">true</item>
+
         <!-- EditText -->
         <item name="colorControlActivated">@color/accent_color_red</item>
         <!-- <item name="colorControlHighlight">@color/red</item> -->
@@ -15,16 +19,6 @@
         <!-- Action Mode position -->
         <item name="android:windowActionModeOverlay">true</item>
         <item name="windowActionModeOverlay">true</item>
-    </style>
-
-    <!-- Base application theme. -->
-    <style name="AppThemeBlue" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
-
-        <!-- colorPrimary is used for the default action bar background -->
-        <item name="colorPrimary">@color/blue</item>
-        <!-- colorPrimaryDark is used for the status bar -->
-        <item name="colorPrimaryDark">@color/blue</item>
     </style>
 
 </resources>

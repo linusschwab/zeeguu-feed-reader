@@ -16,6 +16,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.R;
 
 public class FeedEntryListFragment extends Fragment {
@@ -23,8 +24,8 @@ public class FeedEntryListFragment extends Fragment {
     private ListView listView;
     private FeedEntryListAdapter adapter;
 
-    // TODO: display error message if empty
-    private ArrayList<FeedEntry> list = new ArrayList<>();
+    // TODO: display error message if null
+    private Feed feed;
 
     private FeedEntryListCallbacks callback;
 
@@ -32,7 +33,7 @@ public class FeedEntryListFragment extends Fragment {
      *  Callback interface that must be implemented by the container activity
      */
     public interface FeedEntryListCallbacks {
-        void setActionBar(String title, boolean displayBackButton, int statusBarColor, int actionBarColor);
+        void setActionBar(boolean displayBackButton, int actionBarColor);
         void resetActionBar();
 
         void displayFeedEntry(FeedEntry entry);
@@ -75,12 +76,12 @@ public class FeedEntryListFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        adapter = new FeedEntryListAdapter(getActivity(), list);
+        adapter = new FeedEntryListAdapter(getActivity(), feed.getEntries());
         listView.setAdapter(adapter);
     }
 
-    public void setEntries(ArrayList<FeedEntry> entries) {
-        this.list = entries;
+    public void setFeed(Feed feed) {
+        this.feed = feed;
     }
 
     @Override
@@ -104,8 +105,6 @@ public class FeedEntryListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-
-
     }
 
     @Override
@@ -120,7 +119,6 @@ public class FeedEntryListFragment extends Fragment {
         super.onResume();
 
         // TODO: set title from feed/category
-        callback.setActionBar(getString(R.string.title_feedEntryList), true,
-                getResources().getColor(R.color.darkred), getResources().getColor(R.color.red));
+        callback.setActionBar(true, feed.getColor());
     }
 }

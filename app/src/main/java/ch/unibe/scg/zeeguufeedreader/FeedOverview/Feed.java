@@ -15,7 +15,7 @@ public class Feed {
 
     private final String name;
     private final long id;
-    private String color;
+    private int color;
 
     private ArrayList<FeedEntry> entries = new ArrayList<>();
     private int unreadCount;
@@ -80,11 +80,11 @@ public class Feed {
         calculateUnreadCount();
     }
 
-    public String getColor() {
+    public int getColor() {
         return color;
     }
 
-    public void setColor(String color) {
+    public void setColor(int color) {
         this.color = color;
     }
 

@@ -1,7 +1,11 @@
 package ch.unibe.scg.zeeguufeedreader.FeedEntry;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.webkit.WebView;
+import android.widget.TextView;
 
+import ch.unibe.scg.zeeguufeedreader.R;
 import ch.unibe.zeeguulibrary.Core.Utility;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
 
@@ -28,12 +32,12 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        this.enableTitle(false);
 
-        if (savedInstanceState == null) {
-            webView.loadData(loadHtml(), "text/html", "utf-8");
-        } else {
+        if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState);
-        }
+        } else
+            loadEntry();
     }
 
     private String loadHtml() {
@@ -42,13 +46,30 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
         String css = Utility.assetToString(getActivity(), "css/style.css");
 
         if (title != null && content != null)
-            return "<html><head><title>" + title + "</title><style>" + css + "</style></head><body>" + content + "</body></html>";
+            return "<html><head><style>" + css + "</style></head><body>" + content + "</body></html>";
         else
             return "";
     }
 
+    public FeedEntry getEntry() {
+        return entry;
+    }
+
     public void setEntry(FeedEntry entry) {
-        this.entry = entry;
+        if (this.entry == null)
+            this.entry = entry;
+        else if (!this.entry.equals(entry)) {
+            this.entry = entry;
+            loadEntry();
+        }
+    }
+
+    public void loadEntry() {
+        if (this.isAdded() && this.entry != null) {
+            TextView panel_title = (TextView) getActivity().findViewById(R.id.panel_title);
+            panel_title.setText(entry.getTitle());
+            webView.loadDataWithBaseURL(null, loadHtml(), "text/html", "utf-8", null);
+        }
     }
 }
 
