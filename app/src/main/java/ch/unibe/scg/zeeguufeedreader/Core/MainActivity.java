@@ -31,6 +31,8 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
+import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAuthenticationFragment;
+import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyConnectionManager;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuTranslationActionMode;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.Compatibility.FeedEntryCompatibilityFragment;
@@ -54,6 +56,8 @@ public class MainActivity extends AppCompatActivity implements
         SettingsFragment.SettingsCallbacks,
         FeedOverviewFragment.FeedOverviewCallbacks,
         FeedEntryListFragment.FeedEntryListCallbacks,
+        FeedlyConnectionManager.FeedlyConnectionManagerCallbacks,
+        FeedlyAuthenticationFragment.FeedlyAuthenticationCallbacks,
         MyWordsFragment.ZeeguuFragmentMyWordsCallbacks,
         ZeeguuWebViewInterface.ZeeguuWebViewInterfaceCallbacks,
         ZeeguuWebViewFragment.ZeeguuWebViewCallbacks,
@@ -78,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements
     private FeedEntryListFragment feedEntryListFragment;
     private FeedEntryFragment feedEntryFragment;
     private FeedEntryCompatibilityFragment feedEntryCompatibilityFragment;
+    private FeedlyAuthenticationFragment feedlyAuthenticationFragment;
     private SettingsFragment settingsFragment;
     private MyWordsFragment myWordsFragment;
 
@@ -126,6 +131,9 @@ public class MainActivity extends AppCompatActivity implements
 
         feedEntryCompatibilityFragment = (FeedEntryCompatibilityFragment) fragmentManager.findFragmentByTag("feedItemCompatibility");
         if (feedEntryCompatibilityFragment == null) feedEntryCompatibilityFragment = new FeedEntryCompatibilityFragment();
+
+        feedlyAuthenticationFragment = (FeedlyAuthenticationFragment) fragmentManager.findFragmentByTag("feedlyAuthenticationFragment");
+        if (feedlyAuthenticationFragment == null) feedlyAuthenticationFragment = new FeedlyAuthenticationFragment();
 
         myWordsFragment = (MyWordsFragment) fragmentManager.findFragmentByTag("myWords");
         if (myWordsFragment == null) myWordsFragment = new MyWordsFragment();
@@ -221,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements
             dataFragment = new DataFragment();
             addFragment(dataFragment, "data");
             // Create objects, store in data fragment
-            //dataFragment.setConnectionManager(this);
+            //dataFragment.setZeeguuConnectionManager(this);
         }
     }
 
@@ -276,6 +284,12 @@ public class MainActivity extends AppCompatActivity implements
     public void resetActionBar() {
         // Use default colors
         setActionBar(false, getResources().getColor(R.color.action_bar_gray));
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        this.title = title;
+        super.setTitle(title);
     }
 
     @Override
@@ -337,11 +351,6 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onBackPressed() {
 
-        if (titleOld != null) {
-            setTitle(titleOld);
-            titleOld = null;
-        }
-
         if (panel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
             panel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             return;
@@ -353,8 +362,13 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         // TODO: feedEntryFragment.goBack() (Make sure that this only applies to web pages and not feed entries)
-        if (fragmentManager.getBackStackEntryCount() > 0)
+        if (feedlyAuthenticationFragment.goBack() && fragmentManager.getBackStackEntryCount() > 0) {
             fragmentManager.popBackStack();
+            if (titleOld != null) {
+                setTitle(titleOld);
+                titleOld = null;
+            }
+        }
     }
 
     @Override
@@ -410,79 +424,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public ZeeguuWebViewFragment getWebViewFragment() {
-        return feedEntryFragment;
-    }
-
-    public ZeeguuConnectionManager getConnectionManager() {
-        return dataFragment.getConnectionManager();
-    }
-
-    // Zeeguu interface methods
-    @Override
-    public void showZeeguuLoginDialog(String message, String email) {
-        zeeguuLoginDialog.setMessage(message);
-        zeeguuLoginDialog.setEmail(email);
-        zeeguuLoginDialog.show(fragmentManager, "zeeguuLoginDialog");
-    }
-
-    public void showZeeguuLogoutDialog() {
-        zeeguuLogoutDialog.show(fragmentManager, "zeeguuLogoutDialog");
-    }
-
-    public void showZeeguuCreateAccountDialog(String message, String username, String email) {
-        zeeguuCreateAccountDialog.setMessage(message);
-        zeeguuCreateAccountDialog.setUsername(username);
-        zeeguuCreateAccountDialog.setEmail(email);
-        zeeguuCreateAccountDialog.show(fragmentManager, "zeeguuCreateAccountDialog");
-    }
-
-    @Override
-    public void displayMessage(String message) {
-        Snackbar.make(contentFrame, message, Snackbar.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void openUrlInBrowser(String URL) {
-
-    }
-
-    @Override
-    public void notifyDataChanged(boolean myWordsChanged) {
-        myWordsFragment.notifyDataSetChanged(myWordsChanged);
-    }
-
-    @Override
-    public void notifyLanguageChanged(boolean isLanguageFrom) {
-
-    }
-
-    @Override
-    public void bookmarkWord(String bookmarkID) {
-
-    }
-
-    @Override
-    public void displayErrorMessage(String error, boolean isToast) {
-        if (isToast)
-            Snackbar.make(contentFrame, error, Snackbar.LENGTH_SHORT).show();
-        else {
-            feedEntryFragment.setTranslation(error);
-        }
-    }
-
-    @Override
-    public void setTranslation(String translation) {
-        feedEntryFragment.setTranslation(translation);
-    }
-
-    @Override
-    public void highlight(String word) {
-        if (sharedPref.getBoolean("pref_zeeguu_highlight_words", true)) {
-            feedEntryFragment.highlight(word);
-        }
-    }
-
+    // Feed entry fragment navigation
     @Override
     public void displayFeedEntryList(Feed feed) {
         feedEntryListFragment.setFeed(feed);
@@ -515,13 +457,7 @@ public class MainActivity extends AppCompatActivity implements
         panel.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
     }
 
-    @Override
-    public void setTitle(CharSequence title) {
-        this.title = title;
-        super.setTitle(title);
-    }
-
-    Runnable backgroundThread = new Runnable() {
+    private Runnable backgroundThread = new Runnable() {
         @Override
         public void run() {
             android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
@@ -540,4 +476,101 @@ public class MainActivity extends AppCompatActivity implements
             currentFragment = "feedEntry";
         }
     };
+
+    // Feedly authentication
+    @Override
+    public void feedlyAuthentication(String url) {
+        feedlyAuthenticationFragment.setUrl(url);
+
+        switchFragmentBackstack(feedlyAuthenticationFragment, "feedlyAuthentication");
+        titleOld = title;
+        setTitle(getString(R.string.title_feedlyAuthentication));
+    }
+
+    @Override
+    public void authenticationSuccessful(String code) {
+        dataFragment.getFeedlyConnectionManager().authenticationSuccessful(code);
+
+        // Switch to next fragment
+        switchFragment(feedOverviewFragment, "feedOverview");
+        titleOld = null;
+        setTitle(getString(R.string.title_feedOverview));
+    }
+
+    // Messages
+    @Override
+    public void displayMessage(String message) {
+        Snackbar.make(contentFrame, message, Snackbar.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void displayErrorMessage(String error, boolean isToast) {
+        if (isToast)
+            Snackbar.make(contentFrame, error, Snackbar.LENGTH_SHORT).show();
+        else {
+            feedEntryFragment.setTranslation(error);
+        }
+    }
+
+    // Zeeguu authentication
+    @Override
+    public void showZeeguuLoginDialog(String message, String email) {
+        zeeguuLoginDialog.setMessage(message);
+        zeeguuLoginDialog.setEmail(email);
+        zeeguuLoginDialog.show(fragmentManager, "zeeguuLoginDialog");
+    }
+
+    public void showZeeguuLogoutDialog() {
+        zeeguuLogoutDialog.show(fragmentManager, "zeeguuLogoutDialog");
+    }
+
+    public void showZeeguuCreateAccountDialog(String message, String username, String email) {
+        zeeguuCreateAccountDialog.setMessage(message);
+        zeeguuCreateAccountDialog.setUsername(username);
+        zeeguuCreateAccountDialog.setEmail(email);
+        zeeguuCreateAccountDialog.show(fragmentManager, "zeeguuCreateAccountDialog");
+    }
+
+    // Zeeguu
+    @Override
+    public ZeeguuWebViewFragment getWebViewFragment() {
+        return feedEntryFragment;
+    }
+
+    @Override
+    public ZeeguuConnectionManager getConnectionManager() {
+        return dataFragment.getZeeguuConnectionManager();
+    }
+
+    @Override
+    public void setTranslation(String translation) {
+        feedEntryFragment.setTranslation(translation);
+    }
+
+    @Override
+    public void highlight(String word) {
+        if (sharedPref.getBoolean("pref_zeeguu_highlight_words", true)) {
+            feedEntryFragment.highlight(word);
+        }
+    }
+
+    @Override
+    public void openUrlInBrowser(String URL) {
+
+    }
+
+    @Override
+    public void notifyDataChanged(boolean myWordsChanged) {
+        myWordsFragment.notifyDataSetChanged(myWordsChanged);
+    }
+
+    @Override
+    public void notifyLanguageChanged(boolean isLanguageFrom) {
+
+    }
+
+    @Override
+    public void bookmarkWord(String bookmarkID) {
+
+    }
 }

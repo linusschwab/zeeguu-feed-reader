@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 
+import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyConnectionManager;
 import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
 
 public class DataFragment extends Fragment {
     // Stored data
-    private ZeeguuConnectionManager connectionManager;
+    private ZeeguuConnectionManager zeeguuConnectionManager;
+    private FeedlyConnectionManager feedlyConnectionManager;
 
     // This method is only called once for this fragment
     @Override
@@ -21,23 +23,38 @@ public class DataFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        connectionManager = new ZeeguuConnectionManager(getActivity());
+        zeeguuConnectionManager = new ZeeguuConnectionManager(getActivity());
+        feedlyConnectionManager = new FeedlyConnectionManager(getActivity());
     }
 
     public void onRestore(Activity activity) {
-        // ConnectionManager
-        if (connectionManager != null)
-            connectionManager.onRestore(activity);
+        // ZeeguConnectionManager
+        if (zeeguuConnectionManager != null)
+            zeeguuConnectionManager.onRestore(activity);
         else
-            connectionManager = new ZeeguuConnectionManager(activity);
+            zeeguuConnectionManager = new ZeeguuConnectionManager(activity);
+
+        // FeedlyConnectionManager
+        if (feedlyConnectionManager != null)
+            feedlyConnectionManager.onRestore(activity);
+        else
+            feedlyConnectionManager = new FeedlyConnectionManager(activity);
     }
 
     // Getters and Setters
-    public ZeeguuConnectionManager getConnectionManager() {
-        return connectionManager;
+    public ZeeguuConnectionManager getZeeguuConnectionManager() {
+        return zeeguuConnectionManager;
     }
 
-    public void setConnectionManager(ZeeguuConnectionManager connectionManager) {
-        this.connectionManager = connectionManager;
+    public void setZeeguuConnectionManager(ZeeguuConnectionManager zeeguuConnectionManager) {
+        this.zeeguuConnectionManager = zeeguuConnectionManager;
+    }
+
+    public FeedlyConnectionManager getFeedlyConnectionManager() {
+        return feedlyConnectionManager;
+    }
+
+    public void setFeedlyConnectionManager(FeedlyConnectionManager feedlyConnectionManager) {
+        this.feedlyConnectionManager = feedlyConnectionManager;
     }
 }
