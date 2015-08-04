@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
@@ -27,6 +28,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+
+import java.util.ArrayList;
+import java.util.Stack;
 
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
@@ -98,10 +102,7 @@ public class MainActivity extends AppCompatActivity implements
     private SharedPreferences sharedPref;
     private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
 
-    private String currentFragment;
-
-    private CharSequence title;
-    private CharSequence titleOld;
+    private Stack<CharSequence> backStackTitle = new Stack<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,18 +160,15 @@ public class MainActivity extends AppCompatActivity implements
         setUpNavigationDrawer(navigationView);
 
         // Display Feed Overview
-        if (savedInstanceState == null) {
-            switchFragment(feedOverviewFragment, "feedOverview");
-            setTitle(getString(R.string.title_feedOverview));
-        }
+        if (savedInstanceState == null)
+            switchFragment(feedOverviewFragment, "feedOverview", getString(R.string.title_feedOverview));
     }
 
     private void setUpToolbar() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         if (toolbar != null) {
-            toolbar.setTitle(title);
+            toolbar.setTitle(R.string.app_name);
             setSupportActionBar(toolbar);
-
         }
     }
 
@@ -205,21 +203,22 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void selectDrawerItem(MenuItem menuItem) {
+        CharSequence title = menuItem.getTitle();
+
         // Update the main content by replacing fragments
         switch (menuItem.getItemId()) {
             case R.id.navigation_item_1:
-                switchFragment(feedOverviewFragment, "feedOverview");
+                switchFragment(feedOverviewFragment, "feedOverview", title);
                 break;
             case R.id.navigation_item_2:
-                switchFragment(myWordsFragment, "myWords");
+                switchFragment(myWordsFragment, "myWords", title);
                 break;
             case R.id.navigation_item_3:
-                switchFragment(settingsFragment, "settings");
+                switchFragment(settingsFragment, "settings", title);
                 break;
         }
 
         menuItem.setChecked(true);
-        setTitle(menuItem.getTitle());
         drawerLayout.closeDrawers();
     }
 
@@ -244,19 +243,31 @@ public class MainActivity extends AppCompatActivity implements
             .commit();
     }
 
-    private void switchFragment(Fragment fragment, String tag) {
+    private void switchFragment(Fragment fragment, String tag, CharSequence title) {
+        emptyBackStack();
         fragmentManager.beginTransaction()
             .replace(R.id.container, fragment, tag)
             .commit();
-        currentFragment = tag;
+
+        setTitle(title);
     }
 
-    private void switchFragmentBackstack(Fragment fragment, String tag) {
+    private void switchFragmentBackstack(Fragment fragment, String tag, CharSequence title) {
         fragmentManager.beginTransaction()
                 .replace(R.id.container, fragment, tag)
                 .addToBackStack(tag)
                 .commit();
-        currentFragment = tag;
+
+        backStackTitle.push(getTitle());
+        setTitle(title);
+    }
+
+    private void emptyBackStack() {
+        if (fragmentManager.getBackStackEntryCount() > 0) {
+            FragmentManager.BackStackEntry first = fragmentManager.getBackStackEntryAt(0);
+            fragmentManager.popBackStack(first.getId(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            backStackTitle = new Stack<>();
+        }
     }
 
     /**
@@ -288,7 +299,8 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void setTitle(CharSequence title) {
-        this.title = title;
+        if (toolbar != null)
+            toolbar.setTitle(title);
         super.setTitle(title);
     }
 
@@ -298,15 +310,24 @@ public class MainActivity extends AppCompatActivity implements
         // Save UI state changes to the savedInstanceState.
         // This bundle will be passed to onCreate if the process is
         // killed and restarted.
-        savedInstanceState.putCharSequence("title", title);
+        savedInstanceState.putCharSequence("title", getTitle());
+        savedInstanceState.putCharSequenceArrayList("backStackTitle", new ArrayList<CharSequence>(backStackTitle));
     }
 
     @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
+    public void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         // Restore UI state from the savedInstanceState.
         // This bundle has also been passed to onCreate.
-        title = savedInstanceState.getCharSequence("title");
+        setTitle(savedInstanceState.getCharSequence("title"));
+
+        ArrayList<CharSequence> titleArrayList = savedInstanceState.getCharSequenceArrayList("backStackTitle");
+        if (titleArrayList != null) {
+            backStackTitle = new Stack<>();
+            for (CharSequence title : titleArrayList) {
+                backStackTitle.push(title);
+            }
+        }
     }
 
     @Override
@@ -337,8 +358,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // TODO: Remove settings from menu
         if (id == R.id.action_settings) {
-            title = getString(R.string.title_settings);
-            switchFragment(settingsFragment, "settings");
+            switchFragment(settingsFragment, "settings", getString(R.string.title_settings));
             return true;
         }
 
@@ -364,10 +384,8 @@ public class MainActivity extends AppCompatActivity implements
         // TODO: feedEntryFragment.goBack() (Make sure that this only applies to web pages and not feed entries)
         if (feedlyAuthenticationFragment.goBack() && fragmentManager.getBackStackEntryCount() > 0) {
             fragmentManager.popBackStack();
-            if (titleOld != null) {
-                setTitle(titleOld);
-                titleOld = null;
-            }
+            if (!backStackTitle.isEmpty())
+                setTitle(backStackTitle.pop());
         }
     }
 
@@ -375,7 +393,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onSupportActionModeStarted(ActionMode mode) {
         actionMode = mode;
 
-        if (currentFragment.equals("feedEntry")) {
+        if (displayTranslationActionMode()) {
             translationActionMode.onPrepareActionMode(mode, mode.getMenu());
             translationActionMode.onCreateActionMode(mode, mode.getMenu());
         }
@@ -387,7 +405,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onSupportActionModeFinished(ActionMode mode) {
         actionMode = null;
 
-        if (currentFragment.equals("feedEntry"))
+        if (displayTranslationActionMode())
             translationActionMode.onDestroyActionMode(mode);
 
         super.onSupportActionModeFinished(mode);
@@ -396,9 +414,13 @@ public class MainActivity extends AppCompatActivity implements
     public void onActionItemClicked(MenuItem item) {
         // Handle custom action mode clicks
         if (actionMode != null) {
-            if (currentFragment.equals("feedEntry"))
+            if (displayTranslationActionMode())
                 translationActionMode.onActionItemClicked(actionMode, item);
         }
+    }
+
+    private boolean displayTranslationActionMode() {
+        return panel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED;
     }
 
     @Override
@@ -428,10 +450,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void displayFeedEntryList(Feed feed) {
         feedEntryListFragment.setFeed(feed);
-        switchFragmentBackstack(feedEntryListFragment, "feedEntryList");
-
-        titleOld = title;
-        setTitle(feed.getName());
+        switchFragmentBackstack(feedEntryListFragment, "feedEntryList", feed.getName());
 
         // Show panel
         panel.setPanelHeight((int) Utility.dpToPx(this, 68));
@@ -472,8 +491,6 @@ public class MainActivity extends AppCompatActivity implements
             fragmentManager.beginTransaction()
                     .replace(R.id.panel, feedEntryFragment, "feedEntry")
                     .commit();
-            // TODO: Find better solution (for example check if panel is expanded)
-            currentFragment = "feedEntry";
         }
     };
 
@@ -482,9 +499,8 @@ public class MainActivity extends AppCompatActivity implements
     public void feedlyAuthentication(String url) {
         feedlyAuthenticationFragment.setUrl(url);
 
-        switchFragmentBackstack(feedlyAuthenticationFragment, "feedlyAuthentication");
-        titleOld = title;
-        setTitle(getString(R.string.title_feedlyAuthentication));
+        CharSequence title = getString(R.string.title_feedlyAuthentication);
+        switchFragmentBackstack(feedlyAuthenticationFragment, "feedlyAuthentication", title);
     }
 
     @Override
@@ -492,9 +508,8 @@ public class MainActivity extends AppCompatActivity implements
         dataFragment.getFeedlyConnectionManager().authenticationSuccessful(code);
 
         // Switch to next fragment
-        switchFragment(feedOverviewFragment, "feedOverview");
-        titleOld = null;
-        setTitle(getString(R.string.title_feedOverview));
+        CharSequence title = getString(R.string.title_feedOverview);
+        switchFragment(feedOverviewFragment, "feedOverview", title);
     }
 
     // Messages

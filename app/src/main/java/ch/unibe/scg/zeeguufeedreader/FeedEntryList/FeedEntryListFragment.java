@@ -118,7 +118,6 @@ public class FeedEntryListFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        // TODO: set title from feed/category
         callback.setActionBar(true, feed.getColor());
     }
 }
