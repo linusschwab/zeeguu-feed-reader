@@ -23,7 +23,7 @@ public class FeedlyAuthenticationFragment extends Fragment {
      * Callback interface that must be implemented by the container activity
      */
     public interface FeedlyAuthenticationCallbacks {
-        void authenticationSuccessful(String code);
+        void feedlyAuthenticationResponse(String response, boolean successful);
     }
 
     /**
@@ -72,9 +72,11 @@ public class FeedlyAuthenticationFragment extends Fragment {
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 // Check if the current url is the callback url
                 String parameterCode = "?code=";
+                String parameterError = "?error=";
                 String parameterState = "&state=";
 
                 int start = url.indexOf(parameterCode);
+                int startError = url.indexOf(parameterError);
                 int end = url.indexOf(parameterState);
 
                 if (start > -1) {
@@ -87,7 +89,19 @@ public class FeedlyAuthenticationFragment extends Fragment {
                     else
                         code = url.substring(start + parameterCode.length(), url.length());
 
-                    callback.authenticationSuccessful(code);
+                    callback.feedlyAuthenticationResponse(code, true);
+                }
+                else if (startError > -1) {
+                    webView.stopLoading();
+
+                    // Get the code parameter
+                    String error;
+                    if (end > -1)
+                        error = url.substring(startError + parameterCode.length(), end);
+                    else
+                        error = url.substring(startError + parameterCode.length(), url.length());
+
+                    callback.feedlyAuthenticationResponse(error, true);
                 }
             }
         });

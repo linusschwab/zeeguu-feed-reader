@@ -21,14 +21,19 @@
 
     <!-- Feedly -->
     <string name="feedly_authentication_successful">Authentication successful</string>
+    <string name="feedly_authentication_failed">Authentication failed</string>
 
     <!-- Fragment titles -->
-    <string name="title_feedOverview">Feed Overview</string>
-    <string name="title_feedEntryList">Feed Entry List</string>
-    <string name="title_feedEntry">Feed Entry</string>
-    <string name="title_feedlyAuthentication">Feedly Authentication</string>
-    <string name="title_myWords">My Words</string>
+    <string name="title_feed_overview">Feed Overview</string>
+    <string name="title_feed_entry_list">Feed Entry List</string>
+    <string name="title_feed_entry">Feed Entry</string>
+    <string name="title_feedly_authentication">Feedly Authentication</string>
+    <string name="title_my_words">My Words</string>
     <string name="title_settings">Settings</string>
+
+    <!-- Menu titles -->
+    <string name="menu_login_feedly">Feedly Login</string>
+    <string name="menu_login_zeeguu">Zeeguu Login</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -36,6 +41,14 @@
     <!-- Menu -->
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
+
+    <!-- Shared preference keys -->
+    <string name="pref_feedly_email">pref_feedly_email</string>
+    <string name="pref_feedly_user_id">pref_feedly_user_id</string>
+    <string name="pref_feedly_authentication_code">pref_feedly_authentication_code</string>
+    <string name="pref_feedly_refresh_token">pref_feedly_refresh_token</string>
+    <string name="pref_feedly_access_token">pref_feedly_access_token</string>
+    <string name="pref_feedly_access_token_expiration">pref_feedly_access_token_expiration</string>
 
     <!-- Language arrays -->
     <string-array name="zeeguu_languages_entries">

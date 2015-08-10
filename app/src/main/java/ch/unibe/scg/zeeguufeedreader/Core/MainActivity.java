@@ -36,6 +36,7 @@ import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAuthenticationFragment;
+import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyCallbacks;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyConnectionManager;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuTranslationActionMode;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements
         SettingsFragment.SettingsCallbacks,
         FeedOverviewFragment.FeedOverviewCallbacks,
         FeedEntryListFragment.FeedEntryListCallbacks,
-        FeedlyConnectionManager.FeedlyConnectionManagerCallbacks,
+        FeedlyCallbacks,
         FeedlyAuthenticationFragment.FeedlyAuthenticationCallbacks,
         MyWordsFragment.ZeeguuFragmentMyWordsCallbacks,
         ZeeguuWebViewInterface.ZeeguuWebViewInterfaceCallbacks,
@@ -161,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // Display Feed Overview
         if (savedInstanceState == null)
-            switchFragment(feedOverviewFragment, "feedOverview", getString(R.string.title_feedOverview));
+            switchFragment(feedOverviewFragment, "feedOverview", getString(R.string.title_feed_overview));
     }
 
     private void setUpToolbar() {
@@ -200,6 +201,13 @@ public class MainActivity extends AppCompatActivity implements
                 return true;
             }
         });
+
+        // TODO: Navigation drawer login
+        MenuItem navigation_feedly = navigationView.getMenu().findItem(R.id.navigation_feedly);
+        navigation_feedly.setVisible(false);
+        MenuItem navigation_zeeguu = navigationView.getMenu().findItem(R.id.navigation_zeeguu);
+        navigation_zeeguu.setVisible(false);
+
     }
 
     private void selectDrawerItem(MenuItem menuItem) {
@@ -207,13 +215,13 @@ public class MainActivity extends AppCompatActivity implements
 
         // Update the main content by replacing fragments
         switch (menuItem.getItemId()) {
-            case R.id.navigation_item_1:
+            case R.id.navigation_feed_overview:
                 switchFragment(feedOverviewFragment, "feedOverview", title);
                 break;
-            case R.id.navigation_item_2:
+            case R.id.navigation_my_words:
                 switchFragment(myWordsFragment, "myWords", title);
                 break;
-            case R.id.navigation_item_3:
+            case R.id.navigation_settings:
                 switchFragment(settingsFragment, "settings", title);
                 break;
         }
@@ -496,19 +504,22 @@ public class MainActivity extends AppCompatActivity implements
 
     // Feedly authentication
     @Override
-    public void feedlyAuthentication(String url) {
+    public void displayFeedlyAuthentication(String url) {
         feedlyAuthenticationFragment.setUrl(url);
 
-        CharSequence title = getString(R.string.title_feedlyAuthentication);
+        CharSequence title = getString(R.string.title_feedly_authentication);
         switchFragmentBackstack(feedlyAuthenticationFragment, "feedlyAuthentication", title);
     }
 
     @Override
-    public void authenticationSuccessful(String code) {
-        dataFragment.getFeedlyConnectionManager().authenticationSuccessful(code);
+    public void feedlyAuthenticationResponse(String response, boolean successful) {
+        if (successful)
+            dataFragment.getFeedlyConnectionManager().authenticationSuccessful(response);
+        else
+            dataFragment.getFeedlyConnectionManager().authenticationFailed(response);
 
         // Switch to next fragment
-        CharSequence title = getString(R.string.title_feedOverview);
+        CharSequence title = getString(R.string.title_feed_overview);
         switchFragment(feedOverviewFragment, "feedOverview", title);
     }
 
@@ -587,5 +598,32 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void bookmarkWord(String bookmarkID) {
 
+    }
+
+    /*
+     * Shared preferences helper methods
+     */
+    @Override
+    public void saveString(int prefKey, String value) {
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(getResources().getString(prefKey), value);
+        editor.apply();
+    }
+
+    @Override
+    public String loadString(int prefKey) {
+        return sharedPref.getString(getResources().getString(prefKey), "");
+    }
+
+    @Override
+    public void saveLong(int prefKey, Long value) {
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putLong(getResources().getString(prefKey), value);
+        editor.apply();
+    }
+
+    @Override
+    public Long loadLong(int prefKey) {
+        return sharedPref.getLong(getResources().getString(prefKey), 0);
     }
 }
