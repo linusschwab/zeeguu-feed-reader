@@ -1,5 +1,8 @@
 package ch.unibe.scg.zeeguufeedreader.Core;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -22,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -34,6 +38,7 @@ import java.util.Stack;
 
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAuthenticationFragment;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyCallbacks;
@@ -288,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements
             return;
 
         // Display back arrow
-        drawerToggle.setDrawerIndicatorEnabled(!displayBackButton);
+        animateBackArrow(displayBackButton);
 
         // Set color
         if (color != 0) {
@@ -303,6 +308,39 @@ public class MainActivity extends AppCompatActivity implements
     public void resetActionBar() {
         // Use default colors
         setActionBar(false, getResources().getColor(R.color.action_bar_gray));
+    }
+
+    private void animateBackArrow(final boolean displayBackButton) {
+        ValueAnimator animator;
+
+        // Set animation direction
+        if (displayBackButton)
+            animator = ValueAnimator.ofFloat(0, 1);
+        else {
+            animator = ValueAnimator.ofFloat(1, 0);
+            drawerToggle.setDrawerIndicatorEnabled(true);
+        }
+
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                float slideOffset = (Float) valueAnimator.getAnimatedValue();
+                drawerToggle.onDrawerSlide(drawerLayout, slideOffset);
+            }
+        });
+
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                drawerToggle.setDrawerIndicatorEnabled(!displayBackButton);
+            }
+        });
+
+        animator.setInterpolator(new DecelerateInterpolator());
+
+        // Animation speed
+        animator.setDuration(300);
+        animator.start();
     }
 
     @Override
@@ -465,7 +503,7 @@ public class MainActivity extends AppCompatActivity implements
         panel.setShadowHeight((int) Utility.dpToPx(this, 4));
 
         // Load fragment
-        if (!feedEntryFragment.isAdded() && !feed.getEntries().isEmpty()) {
+        if (!feedEntryFragment.isAdded() && feed.getEntries() != null && !feed.getEntries().isEmpty()) {
             FeedEntry entry = feed.getEntries().get(0);
             feedEntryFragment.setEntry(entry);
 
@@ -501,6 +539,15 @@ public class MainActivity extends AppCompatActivity implements
                     .commit();
         }
     };
+
+    @Override
+    public void updateSubscriptions(ArrayList<Category> categories) {
+        // Update unread count
+        for (Category category : categories)
+            category.getUnreadCount();
+
+        feedOverviewFragment.updateSubscriptions(categories);
+    }
 
     // Feedly authentication
     @Override

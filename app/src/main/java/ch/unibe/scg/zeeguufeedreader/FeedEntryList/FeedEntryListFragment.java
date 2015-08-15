@@ -76,7 +76,11 @@ public class FeedEntryListFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        adapter = new FeedEntryListAdapter(getActivity(), feed.getEntries());
+        ArrayList<FeedEntry> entries = new ArrayList<>();
+        if (feed.getEntries() != null)
+            entries = feed.getEntries();
+
+        adapter = new FeedEntryListAdapter(getActivity(), entries);
         listView.setAdapter(adapter);
     }
 

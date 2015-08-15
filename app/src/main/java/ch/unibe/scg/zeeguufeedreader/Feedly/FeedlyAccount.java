@@ -3,6 +3,10 @@ package ch.unibe.scg.zeeguufeedreader.Feedly;
 import android.app.Activity;
 import android.content.SharedPreferences;
 
+import java.util.ArrayList;
+
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.R;
 
 public class FeedlyAccount {
@@ -18,6 +22,10 @@ public class FeedlyAccount {
     private String refreshToken;
     private String accessToken;
     private long accessTokenExpiration;
+
+    // Subscriptions
+    private ArrayList<Category> categories;
+    private ArrayList<Feed> feeds;
 
     public FeedlyAccount(Activity activity) {
         this.activity = activity;
@@ -79,7 +87,7 @@ public class FeedlyAccount {
     // Boolean Checks
     // TODO: Write tests!
     public boolean isUserLoggedIn() {
-        return !(authenticationCode == null || authenticationCode.equals("") || !isUserInSession());
+        return !(authenticationCode == null || authenticationCode.equals("")) || isUserInSession();
     }
 
     public boolean isUserInSession() {
@@ -136,5 +144,46 @@ public class FeedlyAccount {
     public void setAccessToken(String accessToken, String accessTokenExpiration) {
         this.accessToken = accessToken;
         this.accessTokenExpiration = Long.parseLong(accessTokenExpiration);
+    }
+
+    // Subscriptions
+    public ArrayList<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(ArrayList<Category> categories) {
+        this.categories = categories;
+    }
+
+    public void addCategory(Category category) {
+        this.categories.add(category);
+    }
+
+    public Category getCategoryById(String feedlyId) {
+        for (Category category : categories) {
+            if (category.getFeedlyId().equals(feedlyId))
+                return category;
+        }
+        return null;
+    }
+
+    public ArrayList<Feed> getFeeds() {
+        return feeds;
+    }
+
+    public void setFeeds(ArrayList<Feed> feeds) {
+        this.feeds = feeds;
+    }
+
+    public void addFeed(Feed feed) {
+        this.feeds.add(feed);
+    }
+
+    public Feed getFeedById(String feedlyId) {
+        for (Feed feed : feeds) {
+            if (feed.getFeedlyId().equals(feedlyId))
+                return feed;
+        }
+        return null;
     }
 }

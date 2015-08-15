@@ -13,17 +13,18 @@ public class FeedEntry {
 
     private final String title;
     private final long id;
+    private String feedlyId;
 
     private String content;
+    private String summary;
     private String url;
     private String author;
-    private int date;
+    private String date;
 
     private boolean unread = true;
 
-    public FeedEntry(String title, String content, String url, String author, int date, long id) {
+    public FeedEntry(String title, String content, String url, String author, String date, long id) {
         this.title = title;
-
         this.content = content;
         this.url = url;
         this.author = author;
@@ -51,7 +52,11 @@ public class FeedEntry {
 
         holder.published.setText("" + date);
         holder.title.setText(title);
-        holder.summary.setText(Html.fromHtml(content));
+
+        if (summary != null && !summary.equals(""))
+            holder.summary.setText(Html.fromHtml(summary));
+        else
+            holder.summary.setText(Html.fromHtml(content));
 
         return convertView;
     }
@@ -64,12 +69,28 @@ public class FeedEntry {
         return id;
     }
 
+    public String getFeedlyId() {
+        return feedlyId;
+    }
+
+    public void setFeedlyId(String feedlyId) {
+        this.feedlyId = feedlyId;
+    }
+
     public String getContent() {
         return content;
     }
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
     }
 
     public String getUrl() {
@@ -88,12 +109,8 @@ public class FeedEntry {
         this.author = author;
     }
 
-    public int getDate() {
+    public String getDate() {
         return date;
-    }
-
-    public void setDate(int date) {
-        this.date = date;
     }
 
     public boolean isUnread() {
@@ -112,12 +129,13 @@ public class FeedEntry {
         FeedEntry entry = (FeedEntry) o;
 
         if (id != entry.id) return false;
-        if (date != entry.date) return false;
         if (unread != entry.unread) return false;
         if (title != null ? !title.equals(entry.title) : entry.title != null) return false;
         if (content != null ? !content.equals(entry.content) : entry.content != null) return false;
+        if (summary != null ? !summary.equals(entry.content) : entry.summary != null) return false;
         if (url != null ? !url.equals(entry.url) : entry.url != null) return false;
-        return !(author != null ? !author.equals(entry.author) : entry.author != null);
+        if (author != null ? !author.equals(entry.author) : entry.author != null) return false;
+        return !(date != null ? !date.equals(entry.date) : entry.date != null);
     }
 
     @Override
@@ -125,9 +143,10 @@ public class FeedEntry {
         int result = title != null ? title.hashCode() : 0;
         result = 31 * result + (int) (id ^ (id >>> 32));
         result = 31 * result + (content != null ? content.hashCode() : 0);
+        result = 31 * result + (summary != null ? summary.hashCode() : 0);
         result = 31 * result + (url != null ? url.hashCode() : 0);
         result = 31 * result + (author != null ? author.hashCode() : 0);
-        result = 31 * result + date;
+        result = 31 * result + (date != null ? date.hashCode() : 0);
         result = 31 * result + (unread ? 1 : 0);
         return result;
     }

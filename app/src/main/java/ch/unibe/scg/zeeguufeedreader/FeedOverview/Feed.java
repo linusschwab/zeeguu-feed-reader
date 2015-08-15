@@ -15,8 +15,12 @@ public class Feed {
 
     private final String name;
     private final long id;
+    private String feedlyId;
+    private String url;
+    private String imageUrl;
     private int color;
 
+    private ArrayList<Category> categories = new ArrayList<>();
     private ArrayList<FeedEntry> entries = new ArrayList<>();
     private int unreadCount;
 
@@ -50,9 +54,12 @@ public class Feed {
 
     private int calculateUnreadCount() {
         unreadCount = 0;
-        for (FeedEntry entry:entries) {
-            if (entry.isUnread())
-                unreadCount++;
+
+        if (entries != null) {
+            for (FeedEntry entry : entries) {
+                if (entry != null && entry.isUnread())
+                    unreadCount++;
+            }
         }
 
         return unreadCount;
@@ -66,11 +73,6 @@ public class Feed {
         return id;
     }
 
-    public void addEntry(FeedEntry entry) {
-        entries.add(entry);
-        calculateUnreadCount();
-    }
-
     public ArrayList<FeedEntry> getEntries() {
         return entries;
     }
@@ -78,6 +80,47 @@ public class Feed {
     public void setEntries(ArrayList<FeedEntry> entries) {
         this.entries = entries;
         calculateUnreadCount();
+    }
+
+    public void addEntry(FeedEntry entry) {
+        entries.add(entry);
+        calculateUnreadCount();
+    }
+
+    public ArrayList<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(ArrayList<Category> categories) {
+        this.categories = categories;
+    }
+
+    public void addCategory(Category category) {
+        categories.add(category);
+    }
+
+    public String getFeedlyId() {
+        return feedlyId;
+    }
+
+    public void setFeedlyId(String feedlyId) {
+        this.feedlyId = feedlyId;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public int getColor() {

@@ -79,4 +79,9 @@ public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
         super.onGroupExpanded(groupPosition);
         categories.get(groupPosition).expand();
     }
+
+    public void setCategories(ArrayList<Category> categories) {
+        this.categories = categories;
+        notifyDataSetChanged();
+    }
 }

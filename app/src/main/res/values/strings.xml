@@ -22,6 +22,7 @@
     <!-- Feedly -->
     <string name="feedly_authentication_successful">Authentication successful</string>
     <string name="feedly_authentication_failed">Authentication failed</string>
+    <string name="feedly_subscriptions_updated">Subscriptions updated</string>
 
     <!-- Fragment titles -->
     <string name="title_feed_overview">Feed Overview</string>

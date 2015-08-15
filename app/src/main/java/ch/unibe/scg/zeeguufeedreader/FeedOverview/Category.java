@@ -14,6 +14,7 @@ public class Category {
 
     private final String name;
     private final long id;
+    private String feedlyId;
 
     private ArrayList<Feed> feeds;
     private int unreadCount;
@@ -57,7 +58,8 @@ public class Category {
 
     private int calculateUnreadCount() {
         unreadCount = 0;
-        for (Feed feed:feeds) {
+
+        for (Feed feed : feeds) {
             unreadCount += feed.getUnreadCount();
         }
 
@@ -70,6 +72,14 @@ public class Category {
 
     public long getId() {
         return id;
+    }
+
+    public String getFeedlyId() {
+        return feedlyId;
+    }
+
+    public void setFeedlyId(String feedlyId) {
+        this.feedlyId = feedlyId;
     }
 
     // Feeds
@@ -91,6 +101,15 @@ public class Category {
 
     public int getFeedCount() {
         return feeds.size();
+    }
+
+    public int getUnreadCount() {
+        calculateUnreadCount();
+        return unreadCount;
+    }
+
+    public void setUnreadCount(int unreadCount) {
+        this.unreadCount = unreadCount;
     }
 
     // Expanded

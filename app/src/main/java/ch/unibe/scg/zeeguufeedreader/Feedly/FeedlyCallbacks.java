@@ -1,11 +1,16 @@
 package ch.unibe.scg.zeeguufeedreader.Feedly;
 
+import java.util.ArrayList;
+
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
+
 /**
  * Callback interface that must be implemented by the container activity
  */
 public interface FeedlyCallbacks {
     void displayFeedlyAuthentication(String url);
     void displayMessage(String message);
+    void updateSubscriptions(ArrayList<Category> categories);
 
     // Shared preference helper methods
     void saveString(int prefKey, String value);

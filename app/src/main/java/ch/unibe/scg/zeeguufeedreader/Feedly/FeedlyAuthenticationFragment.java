@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -67,7 +68,11 @@ public class FeedlyAuthenticationFragment extends Fragment {
     }
 
     private void authenticate(String url) {
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+
         webView.loadUrl(url);
+        webView.setHorizontalScrollBarEnabled(false);
         webView.setWebViewClient(new WebViewClient() {
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 // Check if the current url is the callback url

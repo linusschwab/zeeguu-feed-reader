@@ -5,24 +5,28 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.util.JsonReader;
 import android.util.Log;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
+import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.R;
 
 /**
@@ -57,11 +61,14 @@ public class FeedlyConnectionManager {
         // Load user information
         account.load();
 
+        // TODO: Don't display login on app start
         // Get missing information from server
         if (!account.isUserLoggedIn())
             getAuthenticationCode();
         else if (!account.isUserInSession())
             getAuthenticationToken(account.getAuthenticationCode());
+        else
+            getCategories();
     }
 
     /**
@@ -109,6 +116,8 @@ public class FeedlyConnectionManager {
     public void getAuthenticationToken(String authenticationCode) {
         if (!isNetworkAvailable())
             return; // ignore here
+        if (!isInputValid(authenticationCode))
+            return;
 
         String url = URL + "/v3/auth/token";
 
@@ -173,21 +182,250 @@ public class FeedlyConnectionManager {
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST,
                 url, params, new Response.Listener<JSONObject>() {
 
-                @Override
-                public void onResponse(JSONObject response) {
-                    // TODO: Update in account
-                    callback.displayMessage(response.toString());
-                }
-            }, new Response.ErrorListener() {
+            @Override
+            public void onResponse(JSONObject response) {
+                // TODO: Update in account
+                callback.displayMessage(response.toString());
+            }
+        }, new Response.ErrorListener() {
 
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.e("feedly_refresh_token", FeedlyResponseParser.parseErrorMessage(error));
-                }
-            }) {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("feedly_refresh_token", FeedlyResponseParser.parseErrorMessage(error));
+            }
+        }) {
         };
 
         queue.add(request);
+    }
+
+    /**
+     * Revoke the refresh token (logout)
+     *
+     * POST /v3/auth/token
+     *
+     * Input:
+     * refresh_token: string The refresh token returned in the previous code.
+     * client_id: string The clientId obtained during application registration.
+     * client_secret: string The client secret obtained during application registration.
+     * grant_type: string This field must contain a value of revoke_token.
+     */
+    public void revokeRefreshToken() {
+        if (!isNetworkAvailable())
+            return; // ignore here
+
+        String url = URL + "/v3/auth/token";
+
+        JSONObject params = new JSONObject();
+        try {
+            params.put("refresh_token", account.getRefreshToken());
+            params.put("client_id", clientId);
+            params.put("client_secret", clientSecret);
+            params.put("grant_type", "revoke_token");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST,
+                url, params, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+                account.logout();
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("feedly_revoke_token", FeedlyResponseParser.parseErrorMessage(error));
+            }
+        }) {
+        };
+
+        queue.add(request);
+    }
+
+    /**
+     * Get a list of all user categories
+     *
+     * GET /v3/categories
+     */
+    public void getCategories() {
+        if (!isNetworkAvailable())
+            return; // ignore here
+
+        String url = URL + "/v3/categories";
+
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET,
+                url, null, new Response.Listener<JSONArray>() {
+
+            @Override
+            public void onResponse(JSONArray response) {
+                account.setCategories(FeedlyResponseParser.parseCategories(response));
+                getSubscriptions();
+            }
+
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("feedly_get_categories", FeedlyResponseParser.parseErrorMessage(error));
+            }
+
+        }) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return authorizationHeader();
+            }
+        };
+
+        queue.add(request);
+    }
+
+    /**
+     * Get a list of all feeds the user subscribed to
+     *
+     * GET /v3/subscriptions
+     */
+    public void getSubscriptions() {
+        if (!isNetworkAvailable())
+            return; // ignore here
+
+        String url = URL + "/v3/subscriptions";
+
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET,
+                url, null, new Response.Listener<JSONArray>() {
+
+            @Override
+            public void onResponse(JSONArray response) {
+                account.setFeeds(FeedlyResponseParser.parseSubscriptions(response, account));
+                getAllFeedEntries(100);
+            }
+
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("feedly_get_feeds", FeedlyResponseParser.parseErrorMessage(error));
+            }
+
+        }) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return authorizationHeader();
+            }
+        };
+
+        queue.add(request);
+    }
+
+    /**
+     * Get the defined amount of entries for a feed.
+     * No authentication needed.
+     *
+     * GET /v3/streams/contents?streamId=streamId
+     */
+    public void getFeedEntries(final Feed feed, int count) {
+        if (!isNetworkAvailable())
+            return; // ignore here
+        if (count > 1000)
+            count = 1000;
+
+        String url = URL + "/v3/streams/contents?streamId=" + Uri.encode(feed.getFeedlyId()) +
+                           "&count=" + count;
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET,
+                url, null, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+                feed.setEntries(FeedlyResponseParser.parseFeedEntries(response));
+                callback.updateSubscriptions(account.getCategories());
+                callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated));
+            }
+
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("feedly_get_all_entries", FeedlyResponseParser.parseErrorMessage(error));
+            }
+
+        });
+
+        queue.add(request);
+    }
+
+    /**
+     * Get the defined amount of entries (sorted by date, newest first)
+     *
+     * GET /v3/streams/contents?streamId=streamId
+     */
+    public void getAllFeedEntries(int count) {
+        if (!isNetworkAvailable())
+            return; // ignore here
+        if (count > 1000) // TODO: Multiple API calls if more than 1000
+            count = 1000;
+
+        String url = URL + "/v3/streams/contents?streamId=" +
+                           Uri.encode("user/" + account.getUserId() + "/category/global.all") +
+                           "&count=" + count;
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET,
+                url, null, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+                FeedlyResponseParser.parseAllFeedEntries(response, account);
+                callback.updateSubscriptions(account.getCategories());
+                callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated));
+            }
+
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("feedly_get_feed_entries", FeedlyResponseParser.parseErrorMessage(error));
+            }
+
+        }) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return authorizationHeader();
+            }
+        };
+
+        queue.add(request);
+    }
+
+    /**
+     * Get the metadata for all feeds
+     *
+     * POST /v3/feeds/.mget
+     */
+    public void getFeeds() {
+
+    }
+
+    /**
+     * Get the metadata of a feed
+     *
+     * GET /v3/feeds/:feedId
+     */
+    public void getFeed(Feed feed) {
+
+    }
+
+    /**
+     * Generate the header with the authorization code
+     */
+    private Map<String, String> authorizationHeader() {
+        Map<String, String> params = new HashMap<>();
+        params.put("Authorization", "OAuth " + account.getAccessToken());
+        return params;
     }
 
     // Boolean Checks
@@ -196,5 +434,18 @@ public class FeedlyConnectionManager {
         ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected();
+    }
+
+    private boolean isInputValid(String input) {
+        return !(input == null || input.trim().equals(""));
+    }
+
+    // Getter/Setter
+    public FeedlyAccount getAccount() {
+        return account;
+    }
+
+    public void setAccount(FeedlyAccount account) {
+        this.account = account;
     }
 }
