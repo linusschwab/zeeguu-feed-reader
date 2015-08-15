@@ -117,12 +117,6 @@ public class BasicNetwork implements Network {
                             entry.responseHeaders, true,
                             SystemClock.elapsedRealtime() - requestStart);
                 }
-                
-                // Handle moved resources
-                if (statusCode == HttpStatus.SC_MOVED_PERMANENTLY || statusCode == HttpStatus.SC_MOVED_TEMPORARILY) {
-                	String newUrl = responseHeaders.get("Location");
-                	request.setRedirectUrl(newUrl);
-                }
 
                 // Some responses such as 204s do not have content.  We must check.
                 if (httpResponse.getEntity() != null) {
@@ -156,22 +150,13 @@ public class BasicNetwork implements Network {
                 } else {
                     throw new NoConnectionError(e);
                 }
-                if (statusCode == HttpStatus.SC_MOVED_PERMANENTLY || 
-                		statusCode == HttpStatus.SC_MOVED_TEMPORARILY) {
-                	VolleyLog.e("Request at %s has been redirected to %s", request.getOriginUrl(), request.getUrl());
-                } else {
-                	VolleyLog.e("Unexpected response code %d for %s", statusCode, request.getUrl());
-                }
+                VolleyLog.e("Unexpected response code %d for %s", statusCode, request.getUrl());
                 if (responseContents != null) {
                     networkResponse = new NetworkResponse(statusCode, responseContents,
                             responseHeaders, false, SystemClock.elapsedRealtime() - requestStart);
                     if (statusCode == HttpStatus.SC_UNAUTHORIZED ||
                             statusCode == HttpStatus.SC_FORBIDDEN) {
                         attemptRetryOnException("auth",
-                                request, new AuthFailureError(networkResponse));
-                    } else if (statusCode == HttpStatus.SC_MOVED_PERMANENTLY || 
-                    			statusCode == HttpStatus.SC_MOVED_TEMPORARILY) {
-                        attemptRetryOnException("redirect",
                                 request, new AuthFailureError(networkResponse));
                     } else {
                         // TODO: Only throw ServerError for 5xx status codes.
