@@ -123,13 +123,13 @@ public class FeedlyResponseParser {
     /**
      *  @param jsonObject: https://developer.feedly.com/v3/streams/#get-the-content-of-a-stream
      */
-    public static ArrayList<FeedEntry> parseFeedEntries(JSONObject jsonObject) {
+    public static ArrayList<FeedEntry> parseFeedEntries(JSONObject jsonObject, Feed feed) {
         ArrayList<FeedEntry> entries = new ArrayList<>();
         try {
             JSONArray jsonArray = jsonObject.getJSONArray("items");
             for (int i=0; i < jsonArray.length(); i++) {
                 JSONObject json = jsonArray.getJSONObject(i);
-                entries.add(parseSingleFeedEntry(json, i));
+                entries.add(parseSingleFeedEntry(feed, json, i));
             }
 
             return entries;
@@ -155,7 +155,7 @@ public class FeedlyResponseParser {
 
                 // Add entry to feed
                 if (feed != null) {
-                    FeedEntry entry = parseSingleFeedEntry(jsonFeed, i);
+                    FeedEntry entry = parseSingleFeedEntry(feed, jsonFeed, i);
                     if (entry != null)
                         feed.addEntry(entry);
                 }
@@ -170,7 +170,7 @@ public class FeedlyResponseParser {
     /**
      * @param json: https://developer.feedly.com/v3/entries/#get-the-content-of-an-entry
      */
-    private static FeedEntry parseSingleFeedEntry(JSONObject json, int id) {
+    private static FeedEntry parseSingleFeedEntry(Feed feed, JSONObject json, int id) {
         try {
             // Content
             String content = "No content";
@@ -180,22 +180,25 @@ public class FeedlyResponseParser {
                 content = json.getJSONObject("summary").getString("content");
 
             // Author
-            // TODO: handle entries with no author
             String author = "";
             if (json.has("author"))
                 author = json.getString("author");
+            else
+                author = feed.getName();
 
             FeedEntry entry = new FeedEntry(
                     json.getString("title"),
                     content,
                     json.getJSONArray("alternate").getJSONObject(0).getString("href"),
                     author,
-                    json.getString("published"), //TODO: Convert timestamp into date
+                    json.getLong("published"),
                     id);
             entry.setFeedlyId(json.getString("id"));
 
             if (json.has("summary"))
                 entry.setSummary(json.getJSONObject("summary").getString("content"));
+
+            entry.setFeed(feed);
 
             return entry;
         }

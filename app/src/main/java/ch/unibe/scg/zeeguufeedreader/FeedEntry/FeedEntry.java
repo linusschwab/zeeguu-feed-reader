@@ -7,6 +7,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.R;
 
 public class FeedEntry {
@@ -19,16 +24,17 @@ public class FeedEntry {
     private String summary;
     private String url;
     private String author;
-    private String date;
+    private Date date;
 
+    private Feed feed;
     private boolean unread = true;
 
-    public FeedEntry(String title, String content, String url, String author, String date, long id) {
+    public FeedEntry(String title, String content, String url, String author, long timestamp, long id) {
         this.title = title;
         this.content = content;
         this.url = url;
         this.author = author;
-        this.date = date;
+        this.date = new Date(timestamp);
         this.id = id;
     }
 
@@ -50,7 +56,7 @@ public class FeedEntry {
             holder = (FeedEntryViewHolder) convertView.getTag();
         }
 
-        holder.published.setText("" + date);
+        holder.published.setText(getDateTime());
         holder.title.setText(title);
 
         if (summary != null && !summary.equals(""))
@@ -109,8 +115,26 @@ public class FeedEntry {
         this.author = author;
     }
 
-    public String getDate() {
-        return date;
+    public String getDateFull() {
+        DateFormat dateFull = new SimpleDateFormat("EEEE, dd.MM.yyyy");
+        return dateFull.format(date);
+    }
+
+    public String getDateTime() {
+        DateFormat time = new SimpleDateFormat("HH:mm");
+        return time.format(date);
+    }
+
+    public void setDate(long timestamp) {
+        this.date = new Date(timestamp);
+    }
+
+    public Feed getFeed() {
+        return feed;
+    }
+
+    public void setFeed(Feed feed) {
+        this.feed = feed;
     }
 
     public boolean isUnread() {

@@ -41,44 +41,20 @@
             </RelativeLayout>
 
             <!-- Sliding panel -->
-            <RelativeLayout
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-
-                <!-- Sliding panel header -->
-                <RelativeLayout
-                    android:id="@+id/panel_header"
-                    android:layout_width="match_parent"
-                    android:layout_height="68dp"
-                    android:background="@color/white">
-
-                    <ImageView
-                        android:id="@+id/panel_favicon"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_centerVertical="true"
-                        android:layout_marginRight="12dp"
-                        android:layout_marginEnd="12dp" />
-
-                    <TextView
-                        android:id="@+id/panel_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:layout_toRightOf="@+id/panel_favicon"
-                        android:layout_toEndOf="@+id/panel_favicon"
-                        android:textSize="18sp"/>
-
-                </RelativeLayout>
 
                 <!-- Container for the sliding fragment-->
                 <FrameLayout
                     android:id="@+id/panel"
-                    android:layout_below="@+id/panel_header"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
 
-            </RelativeLayout>
+                <!-- Sliding panel header -->
+                <include layout="@layout/panel_header" />
+
+            </FrameLayout>
 
         </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 

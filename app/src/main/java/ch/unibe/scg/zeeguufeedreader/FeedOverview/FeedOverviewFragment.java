@@ -122,11 +122,11 @@ public class FeedOverviewFragment extends Fragment {
     }
 
     private ArrayList<FeedEntry> createTestFeedEntries() {
-        FeedEntry test1 = new FeedEntry("Test", createTestContent(), "", "Author", "11112015", 101);
-        FeedEntry test2 = new FeedEntry("Test Hallo", createTestContent(), "", "Author", "11112015", 102);
-        FeedEntry test3 = new FeedEntry("Test Hi", "Test Test Test Test Test Test Test Test", "", "Author", "11112015", 103);
-        FeedEntry test4 = new FeedEntry("Test 123", "Test Test Test Test Test Test Test Test", "", "Author", "11112015", 104);
-        FeedEntry test5 = new FeedEntry("Test Entry", "Test Test Test Test Test Test Test Test", "", "Author", "11112015", 105);
+        FeedEntry test1 = new FeedEntry("Test", createTestContent(), "", "Author", 11112015, 101);
+        FeedEntry test2 = new FeedEntry("Test Hallo", createTestContent(), "", "Author", 11112015, 102);
+        FeedEntry test3 = new FeedEntry("Test Hi", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 103);
+        FeedEntry test4 = new FeedEntry("Test 123", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 104);
+        FeedEntry test5 = new FeedEntry("Test Entry", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 105);
 
         ArrayList<FeedEntry> list = new ArrayList<>();
 

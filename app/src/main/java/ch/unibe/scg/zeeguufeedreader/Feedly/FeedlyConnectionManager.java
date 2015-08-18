@@ -341,7 +341,7 @@ public class FeedlyConnectionManager {
 
             @Override
             public void onResponse(JSONObject response) {
-                feed.setEntries(FeedlyResponseParser.parseFeedEntries(response));
+                feed.setEntries(FeedlyResponseParser.parseFeedEntries(response, feed));
                 callback.updateSubscriptions(account.getCategories());
                 callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated));
             }
@@ -407,7 +407,7 @@ public class FeedlyConnectionManager {
      * POST /v3/feeds/.mget
      */
     public void getFeeds() {
-
+        // TODO: Get feed language and automatically switch Zeeguu language or disable if in native language
     }
 
     /**

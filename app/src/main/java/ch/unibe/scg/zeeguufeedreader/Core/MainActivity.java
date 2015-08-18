@@ -42,7 +42,6 @@ import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAuthenticationFragment;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyCallbacks;
-import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyConnectionManager;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuTranslationActionMode;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.Compatibility.FeedEntryCompatibilityFragment;
@@ -82,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements
     private RelativeLayout statusBarBackground;
     private NavigationView navigationView;
     private SlidingUpPanelLayout panel;
+    private RelativeLayout panelHeader;
     private FrameLayout contentFrame;
 
     private FragmentManager fragmentManager = getFragmentManager();
@@ -160,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
         statusBarBackground = (RelativeLayout) findViewById(R.id.status_bar_background);
         panel = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
+        panelHeader = (RelativeLayout) findViewById(R.id.panel_header);
         contentFrame = (FrameLayout) findViewById(R.id.container);
 
         setUpToolbar();
@@ -418,6 +419,9 @@ public class MainActivity extends AppCompatActivity implements
     public void onBackPressed() {
 
         if (panel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
+            if (!feedEntryFragment.goBack())
+                return;
+
             panel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             return;
         }
@@ -427,7 +431,6 @@ public class MainActivity extends AppCompatActivity implements
             return;
         }
 
-        // TODO: feedEntryFragment.goBack() (Make sure that this only applies to web pages and not feed entries)
         if (feedlyAuthenticationFragment.goBack() && fragmentManager.getBackStackEntryCount() > 0) {
             fragmentManager.popBackStack();
             if (!backStackTitle.isEmpty())
@@ -499,20 +502,57 @@ public class MainActivity extends AppCompatActivity implements
         switchFragmentBackstack(feedEntryListFragment, "feedEntryList", feed.getName());
 
         // Show panel
-        panel.setPanelHeight((int) Utility.dpToPx(this, 68));
-        panel.setShadowHeight((int) Utility.dpToPx(this, 4));
+        setUpSlidingPanel();
 
         // Load fragment
         if (!feedEntryFragment.isAdded() && feed.getEntries() != null && !feed.getEntries().isEmpty()) {
             FeedEntry entry = feed.getEntries().get(0);
             feedEntryFragment.setEntry(entry);
 
-            TextView panel_title = (TextView) findViewById(R.id.panel_title);
-            panel_title.setText(entry.getTitle());
+            TextView panel_entry_title = (TextView) findViewById(R.id.panel_entry_title);
+            panel_entry_title.setText(entry.getTitle());
+            TextView panel_feed_title = (TextView) findViewById(R.id.panel_feed_title);
+            panel_feed_title.setText(entry.getFeed().getName());
 
             Thread thread = new Thread(backgroundThread);
             thread.start();
         }
+    }
+
+    private void setUpSlidingPanel() {
+        panel.setPanelHeight((int) DisplayUtility.dpToPx(this, 68));
+        panel.setShadowHeight((int) DisplayUtility.dpToPx(this, 4));
+        panel.setDragView(panelHeader);
+
+        panel.setPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+            @Override
+            public void onPanelSlide(View view, float v) {
+
+            }
+
+            @Override
+            public void onPanelCollapsed(View view) {
+                panelHeader.setBackgroundColor(getResources().getColor(R.color.white));
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+            }
+
+            @Override
+            public void onPanelExpanded(View view) {
+                // TODO: Disable transparency for websites
+                panelHeader.setBackgroundColor(getResources().getColor(R.color.transparent_white));
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            }
+
+            @Override
+            public void onPanelAnchored(View view) {
+
+            }
+
+            @Override
+            public void onPanelHidden(View view) {
+
+            }
+        });
     }
 
     @Override
