@@ -112,16 +112,22 @@ public class FeedEntryListFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        callback.setActionBar(true, feed.getColor());
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
 
         callback.resetActionBar();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        callback.setActionBar(true, feed.getColor());
     }
 }

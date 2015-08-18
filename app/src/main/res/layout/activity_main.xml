@@ -5,17 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-        <!-- Status bar background (transparency color workaround) -->
-        <RelativeLayout
-            android:id="@+id/status_bar_background"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/status_bar_height"
-            android:background="@color/action_bar_gray"/>
+        <include layout="@layout/statusbar_background" />
 
         <com.sothree.slidinguppanel.SlidingUpPanelLayout
             xmlns:sothree="http://schemas.android.com/apk/res-auto"
             android:id="@+id/sliding_layout"
-            android:layout_below="@+id/status_bar_background"
+            android:layout_below="@+id/statusbar_background"
             android:layout_marginTop="@dimen/status_bar_height"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -32,7 +27,7 @@
 
                 <!-- Container for the main fragment-->
                 <FrameLayout
-                    android:id="@+id/container"
+                    android:id="@+id/content"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="?attr/actionBarSize"

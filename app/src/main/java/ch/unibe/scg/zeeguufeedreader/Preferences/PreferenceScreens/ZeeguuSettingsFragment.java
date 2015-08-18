@@ -1,20 +1,18 @@
-package ch.unibe.scg.zeeguufeedreader.Preferences;
+package ch.unibe.scg.zeeguufeedreader.Preferences.PreferenceScreens;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 
+import ch.unibe.scg.zeeguufeedreader.Preferences.BaseSettingsFragment;
 import ch.unibe.scg.zeeguufeedreader.R;
 import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
 
-public class SettingsFragment extends PreferenceFragment {
+public class ZeeguuSettingsFragment extends BaseSettingsFragment {
 
-    private SharedPreferences sharedPref;
-    private SettingsCallbacks callback;
+    private ZeeguuSettingsCallbacks callback;
 
     private Preference zeeguuAccount;
     private Preference languageNative;
@@ -23,8 +21,8 @@ public class SettingsFragment extends PreferenceFragment {
     /**
      *  Callback interface that must be implemented by the container activity
      */
-    public interface SettingsCallbacks {
-        ZeeguuConnectionManager getConnectionManager();
+    public interface ZeeguuSettingsCallbacks {
+        ZeeguuConnectionManager getZeeguuConnectionManager();
         void showZeeguuLoginDialog(String title, String email);
         void showZeeguuLogoutDialog();
     }
@@ -32,10 +30,9 @@ public class SettingsFragment extends PreferenceFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         // Load the preferences from an XML resource
-        addPreferencesFromResource(R.xml.preferences);
+        addPreferencesFromResource(R.xml.preferences_zeeguu);
 
         zeeguuAccount = findPreference("pref_zeeguu_account");
         languageNative = findPreference("pref_zeeguu_language_native");
@@ -54,16 +51,16 @@ public class SettingsFragment extends PreferenceFragment {
 
         // Make sure that the interface is implemented in the container activity
         try {
-            callback = (SettingsCallbacks) activity;
+            callback = (ZeeguuSettingsCallbacks) activity;
         } catch (ClassCastException e) {
-            throw new ClassCastException("Activity must implement SettingsCallbacks");
+            throw new ClassCastException("Activity must implement ZeeguuSettingsCallbacks");
         }
     }
 
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
         // Open Zeeguu login dialog
-        if (preference.getKey().equals("pref_zeeguu_account")) {
+        if (preference.getKey() != null && preference.getKey().equals("pref_zeeguu_account")) {
             if (sharedPref.getString("pref_zeeguu_email", "").equals(""))
                 callback.showZeeguuLoginDialog("", "");
             else
@@ -120,7 +117,7 @@ public class SettingsFragment extends PreferenceFragment {
     private void updateNativeLanguage() {
         String language = sharedPref.getString("pref_zeeguu_language_native", "");
         if (!language.equals("") && isAdded()) {
-            callback.getConnectionManager().setLanguageNative(language);
+            callback.getZeeguuConnectionManager().setLanguageNative(language);
             languageNative.setSummary(language);
         }
     }
@@ -131,7 +128,7 @@ public class SettingsFragment extends PreferenceFragment {
     private void updateLearningLanguage() {
         String language = sharedPref.getString("pref_zeeguu_language_learning", "");
         if (!language.equals("") && isAdded()) {
-            callback.getConnectionManager().setLanguageLearning(language);
+            callback.getZeeguuConnectionManager().setLanguageLearning(language);
             languageLearning.setSummary(language);
         }
     }

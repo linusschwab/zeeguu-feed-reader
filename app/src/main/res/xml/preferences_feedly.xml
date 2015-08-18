@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ch.unibe.scg.zeeguufeedreader.Preferences.PreferenceCategoryCustom
+        android:title="@string/settings_feedly_title">
+        <Preference
+            android:key="pref_feedly_account"
+            android:title="@string/settings_feedly_account_title"
+            android:summary="@string/settings_feedly_account_summary" />
+    </ch.unibe.scg.zeeguufeedreader.Preferences.PreferenceCategoryCustom>
+</PreferenceScreen>

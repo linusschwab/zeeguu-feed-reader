@@ -2,7 +2,11 @@
     <string name="app_name">Zeeguu Feed Reader</string>
 
     <!-- Settings -->
-    <string name="settings_zeeguu_title">Zeeguu</string>
+    <string name="settings_feedly_title">Feedly</string>
+    <string name="settings_feedly_account_title">Account</string>
+    <string name="settings_feedly_account_summary">Not logged in</string>
+
+    <string name="settings_zeguu_title">Zeeguu</string>
     <string name="settings_zeguu_account_title">Account</string>
     <string name="settings_zeguu_account_summary">Not logged in</string>
     <string name="settings_zeguu_account_login">Logged in as</string>
@@ -32,6 +36,12 @@
     <string name="title_my_words">My Words</string>
     <string name="title_settings">Settings</string>
 
+    <!-- Fragment tags -->
+    <string name="tag_feed_overview">feedOverview</string>
+    <string name="tag_main_settings">mainSettings</string>
+    <string name="tag_zeeguu_settings">zeeguuSettings</string>
+    <string name="tag_feedly_settings">zeeguuSettings</string>
+
     <!-- Menu titles -->
     <string name="menu_login_feedly">Feedly Login</string>
     <string name="menu_login_zeeguu">Zeeguu Login</string>
@@ -44,12 +54,15 @@
     <string name="action_settings">Settings</string>
 
     <!-- Shared preference keys -->
+    <string name="pref_feedly">pref_feedly</string>
     <string name="pref_feedly_email">pref_feedly_email</string>
     <string name="pref_feedly_user_id">pref_feedly_user_id</string>
     <string name="pref_feedly_authentication_code">pref_feedly_authentication_code</string>
     <string name="pref_feedly_refresh_token">pref_feedly_refresh_token</string>
     <string name="pref_feedly_access_token">pref_feedly_access_token</string>
     <string name="pref_feedly_access_token_expiration">pref_feedly_access_token_expiration</string>
+
+    <string name="pref_zeeguu">pref_zeeguu</string>
 
     <!-- Language arrays -->
     <string-array name="zeeguu_languages_entries">

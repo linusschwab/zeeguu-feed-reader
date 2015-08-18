@@ -5,11 +5,10 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.Fragment;
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -18,9 +17,7 @@ import android.support.v7.app.ActionBar;
 import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
@@ -41,92 +38,53 @@ import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAuthenticationFragment;
-import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyCallbacks;
+import ch.unibe.scg.zeeguufeedreader.Preferences.SettingsActivity;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuTranslationActionMode;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.Compatibility.FeedEntryCompatibilityFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.FeedOverviewFragment;
 import ch.unibe.scg.zeeguufeedreader.R;
-import ch.unibe.scg.zeeguufeedreader.Preferences.SettingsFragment;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewInterface;
-import ch.unibe.zeeguulibrary.Core.ZeeguuAccount;
-import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
-import ch.unibe.zeeguulibrary.Dialogs.ZeeguuCreateAccountDialog;
-import ch.unibe.zeeguulibrary.Dialogs.ZeeguuDialogCallbacks;
-import ch.unibe.zeeguulibrary.Dialogs.ZeeguuLoginDialog;
-import ch.unibe.zeeguulibrary.Dialogs.ZeeguuLogoutDialog;
 import ch.unibe.zeeguulibrary.MyWords.MyWordsFragment;
 
 /**
  *  Activity to display and switch between the fragments
  */
-public class MainActivity extends AppCompatActivity implements
-        SettingsFragment.SettingsCallbacks,
+public class MainActivity extends BaseActivity implements
         FeedOverviewFragment.FeedOverviewCallbacks,
         FeedEntryListFragment.FeedEntryListCallbacks,
-        FeedlyCallbacks,
         FeedlyAuthenticationFragment.FeedlyAuthenticationCallbacks,
         MyWordsFragment.ZeeguuFragmentMyWordsCallbacks,
         ZeeguuWebViewInterface.ZeeguuWebViewInterfaceCallbacks,
-        ZeeguuWebViewFragment.ZeeguuWebViewCallbacks,
-        ZeeguuConnectionManager.ZeeguuConnectionManagerCallbacks,
-        ZeeguuAccount.ZeeguuAccountCallbacks,
-        ZeeguuDialogCallbacks {
+        ZeeguuWebViewFragment.ZeeguuWebViewCallbacks {
 
     // Navigation
-    private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
-    private RelativeLayout statusBarBackground;
+    private RelativeLayout statusbarBackground;
     private NavigationView navigationView;
     private SlidingUpPanelLayout panel;
     private RelativeLayout panelHeader;
     private FrameLayout contentFrame;
 
-    private FragmentManager fragmentManager = getFragmentManager();
-
     // Fragments
-    private DataFragment dataFragment;
     private FeedOverviewFragment feedOverviewFragment;
     private FeedEntryListFragment feedEntryListFragment;
     private FeedEntryFragment feedEntryFragment;
     private FeedEntryCompatibilityFragment feedEntryCompatibilityFragment;
     private FeedlyAuthenticationFragment feedlyAuthenticationFragment;
-    private SettingsFragment settingsFragment;
     private MyWordsFragment myWordsFragment;
-
-    // Dialogs
-    private ZeeguuLoginDialog zeeguuLoginDialog;
-    private ZeeguuLogoutDialog zeeguuLogoutDialog;
-    private ZeeguuCreateAccountDialog zeeguuCreateAccountDialog;
 
     // Action Mode
     private ActionMode actionMode;
     private ZeeguuTranslationActionMode translationActionMode;
 
-    private SharedPreferences sharedPref;
-    private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
-
-    private Stack<CharSequence> backStackTitle = new Stack<>();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        restoreDataFragment();
 
-        // Dialogs
-        zeeguuLoginDialog = (ZeeguuLoginDialog) fragmentManager.findFragmentByTag("zeeguuLoginDialog");
-        if (zeeguuLoginDialog == null) zeeguuLoginDialog = new ZeeguuLoginDialog();
-
-        zeeguuLogoutDialog = (ZeeguuLogoutDialog) fragmentManager.findFragmentByTag("zeeguuLogoutDialog");
-        if (zeeguuLogoutDialog == null) zeeguuLogoutDialog = new ZeeguuLogoutDialog();
-
-        zeeguuCreateAccountDialog = (ZeeguuCreateAccountDialog) fragmentManager.findFragmentByTag("zeeguuCreateAccountDialog");
-        if (zeeguuCreateAccountDialog == null) zeeguuCreateAccountDialog = new ZeeguuCreateAccountDialog();
-
-        // Initialize UI fragments
+        // Initialize fragments
         feedOverviewFragment = (FeedOverviewFragment) fragmentManager.findFragmentByTag("feedOverview");
         if (feedOverviewFragment == null) feedOverviewFragment = new FeedOverviewFragment();
 
@@ -145,23 +103,17 @@ public class MainActivity extends AppCompatActivity implements
         myWordsFragment = (MyWordsFragment) fragmentManager.findFragmentByTag("myWords");
         if (myWordsFragment == null) myWordsFragment = new MyWordsFragment();
 
-        settingsFragment = (SettingsFragment) fragmentManager.findFragmentByTag("settings");
-        if (settingsFragment == null) settingsFragment = new SettingsFragment();
-
         // Action Mode
         translationActionMode = new ZeeguuTranslationActionMode(feedEntryFragment);
-
-        // Data fragment
-        createDataFragment();
 
         // Layout
         setContentView(R.layout.activity_main);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        statusBarBackground = (RelativeLayout) findViewById(R.id.status_bar_background);
+        statusbarBackground = (RelativeLayout) findViewById(R.id.statusbar_background);
         panel = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
         panelHeader = (RelativeLayout) findViewById(R.id.panel_header);
-        contentFrame = (FrameLayout) findViewById(R.id.container);
+        contentFrame = (FrameLayout) findViewById(R.id.content);
 
         setUpToolbar();
         setUpNavigationDrawer(navigationView);
@@ -169,14 +121,6 @@ public class MainActivity extends AppCompatActivity implements
         // Display Feed Overview
         if (savedInstanceState == null)
             switchFragment(feedOverviewFragment, "feedOverview", getString(R.string.title_feed_overview));
-    }
-
-    private void setUpToolbar() {
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        if (toolbar != null) {
-            toolbar.setTitle(R.string.app_name);
-            setSupportActionBar(toolbar);
-        }
     }
 
     private void setUpNavigationDrawer(NavigationView navigationView) {
@@ -228,60 +172,13 @@ public class MainActivity extends AppCompatActivity implements
                 switchFragment(myWordsFragment, "myWords", title);
                 break;
             case R.id.navigation_settings:
-                switchFragment(settingsFragment, "settings", title);
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
                 break;
         }
 
         menuItem.setChecked(true);
         drawerLayout.closeDrawers();
-    }
-
-    private void createDataFragment() {
-        if (dataFragment == null) {
-            // Add the fragment
-            dataFragment = new DataFragment();
-            addFragment(dataFragment, "data");
-            // Create objects, store in data fragment
-            //dataFragment.setZeeguuConnectionManager(this);
-        }
-    }
-
-    private void restoreDataFragment() {
-        dataFragment = (DataFragment) fragmentManager.findFragmentByTag("data");
-        if (dataFragment != null) dataFragment.onRestore(this);
-    }
-
-    private void addFragment(Fragment fragment, String tag) {
-        fragmentManager.beginTransaction()
-            .add(fragment, tag)
-            .commit();
-    }
-
-    private void switchFragment(Fragment fragment, String tag, CharSequence title) {
-        emptyBackStack();
-        fragmentManager.beginTransaction()
-            .replace(R.id.container, fragment, tag)
-            .commit();
-
-        setTitle(title);
-    }
-
-    private void switchFragmentBackstack(Fragment fragment, String tag, CharSequence title) {
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, fragment, tag)
-                .addToBackStack(tag)
-                .commit();
-
-        backStackTitle.push(getTitle());
-        setTitle(title);
-    }
-
-    private void emptyBackStack() {
-        if (fragmentManager.getBackStackEntryCount() > 0) {
-            FragmentManager.BackStackEntry first = fragmentManager.getBackStackEntryAt(0);
-            fragmentManager.popBackStack(first.getId(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
-            backStackTitle = new Stack<>();
-        }
     }
 
     /**
@@ -300,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements
         if (color != 0) {
             // TODO: Check compatibility with older Android versions
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                statusBarBackground.setBackgroundColor(color);
+                statusbarBackground.setBackgroundColor(color);
             actionBar.setBackgroundDrawable(new ColorDrawable(color));
         }
     }
@@ -345,39 +242,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void setTitle(CharSequence title) {
-        if (toolbar != null)
-            toolbar.setTitle(title);
-        super.setTitle(title);
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
-        // Save UI state changes to the savedInstanceState.
-        // This bundle will be passed to onCreate if the process is
-        // killed and restarted.
-        savedInstanceState.putCharSequence("title", getTitle());
-        savedInstanceState.putCharSequenceArrayList("backStackTitle", new ArrayList<CharSequence>(backStackTitle));
-    }
-
-    @Override
-    public void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        // Restore UI state from the savedInstanceState.
-        // This bundle has also been passed to onCreate.
-        setTitle(savedInstanceState.getCharSequence("title"));
-
-        ArrayList<CharSequence> titleArrayList = savedInstanceState.getCharSequenceArrayList("backStackTitle");
-        if (titleArrayList != null) {
-            backStackTitle = new Stack<>();
-            for (CharSequence title : titleArrayList) {
-                backStackTitle.push(title);
-            }
-        }
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //if (!navigationDrawerFragment.isDrawerOpen()) {
             // Only show items in the action bar relevant to this screen
@@ -405,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // TODO: Remove settings from menu
         if (id == R.id.action_settings) {
-            switchFragment(settingsFragment, "settings", getString(R.string.title_settings));
+            //switchFragment(settingsFragment, "settings", getString(R.string.title_settings));
             return true;
         }
 
@@ -432,9 +296,7 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         if (feedlyAuthenticationFragment.goBack() && fragmentManager.getBackStackEntryCount() > 0) {
-            fragmentManager.popBackStack();
-            if (!backStackTitle.isEmpty())
-                setTitle(backStackTitle.pop());
+            popBackStack();
         }
     }
 
@@ -484,15 +346,6 @@ public class MainActivity extends AppCompatActivity implements
         super.onConfigurationChanged(newConfig);
         // Pass any configuration change to the drawer toggles
         drawerToggle.onConfigurationChanged(newConfig);
-    }
-
-    public void hideKeyboard() {
-        // Check if no view has focus:
-        View view = this.getCurrentFocus();
-        if (view != null) {
-            InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
-            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-        }
     }
 
     // Feed entry fragment navigation
@@ -601,13 +454,15 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void feedlyAuthenticationResponse(String response, boolean successful) {
         if (successful)
-            dataFragment.getFeedlyConnectionManager().authenticationSuccessful(response);
+            getFeedlyConnectionManager().authenticationSuccessful(response);
         else
-            dataFragment.getFeedlyConnectionManager().authenticationFailed(response);
+            getFeedlyConnectionManager().authenticationFailed(response);
 
         // Switch to next fragment
         CharSequence title = getString(R.string.title_feed_overview);
         switchFragment(feedOverviewFragment, "feedOverview", title);
+
+        getFeedlyConnectionManager().getCategories();
     }
 
     // Messages
@@ -625,34 +480,10 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    // Zeeguu authentication
-    @Override
-    public void showZeeguuLoginDialog(String message, String email) {
-        zeeguuLoginDialog.setMessage(message);
-        zeeguuLoginDialog.setEmail(email);
-        zeeguuLoginDialog.show(fragmentManager, "zeeguuLoginDialog");
-    }
-
-    public void showZeeguuLogoutDialog() {
-        zeeguuLogoutDialog.show(fragmentManager, "zeeguuLogoutDialog");
-    }
-
-    public void showZeeguuCreateAccountDialog(String message, String username, String email) {
-        zeeguuCreateAccountDialog.setMessage(message);
-        zeeguuCreateAccountDialog.setUsername(username);
-        zeeguuCreateAccountDialog.setEmail(email);
-        zeeguuCreateAccountDialog.show(fragmentManager, "zeeguuCreateAccountDialog");
-    }
-
     // Zeeguu
     @Override
     public ZeeguuWebViewFragment getWebViewFragment() {
         return feedEntryFragment;
-    }
-
-    @Override
-    public ZeeguuConnectionManager getConnectionManager() {
-        return dataFragment.getZeeguuConnectionManager();
     }
 
     @Override
@@ -668,49 +499,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void openUrlInBrowser(String URL) {
-
-    }
-
-    @Override
     public void notifyDataChanged(boolean myWordsChanged) {
         myWordsFragment.notifyDataSetChanged(myWordsChanged);
-    }
-
-    @Override
-    public void notifyLanguageChanged(boolean isLanguageFrom) {
-
-    }
-
-    @Override
-    public void bookmarkWord(String bookmarkID) {
-
-    }
-
-    /*
-     * Shared preferences helper methods
-     */
-    @Override
-    public void saveString(int prefKey, String value) {
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(getResources().getString(prefKey), value);
-        editor.apply();
-    }
-
-    @Override
-    public String loadString(int prefKey) {
-        return sharedPref.getString(getResources().getString(prefKey), "");
-    }
-
-    @Override
-    public void saveLong(int prefKey, Long value) {
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putLong(getResources().getString(prefKey), value);
-        editor.apply();
-    }
-
-    @Override
-    public Long loadLong(int prefKey) {
-        return sharedPref.getLong(getResources().getString(prefKey), 0);
     }
 }

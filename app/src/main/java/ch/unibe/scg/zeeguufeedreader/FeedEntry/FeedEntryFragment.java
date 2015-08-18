@@ -1,10 +1,7 @@
 package ch.unibe.scg.zeeguufeedreader.FeedEntry;
 
-import android.annotation.TargetApi;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Bundle;
-import android.webkit.ValueCallback;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
@@ -13,6 +10,7 @@ import android.widget.TextView;
 import ch.unibe.scg.zeeguufeedreader.Core.DisplayUtility;
 import ch.unibe.scg.zeeguufeedreader.R;
 import ch.unibe.zeeguulibrary.Core.Utility;
+import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewClient;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
 
 /**
@@ -43,7 +41,7 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
         final FrameLayout panelFrame = (FrameLayout) getActivity().findViewById(R.id.panel);
         this.enableTitle(false);
 
-        webView.setWebViewClient(new WebViewClient() {
+        webView.setWebViewClient(new ZeeguuWebViewClient(getActivity(), callback, webView, false) {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
