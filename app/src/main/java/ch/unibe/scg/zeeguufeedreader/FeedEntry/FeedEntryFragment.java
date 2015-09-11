@@ -93,7 +93,7 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
         String url = entry.getUrl();
         String date = entry.getDateFull() + " - " + entry.getDateTime();
         String feed = entry.getFeed().getName();
-        String author = entry.getAuthor();
+        String author = entry.getAuthor(); // TODO: Remove "by" if no author
         String content = entry.getContent();
 
         String css = Utility.assetToString(getActivity(), "css/style.css");

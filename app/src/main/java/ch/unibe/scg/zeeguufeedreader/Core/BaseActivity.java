@@ -9,18 +9,28 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
+import com.j256.ormlite.android.apptools.OpenHelperManager;
+import com.j256.ormlite.dao.Dao;
+
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
+import ch.unibe.scg.zeeguufeedreader.Database.CategoryFeed;
+import ch.unibe.scg.zeeguufeedreader.Database.DatabaseCallbacks;
+import ch.unibe.scg.zeeguufeedreader.Database.DatabaseHelper;
+import ch.unibe.scg.zeeguufeedreader.Database.QueryHelper;
+import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyCallbacks;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyConnectionManager;
-import ch.unibe.scg.zeeguufeedreader.Preferences.MainSettingsFragment;
 import ch.unibe.scg.zeeguufeedreader.Preferences.PreferenceScreens.ZeeguuSettingsFragment;
-import ch.unibe.scg.zeeguufeedreader.Preferences.SettingsCallbacks;
 import ch.unibe.scg.zeeguufeedreader.R;
 import ch.unibe.zeeguulibrary.Core.ZeeguuAccount;
 import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
@@ -30,11 +40,17 @@ import ch.unibe.zeeguulibrary.Dialogs.ZeeguuLoginDialog;
 import ch.unibe.zeeguulibrary.Dialogs.ZeeguuLogoutDialog;
 
 public abstract class BaseActivity extends AppCompatActivity implements
+        DatabaseCallbacks,
         FeedlyCallbacks,
         ZeeguuAccount.ZeeguuAccountCallbacks,
         ZeeguuConnectionManager.ZeeguuConnectionManagerCallbacks,
         ZeeguuSettingsFragment.ZeeguuSettingsCallbacks,
         ZeeguuDialogCallbacks {
+
+    /**
+     * Cache the database helper in the class.
+     */
+    private DatabaseHelper databaseHelper = null;
 
     private DataFragment dataFragment;
 
@@ -63,6 +79,8 @@ public abstract class BaseActivity extends AppCompatActivity implements
 
         // Data fragment
         createDataFragment();
+
+        databaseHelper = getDatabaseHelper();
     }
 
     // Set up
@@ -97,6 +115,19 @@ public abstract class BaseActivity extends AppCompatActivity implements
         if (toolbar != null) {
             toolbar.setTitle(R.string.app_name);
             setSupportActionBar(toolbar);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+		/*
+		 * Release the database helper when done.
+		 */
+        if (databaseHelper != null) {
+            OpenHelperManager.releaseHelper();
+            databaseHelper = null;
         }
     }
 
@@ -235,6 +266,16 @@ public abstract class BaseActivity extends AppCompatActivity implements
             InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
             inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
+    }
+
+    /**
+     * Get the database helper from the manager once per class.
+     */
+    public DatabaseHelper getDatabaseHelper() {
+        if (databaseHelper == null) {
+            databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
+        }
+        return databaseHelper;
     }
 
     // TODO: Move methods from MainActivity to BaseActivity?

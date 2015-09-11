@@ -59,41 +59,38 @@ public class FeedlyResponseParser {
     }
 
     /**
-     *  @param jsonArray: https://developer.feedly.com/v3/categories/#get-the-list-of-all-categories
+     * @param jsonArray: https://developer.feedly.com/v3/categories/#get-the-list-of-all-categories
      */
-    public static ArrayList<Category> parseCategories(JSONArray jsonArray) {
-        ArrayList<Category> categories = new ArrayList<>();
+    public static void parseCategories(JSONArray jsonArray, FeedlyAccount account) {
         try {
             for (int i=0; i < jsonArray.length(); i++) {
                 JSONObject json = jsonArray.getJSONObject(i);
-                Category category = new Category(json.getString("label"), i);
+                Category category = new Category(json.getString("label"));
                 category.setFeedlyId(json.getString("id"));
-                categories.add(category);
-            }
 
-            return categories;
+                account.saveCategory(category);
+            }
         }
         catch (JSONException e) {
             e.printStackTrace();
         }
-
-        return null;
     }
 
     /**
-     *  @param jsonArray: https://developer.feedly.com/v3/subscriptions/#get-the-users-subscriptions
+     * @param jsonArray: https://developer.feedly.com/v3/subscriptions/#get-the-users-subscriptions
      */
-    public static ArrayList<Feed> parseSubscriptions(JSONArray jsonArray, FeedlyAccount account) {
-        ArrayList<Feed> feeds = new ArrayList<>();
+    public static void parseSubscriptions(JSONArray jsonArray, FeedlyAccount account) {
         try {
             // Loop through all feeds
             for (int i=0; i < jsonArray.length(); i++) {
                 JSONObject json = jsonArray.getJSONObject(i);
-                Feed feed = new Feed(json.getString("title"), i);
+                Feed feed = new Feed(json.getString("title"));
                 feed.setFeedlyId(json.getString("id"));
                 feed.setUrl(json.getString("website"));
                 if (json.has("visualUrl"))
                     feed.setImageUrl(json.getString("visualUrl"));
+
+                account.saveFeed(feed);
 
                 // Loop through all categories of the current feed
                 JSONArray jsonCategories = json.getJSONArray("categories");
@@ -103,61 +100,46 @@ public class FeedlyResponseParser {
 
                     // Add feed to category (and category to feed)
                     if (category != null) {
-                        category.addFeed(feed);
-                        feed.addCategory(category);
+                        account.linkCategoryFeed(category, feed);
                     }
                 }
-
-                feeds.add(feed);
             }
-
-            return feeds;
         }
         catch (JSONException e) {
             e.printStackTrace();
         }
-
-        return null;
     }
 
     /**
-     *  @param jsonObject: https://developer.feedly.com/v3/streams/#get-the-content-of-a-stream
+     * @param jsonObject: https://developer.feedly.com/v3/streams/#get-the-content-of-a-stream
      */
-    public static ArrayList<FeedEntry> parseFeedEntries(JSONObject jsonObject, Feed feed) {
-        ArrayList<FeedEntry> entries = new ArrayList<>();
+    public static void parseFeedEntries(JSONObject jsonObject, Feed feed, FeedlyAccount account) {
         try {
             JSONArray jsonArray = jsonObject.getJSONArray("items");
             for (int i=0; i < jsonArray.length(); i++) {
                 JSONObject json = jsonArray.getJSONObject(i);
-                entries.add(parseSingleFeedEntry(feed, json, i));
+                account.saveFeedEntry(parseSingleFeedEntry(feed, json));
             }
-
-            return entries;
         }
         catch (JSONException e) {
             Log.e("feedly_parse_entries", e.getMessage());
             e.printStackTrace();
         }
-
-        return null;
     }
 
     /**
-     *  @param jsonObject: https://developer.feedly.com/v3/streams/#get-the-content-of-a-stream
+     * @param jsonObject: https://developer.feedly.com/v3/streams/#get-the-content-of-a-stream
      */
     public static void parseAllFeedEntries(JSONObject jsonObject, FeedlyAccount account) {
-        ArrayList<FeedEntry> entries = new ArrayList<>();
         try {
             JSONArray jsonArray = jsonObject.getJSONArray("items");
             for (int i=0; i < jsonArray.length(); i++) {
                 JSONObject jsonFeed = jsonArray.getJSONObject(i);
                 Feed feed = account.getFeedById(jsonFeed.getJSONObject("origin").getString("streamId"));
 
-                // Add entry to feed
                 if (feed != null) {
-                    FeedEntry entry = parseSingleFeedEntry(feed, jsonFeed, i);
-                    if (entry != null)
-                        feed.addEntry(entry);
+                    FeedEntry entry = parseSingleFeedEntry(feed, jsonFeed);
+                    account.saveFeedEntry(entry);
                 }
             }
         }
@@ -170,7 +152,7 @@ public class FeedlyResponseParser {
     /**
      * @param json: https://developer.feedly.com/v3/entries/#get-the-content-of-an-entry
      */
-    private static FeedEntry parseSingleFeedEntry(Feed feed, JSONObject json, int id) {
+    private static FeedEntry parseSingleFeedEntry(Feed feed, JSONObject json) {
         try {
             // Content
             String content = "No content";
@@ -183,16 +165,13 @@ public class FeedlyResponseParser {
             String author = "";
             if (json.has("author"))
                 author = json.getString("author");
-            else
-                author = feed.getName();
 
             FeedEntry entry = new FeedEntry(
                     json.getString("title"),
                     content,
                     json.getJSONArray("alternate").getJSONObject(0).getString("href"),
                     author,
-                    json.getLong("published"),
-                    id);
+                    json.getLong("published"));
             entry.setFeedlyId(json.getString("id"));
 
             if (json.has("summary"))

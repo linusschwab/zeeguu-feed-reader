@@ -82,72 +82,8 @@ public class FeedOverviewFragment extends Fragment {
     }
 
     public void updateSubscriptions(ArrayList<Category> categories) {
-        adapter.setCategories(categories);
+        //adapter.setCategories(categories);
         this.categories = categories;
-    }
-
-    private ArrayList<Category> createTestList() {
-        Category category1 = new Category("Test", 123);
-        Feed feed11 = new Feed("Test Feed", 11);
-        feed11.setColor(getResources().getColor(R.color.darkred));
-        feed11.setEntries(createTestFeedEntries());
-        Feed feed12 = new Feed("Test Feed 2", 12);
-        feed12.setColor(getResources().getColor(R.color.navy));
-        feed12.setEntries(createTestFeedEntries());
-        category1.addFeed(feed11);
-        category1.addFeed(feed12);
-
-        Category category2 = new Category("Hallo", 124);
-        Feed feed21 = new Feed("Test Feed", 21);
-        Feed feed22 = new Feed("Test Feed 2", 22);
-        Feed feed23 = new Feed("Test Feed 3", 22);
-        category2.addFeed(feed21);
-        category2.addFeed(feed22);
-        category2.addFeed(feed23);
-
-        Category category3 = new Category("Kategorie", 125);
-        Feed feed31 = new Feed("Test Feed", 31);
-        Feed feed32 = new Feed("Test Feed 2", 32);
-        Feed feed33 = new Feed("Test Feed 3", 32);
-        category3.addFeed(feed31);
-        category3.addFeed(feed32);
-        category3.addFeed(feed33);
-
-        ArrayList<Category> list = new ArrayList<>();
-        list.add(category1);
-        list.add(category2);
-        list.add(category3);
-
-        return list;
-    }
-
-    private ArrayList<FeedEntry> createTestFeedEntries() {
-        FeedEntry test1 = new FeedEntry("Test", createTestContent(), "", "Author", 11112015, 101);
-        FeedEntry test2 = new FeedEntry("Test Hallo", createTestContent(), "", "Author", 11112015, 102);
-        FeedEntry test3 = new FeedEntry("Test Hi", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 103);
-        FeedEntry test4 = new FeedEntry("Test 123", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 104);
-        FeedEntry test5 = new FeedEntry("Test Entry", "Test Test Test Test Test Test Test Test", "", "Author", 11112015, 105);
-
-        ArrayList<FeedEntry> list = new ArrayList<>();
-
-        list.add(test1);
-        list.add(test2);
-        list.add(test3);
-        list.add(test4);
-        list.add(test5);
-
-        return list;
-    }
-
-    private String createTestContent() {
-        String content =    "<p>This is <u>underlined</u> text. And \"this\" is a test phrase, that needs to be long enough so that it does not fit on one line.</p>" +
-                            "<p>This is a <a href=\"http://google.ch\">link</a>.</p>" +
-                            "<p>Scrolling<br/>Test.</p>" + "<p>1800-Scrolling Test</p>" + "<p>12:00 Scrolling Test</p>" + "<p>16'00-Scrolling Test</p>" + "<p>Scrolling Test</p>" +
-                            "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
-                            "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" + "<p>Scrolling Test</p>" +
-                            "Test";
-
-        return content;
     }
 
     @Override

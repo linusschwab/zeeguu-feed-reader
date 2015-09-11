@@ -67,8 +67,13 @@ public class FeedlyConnectionManager {
             getAuthenticationCode();
         else if (!account.isUserInSession())
             getAuthenticationToken(account.getAuthenticationCode());
-        else
-            getCategories();
+        //else
+            //getCategories();
+
+        account.loadCategories();
+        account.loadFeeds();
+        callback.updateSubscriptions(account.getCategories());
+        callback.displayMessage("Subscriptions loaded");
     }
 
     /**
@@ -261,7 +266,7 @@ public class FeedlyConnectionManager {
 
             @Override
             public void onResponse(JSONArray response) {
-                account.setCategories(FeedlyResponseParser.parseCategories(response));
+                FeedlyResponseParser.parseCategories(response, account);
                 getSubscriptions();
             }
 
@@ -299,7 +304,7 @@ public class FeedlyConnectionManager {
 
             @Override
             public void onResponse(JSONArray response) {
-                account.setFeeds(FeedlyResponseParser.parseSubscriptions(response, account));
+                FeedlyResponseParser.parseSubscriptions(response, account);
                 getAllFeedEntries(100);
             }
 
@@ -341,7 +346,8 @@ public class FeedlyConnectionManager {
 
             @Override
             public void onResponse(JSONObject response) {
-                feed.setEntries(FeedlyResponseParser.parseFeedEntries(response, feed));
+                // TODO: save
+                FeedlyResponseParser.parseFeedEntries(response, feed, account);
                 callback.updateSubscriptions(account.getCategories());
                 callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated));
             }

@@ -2,6 +2,7 @@ package ch.unibe.scg.zeeguufeedreader.Feedly;
 
 import java.util.ArrayList;
 
+import ch.unibe.scg.zeeguufeedreader.Database.DatabaseHelper;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
 
 /**
@@ -11,6 +12,9 @@ public interface FeedlyCallbacks {
     void displayFeedlyAuthentication(String url);
     void displayMessage(String message);
     void updateSubscriptions(ArrayList<Category> categories);
+
+    // Database
+    DatabaseHelper getDatabaseHelper();
 
     // Shared preference helper methods
     void saveString(int prefKey, String value);
