@@ -1,2 +1,3 @@
 configurations.create("default")
+artifacts.add("default", file('ormlite-core-4.48.jar'))
 artifacts.add("default", file('ormlite-android-4.48.jar'))

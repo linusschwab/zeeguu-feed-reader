@@ -1,1 +1,1 @@
-include ':app', ':libraries:volley', ':libraries:zeeguulibrary', ':libraries:ormlite-core-4.48', ':libraries:ormlite-android-4.48'
+include ':app', ':libraries:volley', ':libraries:zeeguulibrary', ':libraries:ormlite'
