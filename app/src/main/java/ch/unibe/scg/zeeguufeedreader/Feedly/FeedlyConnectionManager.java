@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import ch.unibe.scg.zeeguufeedreader.Core.Timer;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
@@ -45,6 +46,9 @@ public class FeedlyConnectionManager {
     private Activity activity;
     private FeedlyCallbacks callback;
 
+    // Timer to measure synchronization duration
+    Timer timer = new Timer();
+
     public FeedlyConnectionManager(Activity activity) {
         this.activity = activity;
         this.account = new FeedlyAccount(activity);
@@ -60,6 +64,12 @@ public class FeedlyConnectionManager {
 
         // Load user information
         account.load();
+        account.loadCategories();
+        account.loadFeeds();
+
+        callback.setSubscriptions(account.getCategories(), false);
+
+        timer.start();
 
         // TODO: Don't display login on app start
         // Get missing information from server
@@ -67,13 +77,8 @@ public class FeedlyConnectionManager {
             getAuthenticationCode();
         else if (!account.isUserInSession())
             getAuthenticationToken(account.getAuthenticationCode());
-        //else
-            //getCategories();
-
-        account.loadCategories();
-        account.loadFeeds();
-        callback.updateSubscriptions(account.getCategories());
-        callback.displayMessage("Subscriptions loaded");
+        else
+            getCategories();
     }
 
     /**
@@ -266,7 +271,10 @@ public class FeedlyConnectionManager {
 
             @Override
             public void onResponse(JSONArray response) {
-                FeedlyResponseParser.parseCategories(response, account);
+                // Parse and synchronize categories
+                ArrayList<Category> categories = FeedlyResponseParser.parseCategories(response);
+                account.synchronizeCategories(categories);
+
                 getSubscriptions();
             }
 
@@ -304,8 +312,11 @@ public class FeedlyConnectionManager {
 
             @Override
             public void onResponse(JSONArray response) {
-                FeedlyResponseParser.parseSubscriptions(response, account);
-                getAllFeedEntries(100);
+                // Parse and synchronize feeds
+                ArrayList<Feed> feeds = FeedlyResponseParser.parseSubscriptions(response, account);
+                account.synchronizeFeeds(feeds);
+
+                getAllFeedEntries(500);
             }
 
         }, new Response.ErrorListener() {
@@ -347,8 +358,8 @@ public class FeedlyConnectionManager {
             @Override
             public void onResponse(JSONObject response) {
                 // TODO: save
-                FeedlyResponseParser.parseFeedEntries(response, feed, account);
-                callback.updateSubscriptions(account.getCategories());
+                FeedlyResponseParser.parseFeedEntries(response, feed);
+                callback.setSubscriptions(account.getCategories(), true);
                 callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated));
             }
 
@@ -384,9 +395,16 @@ public class FeedlyConnectionManager {
 
             @Override
             public void onResponse(JSONObject response) {
-                FeedlyResponseParser.parseAllFeedEntries(response, account);
-                callback.updateSubscriptions(account.getCategories());
-                callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated));
+                // Parse and synchronize entries
+                ArrayList<FeedEntry> entries = FeedlyResponseParser.parseAllFeedEntries(response, account);
+                account.synchronizeFeedEntries(entries);
+                account.loadCategoryFeed();
+
+                timer.stop();
+
+                // Update UI
+                callback.setSubscriptions(account.getCategories(), true);
+                callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated) + " (" + timer.getTimeElapsed() + ")");
             }
 
         }, new Response.ErrorListener() {

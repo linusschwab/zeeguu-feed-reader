@@ -24,7 +24,7 @@ public class FeedEntry {
     @DatabaseField(generatedId = true)
     private int id;
 
-    @DatabaseField(foreign = true, columnName = "feed_id")
+    @DatabaseField(foreign = true, columnName = "feed_id", columnDefinition = "integer references feeds(id) on delete cascade")
     private Feed feed;
 
     @DatabaseField(columnName = "feedly_id")

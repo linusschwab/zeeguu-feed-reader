@@ -8,6 +8,9 @@ import com.j256.ormlite.dao.Dao;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import ch.unibe.scg.zeeguufeedreader.Database.CategoryFeed;
 import ch.unibe.scg.zeeguufeedreader.Database.DatabaseHelper;
@@ -123,15 +126,26 @@ public class FeedlyAccount {
     // Database Methods
     public void saveCategory(Category category) {
         try {
-            if (category.getId() == 0)
+            if (category.getId() == 0) {
                 categoryDao.create(category);
+                categories.add(category);
+            }
             else
                 categoryDao.update(category);
-
-            categories.add(category);
         }
         catch (SQLException e) {
             Log.e(FeedlyAccount.class.getName(), "Can't save category: " + category.getName(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void deleteCategory(Category category) {
+        try {
+            categoryDao.delete(category);
+            categories.remove(category);
+        }
+        catch (SQLException e) {
+            Log.e(FeedlyAccount.class.getName(), "Can't delete category: " + category.getName(), e);
             throw new RuntimeException(e);
         }
     }
@@ -146,6 +160,36 @@ public class FeedlyAccount {
         catch (SQLException e) {
             Log.e(FeedlyAccount.class.getName(), "Can't load categories", e);
             throw new RuntimeException(e);
+        }
+    }
+
+    public void synchronizeCategories(ArrayList<Category> categoriesNew) {
+        if (categoriesNew.size() == 0)
+            return;
+
+        ArrayList<Category> categoriesExisting = new ArrayList<>(categories);
+
+        for (Category categoryNew : categoriesNew) {
+            Category categoryExisting = getCategoryById(categoryNew.getFeedlyId());
+
+            // Category exists
+            if (categoryExisting != null) {
+                // Update name if it changed
+                if (!categoryNew.getName().equals(categoryExisting.getName())) {
+                    categoryExisting.setName(categoryNew.getName());
+                    saveCategory(categoryExisting);
+                }
+
+                categoriesExisting.remove(categoryExisting);
+            }
+            // New category
+            else
+                saveCategory(categoryNew);
+        }
+
+        // Delete categories that don't exist on the server any more
+        for (Category categoryExisting : categoriesExisting) {
+            deleteCategory(categoryExisting);
         }
     }
 
@@ -164,6 +208,17 @@ public class FeedlyAccount {
         }
     }
 
+    public void deleteFeed(Feed feed) {
+        try {
+            feedDao.delete(feed);
+            feeds.remove(feed);
+        }
+        catch (SQLException e) {
+            Log.e(FeedlyAccount.class.getName(), "Can't delete feed: " + feed.getName(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public void loadFeeds() {
         try {
             feeds = new ArrayList<>(feedDao.queryForAll());
@@ -177,6 +232,43 @@ public class FeedlyAccount {
         }
     }
 
+    public void synchronizeFeeds(ArrayList<Feed> feedsNew) {
+        if (feedsNew.size() == 0)
+            return;
+
+        ArrayList<Feed> feedsExisting = new ArrayList<>(feeds);
+
+        for (Feed feedNew : feedsNew) {
+            Feed feedExisting = getFeedById(feedNew.getFeedlyId());
+
+            // Feed exists
+            if (feedExisting != null) {
+                // Update name if it changed
+                if (!feedExisting.getName().equals(feedNew.getName())) {
+                    feedExisting.setName(feedNew.getName());
+                    saveFeed(feedExisting);
+                }
+
+                feedsExisting.remove(feedExisting);
+            }
+            // New feed
+            else {
+                saveFeed(feedNew);
+
+                // Link feed with categories
+                ArrayList<Category> categoriesToLink = feedNew.getCategoriesToLink();
+                for (Category category : categoriesToLink)
+                    linkCategoryFeed(category, feedNew);
+            }
+        }
+
+        // Delete feeds that don't exist on the server any more
+        for (Feed feedExisting : feedsExisting) {
+            deleteFeed(feedExisting);
+        }
+
+    }
+
     public void saveFeedEntry(FeedEntry entry) {
         try {
             if (entry.getId() == 0)
@@ -187,6 +279,36 @@ public class FeedlyAccount {
         catch (SQLException e) {
             Log.e(FeedlyAccount.class.getName(), "Can't save feed entry: " + entry.getTitle(), e);
             throw new RuntimeException(e);
+        }
+    }
+
+    public void deleteFeedEntry(FeedEntry entry) {
+        try {
+            feedEntryDao.delete(entry);
+        }
+        catch (SQLException e) {
+            Log.e(FeedlyAccount.class.getName(), "Can't delete feed entry: " + entry.getTitle(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void synchronizeFeedEntries(ArrayList<FeedEntry> entriesNew) {
+        for (FeedEntry entryNew : entriesNew) {
+            FeedEntry entryExisting = null;
+            try {
+                List<FeedEntry> result = feedEntryDao.queryForEq("feedly_id", entryNew.getFeedlyId());
+
+                if (result.size() != 0)
+                    entryExisting = result.get(0);
+            }
+            catch (SQLException e) {
+                Log.e(FeedlyAccount.class.getName(), "Query error", e);
+                throw new RuntimeException(e);
+            }
+
+            // Entry exists
+            if (entryExisting == null)
+                saveFeedEntry(entryNew);
         }
     }
 
@@ -206,6 +328,20 @@ public class FeedlyAccount {
 
     public void unlinkCategoryFeed(Category category, Feed feed) {
         // TODO: Delete link
+    }
+
+    public void loadCategoryFeed() {
+        try {
+            for (Category category : categories)
+                category.setFeeds(new ArrayList<>(queryHelper.getFeedsForCategory(category)));
+
+            for (Feed feed : feeds)
+                feed.setCategories(new ArrayList<>(queryHelper.getCategoriesForFeed(feed)));
+        }
+        catch (SQLException e) {
+            Log.e(FeedlyAccount.class.getName(), "Can't load category feed link", e);
+            throw new RuntimeException(e);
+        }
     }
 
     // Boolean Checks

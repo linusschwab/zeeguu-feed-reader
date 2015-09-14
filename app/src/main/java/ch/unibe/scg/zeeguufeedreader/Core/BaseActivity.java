@@ -14,20 +14,13 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
-import com.j256.ormlite.dao.Dao;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Stack;
 
-import ch.unibe.scg.zeeguufeedreader.Database.CategoryFeed;
 import ch.unibe.scg.zeeguufeedreader.Database.DatabaseCallbacks;
 import ch.unibe.scg.zeeguufeedreader.Database.DatabaseHelper;
-import ch.unibe.scg.zeeguufeedreader.Database.QueryHelper;
-import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
-import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyCallbacks;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyConnectionManager;
 import ch.unibe.scg.zeeguufeedreader.Preferences.PreferenceScreens.ZeeguuSettingsFragment;
@@ -303,7 +296,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void updateSubscriptions(ArrayList<Category> categories) {
+    public void setSubscriptions(ArrayList<Category> categories, boolean update) {
 
     }
 

@@ -11,7 +11,7 @@ import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
 public interface FeedlyCallbacks {
     void displayFeedlyAuthentication(String url);
     void displayMessage(String message);
-    void updateSubscriptions(ArrayList<Category> categories);
+    void setSubscriptions(ArrayList<Category> categories, boolean update);
 
     // Database
     DatabaseHelper getDatabaseHelper();

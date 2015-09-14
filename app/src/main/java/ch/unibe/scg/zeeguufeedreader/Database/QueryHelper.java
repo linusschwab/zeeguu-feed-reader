@@ -1,6 +1,7 @@
 package ch.unibe.scg.zeeguufeedreader.Database;
 
 import android.app.Activity;
+import android.util.Log;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.PreparedQuery;
@@ -56,6 +57,38 @@ public class QueryHelper {
 
         Dao<Feed, Integer> feedDao = callback.getDatabaseHelper().getFeedDao();
         return feedDao.query(feedsForCategoryQuery);
+    }
+
+    public Category getCategoryByFeedlyId(String feedlyId) {
+        try {
+            Dao<Category, Integer> categoryDao = callback.getDatabaseHelper().getCategoryDao();
+            List<Category> result = categoryDao.queryForEq("feedly_id", feedlyId);
+
+            if (result.size() != 0)
+                return result.get(0);
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get category by feedly id", e);
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
+
+    public Feed getFeedByFeedlyId(String feedlyId) {
+        try {
+            Dao<Feed, Integer> feedDao = callback.getDatabaseHelper().getFeedDao();
+            List<Feed> result = feedDao.queryForEq("feedly_id", feedlyId);
+
+            if (result.size() != 0)
+                return result.get(0);
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get feed by feedly id", e);
+            throw new RuntimeException(e);
+        }
+
+        return null;
     }
 
     // Query builder methods

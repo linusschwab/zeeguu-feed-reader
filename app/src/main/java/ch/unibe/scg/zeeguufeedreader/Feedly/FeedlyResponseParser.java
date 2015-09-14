@@ -61,25 +61,28 @@ public class FeedlyResponseParser {
     /**
      * @param jsonArray: https://developer.feedly.com/v3/categories/#get-the-list-of-all-categories
      */
-    public static void parseCategories(JSONArray jsonArray, FeedlyAccount account) {
+    public static ArrayList<Category> parseCategories(JSONArray jsonArray) {
+        ArrayList<Category> categories = new ArrayList<>();
         try {
             for (int i=0; i < jsonArray.length(); i++) {
                 JSONObject json = jsonArray.getJSONObject(i);
                 Category category = new Category(json.getString("label"));
                 category.setFeedlyId(json.getString("id"));
-
-                account.saveCategory(category);
+                categories.add(category);
             }
         }
         catch (JSONException e) {
             e.printStackTrace();
         }
+
+        return categories;
     }
 
     /**
      * @param jsonArray: https://developer.feedly.com/v3/subscriptions/#get-the-users-subscriptions
      */
-    public static void parseSubscriptions(JSONArray jsonArray, FeedlyAccount account) {
+    public static ArrayList<Feed> parseSubscriptions(JSONArray jsonArray, FeedlyAccount account) {
+        ArrayList<Feed> feeds = new ArrayList<>();
         try {
             // Loop through all feeds
             for (int i=0; i < jsonArray.length(); i++) {
@@ -90,63 +93,68 @@ public class FeedlyResponseParser {
                 if (json.has("visualUrl"))
                     feed.setImageUrl(json.getString("visualUrl"));
 
-                account.saveFeed(feed);
-
                 // Loop through all categories of the current feed
                 JSONArray jsonCategories = json.getJSONArray("categories");
                 for (int j=0; j < jsonCategories.length(); j++) {
                     JSONObject jsonCategory = jsonCategories.getJSONObject(j);
                     Category category = account.getCategoryById(jsonCategory.getString("id"));
 
-                    // Add feed to category (and category to feed)
                     if (category != null) {
-                        account.linkCategoryFeed(category, feed);
+                        feed.addCategoryToLink(category);
                     }
                 }
+
+                feeds.add(feed);
             }
         }
         catch (JSONException e) {
             e.printStackTrace();
         }
+
+        return feeds;
     }
 
     /**
      * @param jsonObject: https://developer.feedly.com/v3/streams/#get-the-content-of-a-stream
      */
-    public static void parseFeedEntries(JSONObject jsonObject, Feed feed, FeedlyAccount account) {
+    public static ArrayList<FeedEntry> parseFeedEntries(JSONObject jsonObject, Feed feed) {
+        ArrayList<FeedEntry> entries = new ArrayList<>();
         try {
             JSONArray jsonArray = jsonObject.getJSONArray("items");
             for (int i=0; i < jsonArray.length(); i++) {
                 JSONObject json = jsonArray.getJSONObject(i);
-                account.saveFeedEntry(parseSingleFeedEntry(feed, json));
+                entries.add(parseSingleFeedEntry(feed, json));
             }
         }
         catch (JSONException e) {
             Log.e("feedly_parse_entries", e.getMessage());
             e.printStackTrace();
         }
+
+        return entries;
     }
 
     /**
      * @param jsonObject: https://developer.feedly.com/v3/streams/#get-the-content-of-a-stream
      */
-    public static void parseAllFeedEntries(JSONObject jsonObject, FeedlyAccount account) {
+    public static ArrayList<FeedEntry> parseAllFeedEntries(JSONObject jsonObject, FeedlyAccount account) {
+        ArrayList<FeedEntry> entries = new ArrayList<>();
         try {
             JSONArray jsonArray = jsonObject.getJSONArray("items");
             for (int i=0; i < jsonArray.length(); i++) {
                 JSONObject jsonFeed = jsonArray.getJSONObject(i);
                 Feed feed = account.getFeedById(jsonFeed.getJSONObject("origin").getString("streamId"));
 
-                if (feed != null) {
-                    FeedEntry entry = parseSingleFeedEntry(feed, jsonFeed);
-                    account.saveFeedEntry(entry);
-                }
+                if (feed != null)
+                    entries.add(parseSingleFeedEntry(feed, jsonFeed));
             }
         }
         catch (JSONException e) {
             Log.e("feedly_parse_entries", e.getMessage());
             e.printStackTrace();
         }
+
+        return entries;
     }
 
     /**

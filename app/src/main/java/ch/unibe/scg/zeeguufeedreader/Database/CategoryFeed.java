@@ -21,11 +21,11 @@ public class CategoryFeed {
     private int id;
 
     // This is a foreign object which just stores the id from the Category object in this table.
-    @DatabaseField(foreign = true, columnName = "category_id")
+    @DatabaseField(foreign = true, columnName = "category_id", columnDefinition = "integer references categories(id) on delete cascade")
     Category category;
 
     // This is a foreign object which just stores the id from the Feed object in this table.
-    @DatabaseField(foreign = true, columnName = "feed_id")
+    @DatabaseField(foreign = true, columnName = "feed_id", columnDefinition = "integer references feeds(id) on delete cascade")
     Feed feed;
 
     CategoryFeed() {

@@ -52,6 +52,11 @@ public class Feed {
      */
     private ArrayList<Category> categories = new ArrayList<>();
 
+    /*
+     List of new categories that are linked during feed synchronization
+     */
+    private ArrayList<Category> categoriesToLink = new ArrayList<>();
+
     private int unreadCount;
 
     public Feed() {
@@ -102,6 +107,10 @@ public class Feed {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public long getId() {
         return id;
     }
@@ -120,6 +129,14 @@ public class Feed {
 
     public void addCategory(Category category) {
         categories.add(category);
+    }
+
+    public ArrayList<Category> getCategoriesToLink() {
+        return categoriesToLink;
+    }
+
+    public void addCategoryToLink(Category category) {
+        categoriesToLink.add(category);
     }
 
     public String getFeedlyId() {

@@ -434,12 +434,15 @@ public class MainActivity extends BaseActivity implements
     };
 
     @Override
-    public void updateSubscriptions(ArrayList<Category> categories) {
+    public void setSubscriptions(ArrayList<Category> categories, boolean update) {
         // Update unread count
         for (Category category : categories)
             category.getUnreadCount();
 
-        feedOverviewFragment.updateSubscriptions(categories);
+        if (update)
+            feedOverviewFragment.updateSubscriptions(categories);
+        else
+            feedOverviewFragment.setCategories(categories);
     }
 
     // Feedly authentication

@@ -82,7 +82,11 @@ public class FeedOverviewFragment extends Fragment {
     }
 
     public void updateSubscriptions(ArrayList<Category> categories) {
-        //adapter.setCategories(categories);
+        adapter.setCategories(categories);
+        this.categories = categories;
+    }
+
+    public void setCategories(ArrayList<Category> categories) {
         this.categories = categories;
     }
 
