@@ -36,20 +36,10 @@
             </RelativeLayout>
 
             <!-- Sliding panel -->
-            <FrameLayout
+            <android.support.v4.view.ViewPager
+                android:id="@+id/panel"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <!-- Container for the sliding fragment-->
-                <FrameLayout
-                    android:id="@+id/panel"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-
-                <!-- Sliding panel header -->
-                <include layout="@layout/panel_header" />
-
-            </FrameLayout>
+                android:layout_height="match_parent" />
 
         </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 

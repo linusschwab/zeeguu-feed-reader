@@ -22,7 +22,6 @@ import ch.unibe.scg.zeeguufeedreader.R;
 public class FeedEntryListFragment extends Fragment {
 
     private ListView listView;
-    private FeedEntryListAdapter adapter;
 
     // TODO: display error message if null
     private Feed feed;
@@ -36,7 +35,7 @@ public class FeedEntryListFragment extends Fragment {
         void setActionBar(boolean displayBackButton, int actionBarColor);
         void resetActionBar();
 
-        void displayFeedEntry(FeedEntry entry);
+        void displayFeedEntry(Feed feed, int position);
     }
 
     /**
@@ -64,8 +63,7 @@ public class FeedEntryListFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                FeedEntry entry = (FeedEntry) adapter.getItem(position);
-                callback.displayFeedEntry(entry);
+            callback.displayFeedEntry(feed, position);
             }
         });
 
@@ -80,7 +78,7 @@ public class FeedEntryListFragment extends Fragment {
         if (feed.getEntries() != null)
             entries = feed.getEntries();
 
-        adapter = new FeedEntryListAdapter(getActivity(), entries);
+        FeedEntryListAdapter adapter = new FeedEntryListAdapter(getActivity(), entries);
         listView.setAdapter(adapter);
     }
 

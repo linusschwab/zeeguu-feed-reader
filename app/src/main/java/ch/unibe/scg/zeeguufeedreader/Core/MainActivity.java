@@ -3,18 +3,15 @@ package ch.unibe.scg.zeeguufeedreader.Core;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
-import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
-import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.view.ActionMode;
@@ -23,17 +20,14 @@ import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
-import java.util.Stack;
 
-import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
+import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryPagerAdapter;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
@@ -64,14 +58,16 @@ public class MainActivity extends BaseActivity implements
     private ActionBarDrawerToggle drawerToggle;
     private RelativeLayout statusbarBackground;
     private NavigationView navigationView;
-    private SlidingUpPanelLayout panel;
-    private RelativeLayout panelHeader;
+    private SlidingUpPanelLayout panelLayout;
     private FrameLayout contentFrame;
+
+    private ViewPager viewPager;
+    private FeedEntryPagerAdapter pagerAdapter;
+    private boolean isPanelLoaded = false;
 
     // Fragments
     private FeedOverviewFragment feedOverviewFragment;
     private FeedEntryListFragment feedEntryListFragment;
-    private FeedEntryFragment feedEntryFragment;
     private FeedEntryCompatibilityFragment feedEntryCompatibilityFragment;
     private FeedlyAuthenticationFragment feedlyAuthenticationFragment;
     private MyWordsFragment myWordsFragment;
@@ -91,9 +87,6 @@ public class MainActivity extends BaseActivity implements
         feedEntryListFragment = (FeedEntryListFragment) fragmentManager.findFragmentByTag("feedEntryList");
         if (feedEntryListFragment == null) feedEntryListFragment = new FeedEntryListFragment();
 
-        feedEntryFragment = (FeedEntryFragment) fragmentManager.findFragmentByTag("feedEntry");
-        if (feedEntryFragment == null) feedEntryFragment = new FeedEntryFragment();
-
         feedEntryCompatibilityFragment = (FeedEntryCompatibilityFragment) fragmentManager.findFragmentByTag("feedItemCompatibility");
         if (feedEntryCompatibilityFragment == null) feedEntryCompatibilityFragment = new FeedEntryCompatibilityFragment();
 
@@ -103,17 +96,17 @@ public class MainActivity extends BaseActivity implements
         myWordsFragment = (MyWordsFragment) fragmentManager.findFragmentByTag("myWords");
         if (myWordsFragment == null) myWordsFragment = new MyWordsFragment();
 
-        // Action Mode
-        translationActionMode = new ZeeguuTranslationActionMode(feedEntryFragment);
-
         // Layout
         setContentView(R.layout.activity_main);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
         statusbarBackground = (RelativeLayout) findViewById(R.id.statusbar_background);
-        panel = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
-        panelHeader = (RelativeLayout) findViewById(R.id.panel_header);
+        panelLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
         contentFrame = (FrameLayout) findViewById(R.id.content);
+
+        viewPager = (ViewPager) findViewById(R.id.panel);
+        pagerAdapter = new FeedEntryPagerAdapter(fragmentManager);
+        viewPager.setAdapter(pagerAdapter);
 
         setUpToolbar();
         setUpNavigationDrawer(navigationView);
@@ -282,11 +275,11 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void onBackPressed() {
 
-        if (panel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
-            if (!feedEntryFragment.goBack())
+        if (panelLayout.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
+            if (!getCurrentFeedEntryFragment().goBack())
                 return;
 
-            panel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+            panelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             return;
         }
 
@@ -305,6 +298,7 @@ public class MainActivity extends BaseActivity implements
         actionMode = mode;
 
         if (displayTranslationActionMode()) {
+            translationActionMode = new ZeeguuTranslationActionMode(getCurrentFeedEntryFragment());
             translationActionMode.onPrepareActionMode(mode, mode.getMenu());
             translationActionMode.onCreateActionMode(mode, mode.getMenu());
         }
@@ -331,7 +325,7 @@ public class MainActivity extends BaseActivity implements
     }
 
     private boolean displayTranslationActionMode() {
-        return panel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED;
+        return panelLayout.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED;
     }
 
     @Override
@@ -354,30 +348,49 @@ public class MainActivity extends BaseActivity implements
         feedEntryListFragment.setFeed(feed);
         switchFragmentBackstack(feedEntryListFragment, "feedEntryList", feed.getName());
 
-        // Show panel
-        setUpSlidingPanel();
+        if (!isPanelLoaded) {
+            pagerAdapter.setFeed(feed);
+            pagerAdapter.notifyDataSetChanged();
 
-        // Load fragment
-        if (!feedEntryFragment.isAdded() && feed.getEntries() != null && !feed.getEntries().isEmpty()) {
-            FeedEntry entry = feed.getEntries().get(0);
-            feedEntryFragment.setEntry(entry);
+            viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                @Override
+                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-            TextView panel_entry_title = (TextView) findViewById(R.id.panel_entry_title);
-            panel_entry_title.setText(entry.getTitle());
-            TextView panel_feed_title = (TextView) findViewById(R.id.panel_feed_title);
-            panel_feed_title.setText(entry.getFeed().getName());
+                }
 
-            Thread thread = new Thread(backgroundThread);
-            thread.start();
+                @Override
+                public void onPageSelected(int position) {
+                    panelLayout.setDragView(getCurrentFeedEntryFragment().getPanelHeader());
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int state) {
+
+                }
+            });
+
+            // Show panel
+            setUpSlidingPanel();
+
+            isPanelLoaded = true;
         }
     }
 
-    private void setUpSlidingPanel() {
-        panel.setPanelHeight((int) DisplayUtility.dpToPx(this, 68));
-        panel.setShadowHeight((int) DisplayUtility.dpToPx(this, 4));
-        panel.setDragView(panelHeader);
+    /**
+     * Workaround to get the FeedEntryFragment currently visible in the viewPager,
+     * see: http://stackoverflow.com/a/8886019
+     */
+    private FeedEntryFragment getCurrentFeedEntryFragment() {
+        return (FeedEntryFragment) pagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
+    }
 
-        panel.setPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+    private void setUpSlidingPanel() {
+        panelLayout.setPanelHeight((int) DisplayUtility.dpToPx(this, 68));
+        panelLayout.setShadowHeight((int) DisplayUtility.dpToPx(this, 4));
+
+        panelLayout.setDragView(getCurrentFeedEntryFragment().getPanelHeader());
+
+        panelLayout.setPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
             public void onPanelSlide(View view, float v) {
 
@@ -385,14 +398,13 @@ public class MainActivity extends BaseActivity implements
 
             @Override
             public void onPanelCollapsed(View view) {
-                panelHeader.setBackgroundColor(getResources().getColor(R.color.white));
+                getCurrentFeedEntryFragment().getPanelHeader().setBackgroundColor(getResources().getColor(R.color.white));
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
             }
 
             @Override
             public void onPanelExpanded(View view) {
-                // TODO: Disable transparency for websites
-                panelHeader.setBackgroundColor(getResources().getColor(R.color.transparent_white));
+                getCurrentFeedEntryFragment().getPanelHeader().setBackgroundColor(getResources().getColor(R.color.transparent_white));
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             }
 
@@ -409,29 +421,16 @@ public class MainActivity extends BaseActivity implements
     }
 
     @Override
-    public void displayFeedEntry(FeedEntry entry) {
-        feedEntryFragment.setEntry(entry);
-
-        panel.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
-    }
-
-    private Runnable backgroundThread = new Runnable() {
-        @Override
-        public void run() {
-            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-
-            // TODO: Temporary workaround
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            fragmentManager.beginTransaction()
-                    .replace(R.id.panel, feedEntryFragment, "feedEntry")
-                    .commit();
+    public void displayFeedEntry(Feed feed, int position) {
+        if (!feed.equals(pagerAdapter.getFeed())) {
+            pagerAdapter.setFeed(feed);
+            pagerAdapter.notifyDataSetChanged();
         }
-    };
+
+        viewPager.setCurrentItem(position);
+
+        panelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+    }
 
     @Override
     public void setSubscriptions(ArrayList<Category> categories, boolean update) {
@@ -479,25 +478,25 @@ public class MainActivity extends BaseActivity implements
         if (isToast)
             Snackbar.make(contentFrame, error, Snackbar.LENGTH_SHORT).show();
         else {
-            feedEntryFragment.setTranslation(error);
+            getCurrentFeedEntryFragment().setTranslation(error);
         }
     }
 
     // Zeeguu
     @Override
     public ZeeguuWebViewFragment getWebViewFragment() {
-        return feedEntryFragment;
+        return getCurrentFeedEntryFragment();
     }
 
     @Override
     public void setTranslation(String translation) {
-        feedEntryFragment.setTranslation(translation);
+        getCurrentFeedEntryFragment().setTranslation(translation);
     }
 
     @Override
     public void highlight(String word) {
         if (sharedPref.getBoolean("pref_zeeguu_highlight_words", true)) {
-            feedEntryFragment.highlight(word);
+            getCurrentFeedEntryFragment().highlight(word);
         }
     }
 

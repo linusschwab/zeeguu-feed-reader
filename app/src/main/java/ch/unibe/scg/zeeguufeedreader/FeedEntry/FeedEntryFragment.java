@@ -2,12 +2,17 @@ package ch.unibe.scg.zeeguufeedreader.FeedEntry;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import ch.unibe.scg.zeeguufeedreader.Core.DisplayUtility;
+import ch.unibe.scg.zeeguufeedreader.Core.MainActivity;
 import ch.unibe.scg.zeeguufeedreader.R;
 import ch.unibe.zeeguulibrary.Core.Utility;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewClient;
@@ -19,8 +24,34 @@ import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
 public class FeedEntryFragment extends ZeeguuWebViewFragment {
 
     private FeedEntry entry;
+    private boolean newEntry;
+
     private boolean isFeedEntry;
-    private String firstUrl;
+    private String firstUrl = "";
+
+    private RelativeLayout panelHeader;
+    private FrameLayout panelContent;
+
+    private TextView panelEntryTitle;
+    private TextView panelFeedTitle;
+
+    // Position in the ViewPager
+    private int position;
+
+    /**
+     * Create a new instance of CountingFragment, providing "position"
+     * as an argument.
+     */
+    static FeedEntryFragment newInstance(int position) {
+        FeedEntryFragment fragment = new FeedEntryFragment();
+
+        // Supply num input as an argument.
+        Bundle args = new Bundle();
+        args.putInt("position", position);
+        fragment.setArguments(args);
+
+        return fragment;
+    }
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -31,14 +62,39 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (getArguments() != null)
+            position = getArguments().getInt("position");
+
         // Set custom action bar layout
         setHasOptionsMenu(true);
+    }
+
+    /**
+     * The system calls this when it's time for the fragment to draw its user interface for the
+     * first time. To draw a UI for your fragment, you must return a View from this method that
+     * is the root of your fragment's layout. You can return null if the fragment does not
+     * provide a UI.
+     */
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View mainView = inflater.inflate(R.layout.fragment_feed_entry, container, false);
+        translationBar = (TextView) mainView.findViewById(R.id.webview_translation);
+        webView = (WebView) mainView.findViewById(R.id.webview_content);
+        progressBar = (ProgressBar) mainView.findViewById(R.id.webview_progress_bar);
+        panelHeader = (RelativeLayout) mainView.findViewById(R.id.panel_header);
+        panelContent = (FrameLayout) mainView.findViewById(R.id.panel_content);
+
+        panelEntryTitle = (TextView) mainView.findViewById(R.id.panel_entry_title);
+        panelFeedTitle = (TextView) mainView.findViewById(R.id.panel_feed_title);
+
+        setTitle();
+
+        return mainView;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        final FrameLayout panelFrame = (FrameLayout) getActivity().findViewById(R.id.panel);
         this.enableTitle(false);
 
         webView.setWebViewClient(new ZeeguuWebViewClient(getActivity(), callback, webView, false) {
@@ -48,11 +104,10 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
 
                 // Disable transparent header for websites
                 if (isLocalUrl(url) && !url.equals("about:blank")) {
-                    panelFrame.setPadding(0, 0, 0, 0);
+                    panelContent.setPadding(0, 0, 0, 0);
                     isFeedEntry = true;
-                }
-                else
-                    panelFrame.setPadding(0, (int) DisplayUtility.dpToPx(getActivity(), 68), 0, 0);
+                } else
+                    panelContent.setPadding(0, (int) DisplayUtility.dpToPx(getActivity(), 68), 0, 0);
             }
 
             @Override
@@ -82,10 +137,17 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
             }
         });
 
-        if (savedInstanceState != null) {
+        if (savedInstanceState != null && !newEntry) {
             webView.restoreState(savedInstanceState);
-        } else
+        }
+        else {
             loadEntry();
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        webView.saveState(savedInstanceState);
     }
 
     private String loadHtml() {
@@ -112,26 +174,15 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
             return "";
     }
 
-    public FeedEntry getEntry() {
-        return entry;
-    }
-
     public void setEntry(FeedEntry entry) {
-        if (this.entry == null)
-            this.entry = entry;
-        else if (!this.entry.equals(entry)) {
-            this.entry = entry;
-            loadEntry();
-        }
+        this.entry = entry;
+        newEntry = true;
     }
 
     public void loadEntry() {
         if (this.isAdded() && this.entry != null) {
-            TextView panel_entry_title = (TextView) getActivity().findViewById(R.id.panel_entry_title);
-            panel_entry_title.setText(entry.getTitle());
-            TextView panel_feed_title = (TextView) getActivity().findViewById(R.id.panel_feed_title);
-            panel_feed_title.setText(entry.getFeed().getName());
             webView.loadDataWithBaseURL("file:///android_asset/", loadHtml(), "text/html", "utf-8", "FeedEntry");
+            newEntry = false;
         }
     }
 
@@ -151,6 +202,19 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
 
     private boolean isLocalUrl(String url) {
         return url.equals("file:///android_asset/") || url.contains("data:text/html");
+    }
+
+    public void setTitle() {
+        panelEntryTitle.setText(entry.getTitle());
+        panelFeedTitle.setText(entry.getFeed().getName());
+    }
+
+    public RelativeLayout getPanelHeader() {
+        return panelHeader;
+    }
+
+    public int getPosition() {
+        return position;
     }
 }
 
