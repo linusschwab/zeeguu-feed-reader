@@ -67,6 +67,7 @@ public class FeedEntry {
 
     public View getView(LayoutInflater inflater, View convertView, ViewGroup parent) {
         FeedEntryViewHolder holder;
+        String newline = System.getProperty("line.separator");
 
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.feed_entry, null);
@@ -83,6 +84,7 @@ public class FeedEntry {
             holder = (FeedEntryViewHolder) convertView.getTag();
         }
 
+        // Favicon
         Bitmap favicon = feed.getFavicon();
         if (favicon != null) {
             holder.favicon.setVisibility(View.VISIBLE);
@@ -91,13 +93,22 @@ public class FeedEntry {
         else
             holder.favicon.setVisibility(View.INVISIBLE);
 
+        // Date
         holder.published.setText(getDateTime());
+
+        // Title
         holder.title.setText(title);
 
-        if (summary != null && !summary.equals(""))
-            holder.summary.setText(Html.fromHtml(summary));
-        else
-            holder.summary.setText(Html.fromHtml(content));
+        // Summary
+        if (content != null && !content.equals("")) {
+            // TODO: Create summary during parsing?
+            String summary = Html.fromHtml(content).toString();
+            summary = summary.replaceAll("￼", ""); // Removes objects like images
+            summary = summary.replaceAll(newline, " ");
+            summary = summary.trim();
+
+            holder.summary.setText(summary);
+        }
 
         return convertView;
     }

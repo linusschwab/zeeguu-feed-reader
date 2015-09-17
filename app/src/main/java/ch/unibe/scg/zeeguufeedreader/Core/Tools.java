@@ -34,9 +34,7 @@ public class Tools {
     }
 
     public static Bitmap byteArrayToBitmap(byte[] byteArray) {
-        Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-
-        return bitmap;
+        return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
     }
 
     public static int getDominantColor(Bitmap bitmap) {
