@@ -81,10 +81,22 @@ public class FeedlyConnectionManager {
         else if (!account.isUserInSession())
             getAuthenticationToken(account.getAuthenticationCode());
         else
-            getCategories();
+            getCategoriesThread();
+    }
 
-        // TODO: Directly get favicon after feed is added
-        getAllFavicons();
+    private void getCategoriesThread() {
+        // TODO: Make sure that the worker thread does not slow down the UI thread
+        Thread thread = new Thread(new Runnable() {
+            public void run() {
+                getCategories();
+
+                // TODO: Directly get favicon after feed is added
+                getAllFavicons();
+            }
+        });
+
+        thread.setPriority(Thread.MIN_PRIORITY);
+        thread.start();
     }
 
     /**
@@ -409,8 +421,12 @@ public class FeedlyConnectionManager {
                 timer.stop();
 
                 // Update UI
-                callback.setSubscriptions(account.getCategories(), true);
-                callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated) + " (" + timer.getTimeElapsed() + ")");
+                activity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        callback.setSubscriptions(account.getCategories(), true);
+                        callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated) + " (" + timer.getTimeElapsed() + ")");
+                    }
+                });
             }
 
         }, new Response.ErrorListener() {

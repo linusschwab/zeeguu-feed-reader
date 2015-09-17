@@ -176,6 +176,10 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
             return "";
     }
 
+    public FeedEntry getEntry() {
+        return entry;
+    }
+
     public void setEntry(FeedEntry entry) {
         this.entry = entry;
         newEntry = true;

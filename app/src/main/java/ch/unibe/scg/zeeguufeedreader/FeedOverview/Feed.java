@@ -76,7 +76,7 @@ public class Feed {
         FeedViewHolder holder;
 
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.feed, null);
+            convertView = inflater.inflate(R.layout.feed, parent, false);
             holder = new FeedViewHolder();
 
             holder.favicon = (ImageView) convertView.findViewById(R.id.feed_favicon);
@@ -102,17 +102,17 @@ public class Feed {
         return convertView;
     }
 
-    private int calculateUnreadCount() {
-        unreadCount = 0;
+    private void calculateUnreadCount() {
+        int unreadCounter = 0;
 
         if (entries != null) {
             for (FeedEntry entry : entries) {
                 if (entry != null && entry.isUnread())
-                    unreadCount++;
+                    unreadCounter++;
             }
         }
 
-        return unreadCount;
+        unreadCount = unreadCounter;
     }
 
     public String getName() {
@@ -129,6 +129,16 @@ public class Feed {
 
     public ArrayList<FeedEntry> getEntries() {
         return new ArrayList<>(entries);
+    }
+
+    public ArrayList<FeedEntry> getUnreadEntries() {
+        ArrayList<FeedEntry> unreadEntries = new ArrayList<>();
+
+        for (FeedEntry entry : entries)
+            if (entry.isUnread())
+                unreadEntries.add(entry);
+
+        return unreadEntries;
     }
 
     public ArrayList<Category> getCategories() {

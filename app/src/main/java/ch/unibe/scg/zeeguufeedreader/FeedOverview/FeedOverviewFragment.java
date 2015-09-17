@@ -64,7 +64,7 @@ public class FeedOverviewFragment extends Fragment {
         expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View view, int groupPosition, int childPosition, long id) {
-                Feed feed = (Feed) adapter.getChild(groupPosition, childPosition);
+                Feed feed = adapter.getChild(groupPosition, childPosition);
                 callback.displayFeedEntryList(feed);
                 return true;
             }
@@ -116,5 +116,19 @@ public class FeedOverviewFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+
+        // Recalculate unread count
+        new Thread(new Runnable() {
+            public void run() {
+                for (Category category : categories)
+                    category.getUnreadCount();
+
+                getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        }).start();
     }
 }

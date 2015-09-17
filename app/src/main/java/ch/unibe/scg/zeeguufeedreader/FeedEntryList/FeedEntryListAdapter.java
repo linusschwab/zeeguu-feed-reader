@@ -27,7 +27,7 @@ public class FeedEntryListAdapter extends BaseAdapter implements ListAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
+    public FeedEntry getItem(int position) {
         return entries.get(position);
     }
 

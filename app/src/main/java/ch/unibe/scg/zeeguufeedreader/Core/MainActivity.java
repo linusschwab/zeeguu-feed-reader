@@ -27,6 +27,7 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
 
+import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryPagerAdapter;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
@@ -362,6 +363,7 @@ public class MainActivity extends BaseActivity implements
                 @Override
                 public void onPageSelected(int position) {
                     panelLayout.setDragView(getCurrentFeedEntryFragment().getPanelHeader());
+                    feedEntryListFragment.markEntryAsRead(position, getFeedlyConnectionManager().getAccount());
                 }
 
                 @Override
@@ -407,6 +409,10 @@ public class MainActivity extends BaseActivity implements
             public void onPanelExpanded(View view) {
                 getCurrentFeedEntryFragment().getPanelHeader().setBackgroundColor(getResources().getColor(R.color.transparent_white));
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+
+                // Check if first page is read
+                if (getCurrentFeedEntryFragment().getPosition() == 0)
+                    feedEntryListFragment.markEntryAsRead(0, getFeedlyConnectionManager().getAccount());
             }
 
             @Override

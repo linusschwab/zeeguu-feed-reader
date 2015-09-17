@@ -24,7 +24,8 @@ public class FeedEntryPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public Fragment getItem(int position) {
         FeedEntryFragment fragment = FeedEntryFragment.newInstance(position);
-        fragment.setEntry(entries.get(position));
+        if (entries.size() != 0)
+            fragment.setEntry(entries.get(position));
         return fragment;
     }
 
@@ -58,6 +59,7 @@ public class FeedEntryPagerAdapter extends FragmentStatePagerAdapter {
 
     public void setFeed(Feed feed) {
         this.feed = feed;
-        entries = feed.getEntries();
+        // TODO: Read/Unread switch
+        entries = feed.getUnreadEntries();
     }
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Zeeguu Feed Reader</string>
+    <string name="app_name">Zeeguu Reader</string>
 
     <!-- Settings -->
     <string name="settings_feedly_title">Feedly</string>

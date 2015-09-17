@@ -15,6 +15,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import ch.unibe.scg.zeeguufeedreader.Core.ContextManager;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.R;
 
@@ -70,7 +71,7 @@ public class FeedEntry {
         String newline = System.getProperty("line.separator");
 
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.feed_entry, null);
+            convertView = inflater.inflate(R.layout.feed_entry, parent, false);
             holder = new FeedEntryViewHolder();
 
             holder.favicon = (ImageView) convertView.findViewById(R.id.feed_entry_favicon);
@@ -82,6 +83,18 @@ public class FeedEntry {
         }
         else {
             holder = (FeedEntryViewHolder) convertView.getTag();
+        }
+
+        // Read/Unread
+        if (unread) {
+            holder.published.setTextColor(ContextManager.getContext().getResources().getColor(R.color.gray));
+            holder.title.setTextColor(ContextManager.getContext().getResources().getColor(R.color.darkgray));
+            holder.summary.setTextColor(ContextManager.getContext().getResources().getColor(R.color.gray));
+        }
+        else {
+            holder.published.setTextColor(ContextManager.getContext().getResources().getColor(R.color.silver));
+            holder.title.setTextColor(ContextManager.getContext().getResources().getColor(R.color.gray));
+            holder.summary.setTextColor(ContextManager.getContext().getResources().getColor(R.color.silver));
         }
 
         // Favicon
@@ -187,8 +200,12 @@ public class FeedEntry {
         return unread;
     }
 
-    public void setUnread(boolean unread) {
-        this.unread = unread;
+    public void markAsRead() {
+        this.unread = false;
+    }
+
+    public void markAsUnread() {
+        this.unread = true;
     }
 
     @Override

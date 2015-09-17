@@ -29,12 +29,12 @@ public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public Object getGroup(int groupPosition) {
+    public Category getGroup(int groupPosition) {
         return categories.get(groupPosition);
     }
 
     @Override
-    public Object getChild(int groupPosition, int childPosition) {
+    public Feed getChild(int groupPosition, int childPosition) {
         return categories.get(groupPosition).getFeed(childPosition);
     }
 

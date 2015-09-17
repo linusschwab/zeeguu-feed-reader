@@ -49,7 +49,7 @@ public class Category {
         CategoryViewHolder holder;
 
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.category, null);
+            convertView = inflater.inflate(R.layout.category, parent, false);
             holder = new CategoryViewHolder();
 
             holder.icon = (ImageView) convertView.findViewById(R.id.category_icon);
@@ -75,14 +75,14 @@ public class Category {
         return convertView;
     }
 
-    private int calculateUnreadCount() {
-        unreadCount = 0;
+    private void calculateUnreadCount() {
+        int unreadCounter = 0;
 
         for (Feed feed : feeds) {
-            unreadCount += feed.getUnreadCount();
+            unreadCounter += feed.getUnreadCount();
         }
 
-        return unreadCount;
+        unreadCount = unreadCounter;
     }
 
     public String getName() {

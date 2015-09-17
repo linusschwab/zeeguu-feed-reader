@@ -12,16 +12,19 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
+import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAccount;
 import ch.unibe.scg.zeeguufeedreader.R;
 
 public class FeedEntryListFragment extends Fragment {
 
     private ListView listView;
+    private FeedEntryListAdapter adapter;
 
     // TODO: display error message if null
     private Feed feed;
@@ -63,7 +66,7 @@ public class FeedEntryListFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            callback.displayFeedEntry(feed, position);
+                callback.displayFeedEntry(feed, position);
             }
         });
 
@@ -76,14 +79,35 @@ public class FeedEntryListFragment extends Fragment {
 
         ArrayList<FeedEntry> entries = new ArrayList<>();
         if (feed.getEntries() != null)
-            entries = feed.getEntries();
+            // TODO: Read/Unread switch
+            entries = feed.getUnreadEntries();
 
-        FeedEntryListAdapter adapter = new FeedEntryListAdapter(getActivity(), entries);
+        adapter = new FeedEntryListAdapter(getActivity(), entries);
         listView.setAdapter(adapter);
     }
 
     public void setFeed(Feed feed) {
         this.feed = feed;
+    }
+
+    public FeedEntry getEntry(int position) {
+        return adapter.getItem(position);
+    }
+
+    public void markEntryAsRead(int position, FeedlyAccount account) {
+        // Mark as read
+        FeedEntry entry = getEntry(position);
+        entry.markAsRead();
+        account.saveFeedEntry(entry);
+
+        // Refresh view
+        updateView(position);
+    }
+
+    public void updateView(int position) {
+        adapter.notifyDataSetChanged();
+        View view = listView.getChildAt(position);
+        adapter.getView(position, view, listView);
     }
 
     @Override
