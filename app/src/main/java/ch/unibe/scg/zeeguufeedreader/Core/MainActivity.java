@@ -346,6 +346,7 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void displayFeedEntryList(Feed feed) {
         feedEntryListFragment.setFeed(feed);
+        feed.setColor(Tools.getDominantColor(feed.getFavicon()));
         switchFragmentBackstack(feedEntryListFragment, "feedEntryList", feed.getName());
 
         if (!isPanelLoaded) {
@@ -385,8 +386,8 @@ public class MainActivity extends BaseActivity implements
     }
 
     private void setUpSlidingPanel() {
-        panelLayout.setPanelHeight((int) DisplayUtility.dpToPx(this, 68));
-        panelLayout.setShadowHeight((int) DisplayUtility.dpToPx(this, 4));
+        panelLayout.setPanelHeight((int) Tools.dpToPx(this, 68));
+        panelLayout.setShadowHeight((int) Tools.dpToPx(this, 4));
 
         panelLayout.setDragView(getCurrentFeedEntryFragment().getPanelHeader());
 

@@ -7,12 +7,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import ch.unibe.scg.zeeguufeedreader.Core.DisplayUtility;
-import ch.unibe.scg.zeeguufeedreader.Core.MainActivity;
+import ch.unibe.scg.zeeguufeedreader.Core.Tools;
 import ch.unibe.scg.zeeguufeedreader.R;
 import ch.unibe.zeeguulibrary.Core.Utility;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewClient;
@@ -34,6 +34,7 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
 
     private TextView panelEntryTitle;
     private TextView panelFeedTitle;
+    private ImageView panelFavicon;
 
     // Position in the ViewPager
     private int position;
@@ -86,6 +87,7 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
 
         panelEntryTitle = (TextView) mainView.findViewById(R.id.panel_entry_title);
         panelFeedTitle = (TextView) mainView.findViewById(R.id.panel_feed_title);
+        panelFavicon = (ImageView) mainView.findViewById(R.id.panel_favicon);
 
         setTitle();
 
@@ -107,7 +109,7 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
                     panelContent.setPadding(0, 0, 0, 0);
                     isFeedEntry = true;
                 } else
-                    panelContent.setPadding(0, (int) DisplayUtility.dpToPx(getActivity(), 68), 0, 0);
+                    panelContent.setPadding(0, (int) Tools.dpToPx(getActivity(), 68), 0, 0);
             }
 
             @Override
@@ -207,6 +209,14 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
     public void setTitle() {
         panelEntryTitle.setText(entry.getTitle());
         panelFeedTitle.setText(entry.getFeed().getName());
+
+        Bitmap favicon = entry.getFeed().getFavicon();
+        if (favicon != null) {
+            panelFavicon.setVisibility(View.VISIBLE);
+            panelFavicon.setImageBitmap(favicon);
+        }
+        else
+            panelFavicon.setVisibility(View.INVISIBLE);
     }
 
     public RelativeLayout getPanelHeader() {

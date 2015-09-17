@@ -34,10 +34,12 @@ public class FeedEntryPagerAdapter extends FragmentStatePagerAdapter {
     }
 
     /**
+     * Update ViewPager dynamically
      * See: http://stackoverflow.com/a/17855730
      */
     @Override
     public int getItemPosition(Object object) {
+        // TODO: Only if feed changed?
         if (object instanceof FeedEntryFragment) {
             int position = ((FeedEntryFragment) object).getPosition();
             if (position < entries.size()) {

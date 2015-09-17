@@ -1,5 +1,6 @@
 package ch.unibe.scg.zeeguufeedreader.FeedEntry;
 
+import android.graphics.Bitmap;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -81,6 +82,14 @@ public class FeedEntry {
         else {
             holder = (FeedEntryViewHolder) convertView.getTag();
         }
+
+        Bitmap favicon = feed.getFavicon();
+        if (favicon != null) {
+            holder.favicon.setVisibility(View.VISIBLE);
+            holder.favicon.setImageBitmap(favicon);
+        }
+        else
+            holder.favicon.setVisibility(View.INVISIBLE);
 
         holder.published.setText(getDateTime());
         holder.title.setText(title);

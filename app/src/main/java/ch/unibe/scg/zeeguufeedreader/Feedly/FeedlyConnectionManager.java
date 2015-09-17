@@ -2,16 +2,19 @@ package ch.unibe.scg.zeeguufeedreader.Feedly;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.ImageView;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
@@ -79,6 +82,9 @@ public class FeedlyConnectionManager {
             getAuthenticationToken(account.getAuthenticationCode());
         else
             getCategories();
+
+        // TODO: Directly get favicon after feed is added
+        getAllFavicons();
     }
 
     /**
@@ -450,6 +456,53 @@ public class FeedlyConnectionManager {
         Map<String, String> params = new HashMap<>();
         params.put("Authorization", "OAuth " + account.getAccessToken());
         return params;
+    }
+
+    public void getAllFavicons() {
+        ArrayList<Feed> feeds = account.getFeeds();
+
+        for (Feed feed : feeds) {
+            if (feed.getFavicon() == null)
+                getFavicon(feed, true);
+        }
+    }
+
+    public void getFavicon(final Feed feed, final boolean direct) {
+        String url = feed.getUrl();
+        String faviconUrl;
+
+        // TODO: Get Apple touch icon if available
+        if (!direct)
+            faviconUrl = "http://www.google.com/s2/favicons?domain=" + Uri.encode(url);
+        else {
+            if (url.charAt(url.length()-1) == '/')
+                faviconUrl = url + "favicon.ico";
+            else
+                faviconUrl = url + "/favicon.ico";
+        }
+
+        ImageRequest request = new ImageRequest(faviconUrl, new Response.Listener<Bitmap>() {
+
+            @Override
+            public void onResponse(Bitmap response) {
+                feed.setFavicon(response);
+                account.saveFeed(feed);
+            }
+
+        }, 128, 128, ImageView.ScaleType.CENTER, Bitmap.Config.ALPHA_8, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // Try again using the Google favicon service
+                if (direct)
+                    getFavicon(feed, false);
+                else
+                    Log.e("feedly_get_favicon", error.toString());
+            }
+
+        });
+
+        queue.add(request);
     }
 
     // Boolean Checks

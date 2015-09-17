@@ -1,5 +1,6 @@
 package ch.unibe.scg.zeeguufeedreader.FeedOverview;
 
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,13 +8,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.j256.ormlite.dao.ForeignCollection;
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
+import ch.unibe.scg.zeeguufeedreader.Core.Tools;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.R;
 
@@ -32,6 +34,9 @@ public class Feed {
 
     @DatabaseField(columnName = "url")
     private String url;
+
+    @DatabaseField(columnName = "favicon", dataType= DataType.BYTE_ARRAY)
+    private byte[] favicon;
 
     @DatabaseField(columnName = "image_url")
     private String imageUrl;
@@ -86,6 +91,13 @@ public class Feed {
 
         holder.name.setText(name);
         holder.unread.setText("" + unreadCount);
+
+        if (favicon != null) {
+            holder.favicon.setVisibility(View.VISIBLE);
+            holder.favicon.setImageBitmap(getFavicon());
+        }
+        else
+            holder.favicon.setVisibility(View.INVISIBLE);
 
         return convertView;
     }
@@ -153,6 +165,17 @@ public class Feed {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public Bitmap getFavicon() {
+        if (favicon != null)
+            return Tools.byteArrayToBitmap(favicon);
+        else
+            return null;
+    }
+
+    public void setFavicon(Bitmap favicon) {
+        this.favicon = Tools.bitmapToByteArray(favicon);
     }
 
     public String getImageUrl() {

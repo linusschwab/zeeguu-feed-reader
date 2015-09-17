@@ -195,12 +195,12 @@ public class FeedlyAccount {
 
     public void saveFeed(Feed feed) {
         try {
-            if (feed.getId() == 0)
+            if (feed.getId() == 0) {
                 feedDao.create(feed);
+                feeds.add(feed);
+            }
             else
                 feedDao.update(feed);
-
-            feeds.add(feed);
         }
         catch (SQLException e) {
             Log.e(FeedlyAccount.class.getName(), "Can't save feed: " + feed.getName(), e);
