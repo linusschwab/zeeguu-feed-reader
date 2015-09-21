@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_read_unread_toggle"
+        android:title="@string/action_mark_as_unread"
+        android:icon="@drawable/ic_action_circle_outline"
+        android:orderInCategory="1"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_favorite_toggle"
+        android:title="@string/action_favorite_add"
+        android:icon="@drawable/ic_action_star_outline"
+        android:orderInCategory="2"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_mark_as_read_above"
+        android:title="@string/action_mark_as_read_above"
+        android:icon="@drawable/ic_action_up"
+        android:orderInCategory="3"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_mark_as_read_below"
+        android:title="@string/action_mark_as_read_below"
+        android:icon="@drawable/ic_action_down"
+        android:orderInCategory="4"
+        app:showAsAction="never" />
+</menu>

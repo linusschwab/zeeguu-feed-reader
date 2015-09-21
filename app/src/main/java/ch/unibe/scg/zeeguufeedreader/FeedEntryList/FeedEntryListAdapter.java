@@ -13,7 +13,7 @@ import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 
 public class FeedEntryListAdapter extends BaseAdapter implements ListAdapter {
 
-    private ArrayList<FeedEntry> entries;
+    private ArrayList<FeedEntry> entries = new ArrayList<>();
     private LayoutInflater inflater;
 
     public FeedEntryListAdapter(Activity activity, ArrayList<FeedEntry> entries) {

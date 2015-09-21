@@ -47,11 +47,14 @@ public class FeedEntry {
     @DatabaseField(columnName = "author")
     private String author;
 
-    @DatabaseField(columnName = "unread")
-    private boolean unread = true;
-
     @DatabaseField(columnName = "date")
     private Date date;
+
+    @DatabaseField(columnName = "unread")
+    private boolean read;
+
+    @DatabaseField(columnName = "favorite")
+    private boolean favorite;
 
     public FeedEntry() {
         // Empty constructor needed by ormlite
@@ -78,6 +81,7 @@ public class FeedEntry {
             holder.published = (TextView) convertView.findViewById(R.id.feed_entry_published);
             holder.title = (TextView) convertView.findViewById(R.id.feed_entry_title);
             holder.summary = (TextView) convertView.findViewById(R.id.feed_entry_summary);
+            holder.favorite = (ImageView) convertView.findViewById(R.id.feed_entry_favorite);
 
             convertView.setTag(holder);
         }
@@ -86,15 +90,15 @@ public class FeedEntry {
         }
 
         // Read/Unread
-        if (unread) {
-            holder.published.setTextColor(ContextManager.getContext().getResources().getColor(R.color.gray));
-            holder.title.setTextColor(ContextManager.getContext().getResources().getColor(R.color.darkgray));
-            holder.summary.setTextColor(ContextManager.getContext().getResources().getColor(R.color.gray));
-        }
-        else {
+        if (read) {
             holder.published.setTextColor(ContextManager.getContext().getResources().getColor(R.color.silver));
             holder.title.setTextColor(ContextManager.getContext().getResources().getColor(R.color.gray));
             holder.summary.setTextColor(ContextManager.getContext().getResources().getColor(R.color.silver));
+        }
+        else {
+            holder.published.setTextColor(ContextManager.getContext().getResources().getColor(R.color.gray));
+            holder.title.setTextColor(ContextManager.getContext().getResources().getColor(R.color.darkgray));
+            holder.summary.setTextColor(ContextManager.getContext().getResources().getColor(R.color.gray));
         }
 
         // Favicon
@@ -121,6 +125,16 @@ public class FeedEntry {
             summary = summary.trim();
 
             holder.summary.setText(summary);
+        }
+
+        // Favorite
+        if (favorite) {
+            holder.favorite.setVisibility(View.VISIBLE);
+            holder.favorite.setImageDrawable(ContextManager.getContext().getResources().getDrawable(R.drawable.ic_star));
+        }
+        else {
+            holder.favorite.setVisibility(View.GONE);
+            holder.favorite.setImageDrawable(null);
         }
 
         return convertView;
@@ -196,16 +210,20 @@ public class FeedEntry {
         this.feed = feed;
     }
 
-    public boolean isUnread() {
-        return unread;
+    public boolean isRead() {
+        return read;
     }
 
-    public void markAsRead() {
-        this.unread = false;
+    public void setRead(boolean read) {
+        this.read = read;
     }
 
-    public void markAsUnread() {
-        this.unread = true;
+    public boolean isFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
     }
 
     @Override
@@ -216,7 +234,7 @@ public class FeedEntry {
         FeedEntry entry = (FeedEntry) o;
 
         if (id != entry.id) return false;
-        if (unread != entry.unread) return false;
+        if (read != entry.read) return false;
         if (title != null ? !title.equals(entry.title) : entry.title != null) return false;
         if (content != null ? !content.equals(entry.content) : entry.content != null) return false;
         if (summary != null ? !summary.equals(entry.content) : entry.summary != null) return false;
@@ -234,7 +252,7 @@ public class FeedEntry {
         result = 31 * result + (url != null ? url.hashCode() : 0);
         result = 31 * result + (author != null ? author.hashCode() : 0);
         result = 31 * result + (date != null ? date.hashCode() : 0);
-        result = 31 * result + (unread ? 1 : 0);
+        result = 31 * result + (read ? 1 : 0);
         return result;
     }
 
@@ -244,5 +262,6 @@ public class FeedEntry {
         TextView published;
         TextView title;
         TextView summary;
+        ImageView favorite;
     }
 }

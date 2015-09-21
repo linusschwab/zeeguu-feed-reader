@@ -53,6 +53,18 @@
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
 
+    <string name="action_mark_as_read_above">Mark above as read</string>
+    <string name="action_mark_as_read_below">Mark below as read</string>
+    <string name="action_mark_as_read_all">Mark all as read</string>
+
+    <string name="action_mark_as_unread">Mark as unread</string>
+    <string name="action_mark_as_read">Mark as read</string>
+
+    <string name="action_favorite_add">Add to favorites</string>
+    <string name="action_favorite_remove">Remove from favorites</string>
+
+    <string name="action_refresh">Refresh</string>
+
     <!-- Shared preference keys -->
     <string name="pref_feedly">pref_feedly</string>
     <string name="pref_feedly_email">pref_feedly_email</string>

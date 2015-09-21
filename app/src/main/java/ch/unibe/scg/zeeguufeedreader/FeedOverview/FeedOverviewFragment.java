@@ -123,11 +123,13 @@ public class FeedOverviewFragment extends Fragment {
                 for (Category category : categories)
                     category.getUnreadCount();
 
-                getActivity().runOnUiThread(new Runnable() {
-                    public void run() {
-                        adapter.notifyDataSetChanged();
-                    }
-                });
+                if (isAdded()) {
+                    getActivity().runOnUiThread(new Runnable() {
+                        public void run() {
+                            adapter.notifyDataSetChanged();
+                        }
+                    });
+                }
             }
         }).start();
     }

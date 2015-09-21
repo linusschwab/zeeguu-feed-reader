@@ -107,7 +107,7 @@ public class Feed {
 
         if (entries != null) {
             for (FeedEntry entry : entries) {
-                if (entry != null && entry.isUnread())
+                if (entry != null && !entry.isRead())
                     unreadCounter++;
             }
         }
@@ -135,7 +135,7 @@ public class Feed {
         ArrayList<FeedEntry> unreadEntries = new ArrayList<>();
 
         for (FeedEntry entry : entries)
-            if (entry.isUnread())
+            if (!entry.isRead())
                 unreadEntries.add(entry);
 
         return unreadEntries;

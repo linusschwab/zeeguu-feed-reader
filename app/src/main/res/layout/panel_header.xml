@@ -21,7 +21,9 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toRightOf="@+id/panel_favicon"
-        android:layout_toEndOf="@+id/panel_favicon" >
+        android:layout_toEndOf="@+id/panel_favicon"
+        android:layout_toLeftOf="@+id/panel_menu"
+        android:layout_toStartOf="@+id/panel_menu" >
 
         <TextView
             android:id="@+id/panel_entry_title"
@@ -37,6 +39,43 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/panel_entry_title"
             android:textSize="12sp" />
+
+    </RelativeLayout>
+
+    <!-- Menu Icons (Size: http://stackoverflow.com/a/14908467) -->
+    <!-- TODO: Replace with overflow menu similar to Chrome -->
+    <RelativeLayout
+        android:visibility="gone"
+        android:id="@+id/panel_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" >
+
+        <ImageView
+            android:id="@+id/panel_read_unread_toggle"
+            android:background="@drawable/ic_action_circle_outline"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp" />
+
+        <ImageView
+            android:id="@+id/panel_favorite_toggle"
+            android:background="@drawable/ic_action_star_outline"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_toRightOf="@+id/panel_read_unread_toggle"
+            android:layout_toEndOf="@+id/panel_read_unread_toggle"/>
 
     </RelativeLayout>
 

@@ -27,7 +27,6 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
 
-import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryPagerAdapter;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
@@ -276,6 +275,11 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void onBackPressed() {
 
+        if (actionMode != null) {
+            actionMode.finish();
+            return;
+        }
+
         if (panelLayout.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
             if (!getCurrentFeedEntryFragment().goBack())
                 return;
@@ -296,6 +300,7 @@ public class MainActivity extends BaseActivity implements
 
     @Override
     public void onSupportActionModeStarted(ActionMode mode) {
+        // TODO: Set status bar color (and back to transparent on finish)
         actionMode = mode;
 
         if (displayTranslationActionMode()) {
@@ -309,10 +314,12 @@ public class MainActivity extends BaseActivity implements
 
     @Override
     public void onSupportActionModeFinished(ActionMode mode) {
-        actionMode = null;
 
-        if (displayTranslationActionMode())
+        if (displayTranslationActionMode() && translationActionMode != null)
             translationActionMode.onDestroyActionMode(mode);
+
+        actionMode = null;
+        translationActionMode = null;
 
         super.onSupportActionModeFinished(mode);
     }
@@ -350,7 +357,7 @@ public class MainActivity extends BaseActivity implements
         feed.setColor(Tools.getDominantColor(feed.getFavicon()));
         switchFragmentBackstack(feedEntryListFragment, "feedEntryList", feed.getName());
 
-        if (!isPanelLoaded) {
+        if (!isPanelLoaded && feedEntryListFragment.hasEntries()) {
             pagerAdapter.setFeed(feed);
             pagerAdapter.notifyDataSetChanged();
 
@@ -396,7 +403,9 @@ public class MainActivity extends BaseActivity implements
         panelLayout.setPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
             public void onPanelSlide(View view, float v) {
-
+                // Close action mode
+                if (actionMode != null)
+                    actionMode.finish();
             }
 
             @Override

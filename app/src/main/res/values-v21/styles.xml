@@ -7,6 +7,7 @@
         <item name="windowNoTitle">true</item>
         <item name="android:windowTranslucentStatus">true</item>
 
+
         <!-- EditText -->
         <item name="colorControlActivated">@color/accent_color_red</item>
         <!-- <item name="colorControlHighlight">@color/red</item> -->
@@ -22,6 +23,9 @@
         <!-- Action Mode position -->
         <item name="android:windowActionModeOverlay">true</item>
         <item name="windowActionModeOverlay">true</item>
+
+        <item name="actionModeBackground">@color/action_bar_gray</item>
+        <item name="actionBarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
     </style>
 
     <style name="DialogStyleCustom" parent="Theme.AppCompat.Light.Dialog">

@@ -20,6 +20,7 @@ import java.util.Stack;
 import ch.unibe.scg.zeeguufeedreader.Database.DatabaseCallbacks;
 import ch.unibe.scg.zeeguufeedreader.Database.DatabaseHelper;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
+import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAccount;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyCallbacks;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyConnectionManager;
 import ch.unibe.scg.zeeguufeedreader.Preferences.PreferenceScreens.ZeeguuSettingsFragment;
@@ -200,8 +201,16 @@ public abstract class BaseActivity extends AppCompatActivity implements
         return dataFragment.getZeeguuConnectionManager();
     }
 
+    public ZeeguuAccount getZeeguuAccount() {
+        return dataFragment.getZeeguuConnectionManager().getAccount();
+    }
+
     public FeedlyConnectionManager getFeedlyConnectionManager() {
         return dataFragment.getFeedlyConnectionManager();
+    }
+
+    public FeedlyAccount getFeedlyAccount() {
+        return dataFragment.getFeedlyConnectionManager().getAccount();
     }
 
     // Zeeguu authentication

@@ -2,17 +2,15 @@ package ch.unibe.scg.zeeguufeedreader.FeedEntryList;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -21,15 +19,18 @@ import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAccount;
 import ch.unibe.scg.zeeguufeedreader.R;
 
-public class FeedEntryListFragment extends Fragment {
+public class FeedEntryListFragment extends Fragment implements
+        FeedEntryListActionMode.FeedEntryListActionModeCallbacks {
 
     private ListView listView;
     private FeedEntryListAdapter adapter;
 
-    // TODO: display error message if null
-    private Feed feed;
+    private Feed feed; // TODO: display error message if null
 
     private FeedEntryListCallbacks callback;
+
+    private ActionMode mode;
+    private int selectedItem;
 
     /**
      *  Callback interface that must be implemented by the container activity
@@ -37,6 +38,8 @@ public class FeedEntryListFragment extends Fragment {
     public interface FeedEntryListCallbacks {
         void setActionBar(boolean displayBackButton, int actionBarColor);
         void resetActionBar();
+
+        FeedlyAccount getFeedlyAccount();
 
         void displayFeedEntry(Feed feed, int position);
     }
@@ -62,11 +65,31 @@ public class FeedEntryListFragment extends Fragment {
         // Inflate the layout for this fragment
         View mainView = (View) inflater.inflate(R.layout.fragment_feed_entry_list, container, false);
         listView = (ListView) mainView.findViewById(R.id.feed_entry_listview);
+        listView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
+        listView.setDrawSelectorOnTop(true);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                callback.displayFeedEntry(feed, position);
+                if (mode != null) {
+                    mode.finish();
+                }
+                if (position != selectedItem)
+                    callback.displayFeedEntry(feed, position);
+            }
+        });
+
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                // Start ActionMode
+                AppCompatActivity activity = (AppCompatActivity) getActivity();
+
+                mode = activity.startSupportActionMode(
+                        new FeedEntryListActionMode(view, position, FeedEntryListFragment.this));
+
+                selectedItem = position;
+                return true;
             }
         });
 
@@ -94,10 +117,14 @@ public class FeedEntryListFragment extends Fragment {
         return adapter.getItem(position);
     }
 
+    public boolean hasEntries() {
+        return feed.getUnreadEntries().size() != 0;
+    }
+
     public void markEntryAsRead(int position, FeedlyAccount account) {
         // Mark as read
         FeedEntry entry = getEntry(position);
-        entry.markAsRead();
+        entry.setRead(true);
         account.saveFeedEntry(entry);
 
         // Refresh view
@@ -108,6 +135,27 @@ public class FeedEntryListFragment extends Fragment {
         adapter.notifyDataSetChanged();
         View view = listView.getChildAt(position);
         adapter.getView(position, view, listView);
+    }
+
+    public void updateVisibleViews() {
+        adapter.notifyDataSetChanged();
+
+        int first = listView.getFirstVisiblePosition();
+        int last = listView.getLastVisiblePosition();
+
+        for (int i = first; i <= last; i++) {
+            View view = listView.getChildAt(i);
+            adapter.getView(i, view, listView);
+        }
+    }
+
+    public FeedlyAccount getFeedlyAccount() {
+        return callback.getFeedlyAccount();
+    }
+
+    public void actionModeFinished() {
+        mode = null;
+        selectedItem = -1;
     }
 
     @Override
