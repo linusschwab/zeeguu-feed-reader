@@ -59,7 +59,19 @@ public class FeedEntryPagerAdapter extends FragmentStatePagerAdapter {
 
     public void setFeed(Feed feed) {
         this.feed = feed;
-        // TODO: Read/Unread switch
-        entries = feed.getUnreadEntries();
+
+        if (feed != null) {
+            // TODO: Read/Unread switch
+            entries = feed.getUnreadEntries();
+        }
+    }
+
+    public ArrayList<FeedEntry> getEntries() {
+        return entries;
+    }
+
+    public void setEntries(ArrayList<FeedEntry> entries) {
+        this.entries = entries;
+        feed = null;
     }
 }

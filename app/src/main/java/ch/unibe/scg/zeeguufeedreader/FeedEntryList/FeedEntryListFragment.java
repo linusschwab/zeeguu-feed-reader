@@ -25,12 +25,14 @@ public class FeedEntryListFragment extends Fragment implements
     private ListView listView;
     private FeedEntryListAdapter adapter;
 
-    private Feed feed; // TODO: display error message if null
+    private Feed feed;
+    private ArrayList<FeedEntry> entries = new ArrayList<>();
+    private boolean newEntries;
 
     private FeedEntryListCallbacks callback;
 
     private ActionMode mode;
-    private int selectedItem;
+    private int selectedItem = -1;
 
     /**
      *  Callback interface that must be implemented by the container activity
@@ -42,6 +44,7 @@ public class FeedEntryListFragment extends Fragment implements
         FeedlyAccount getFeedlyAccount();
 
         void displayFeedEntry(Feed feed, int position);
+        void updateFeedEntries(ArrayList<FeedEntry> entries, Feed feed);
     }
 
     /**
@@ -71,11 +74,15 @@ public class FeedEntryListFragment extends Fragment implements
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (mode != null) {
-                    mode.finish();
+                if (newEntries) {
+                    callback.updateFeedEntries(entries, feed);
+                    newEntries = false;
                 }
                 if (position != selectedItem)
                     callback.displayFeedEntry(feed, position);
+                if (mode != null) {
+                    mode.finish();
+                }
             }
         });
 
@@ -100,8 +107,7 @@ public class FeedEntryListFragment extends Fragment implements
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        ArrayList<FeedEntry> entries = new ArrayList<>();
-        if (feed.getEntries() != null)
+        if (feed != null && feed.getEntries() != null)
             // TODO: Read/Unread switch
             entries = feed.getUnreadEntries();
 
@@ -111,6 +117,14 @@ public class FeedEntryListFragment extends Fragment implements
 
     public void setFeed(Feed feed) {
         this.feed = feed;
+        entries = new ArrayList<>();
+        newEntries = true;
+    }
+
+    public void setEntries(ArrayList<FeedEntry> entries) {
+        this.entries = entries;
+        feed = null;
+        newEntries = true;
     }
 
     public FeedEntry getEntry(int position) {
@@ -118,7 +132,10 @@ public class FeedEntryListFragment extends Fragment implements
     }
 
     public boolean hasEntries() {
-        return feed.getUnreadEntries().size() != 0;
+        if (feed != null)
+            return feed.getUnreadEntries().size() != 0;
+        else
+            return entries != null && entries.size() != 0;
     }
 
     public void markEntryAsRead(int position, FeedlyAccount account) {
@@ -184,14 +201,16 @@ public class FeedEntryListFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
-
     }
 
     @Override
     public void onStart() {
         super.onStart();
 
-        callback.setActionBar(true, feed.getColor());
+        if (feed != null)
+            callback.setActionBar(true, feed.getColor());
+        else
+            callback.setActionBar(true, 0);
     }
 
     @Override

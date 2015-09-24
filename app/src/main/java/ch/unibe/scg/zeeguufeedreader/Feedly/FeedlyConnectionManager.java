@@ -80,6 +80,8 @@ public class FeedlyConnectionManager {
             getAuthenticationCode();
         else if (!account.isUserInSession())
             getAuthenticationToken(account.getAuthenticationCode());
+        else if (account.isAccessTokenExpired())
+            refreshAccessToken();
         else
             getCategoriesThread();
     }
@@ -211,9 +213,12 @@ public class FeedlyConnectionManager {
                 url, params, new Response.Listener<JSONObject>() {
 
             @Override
-            public void onResponse(JSONObject response) {
-                // TODO: Update in account
-                callback.displayMessage(response.toString());
+            public void onResponse(JSONObject json) {
+                Map<String, String> response = FeedlyResponseParser.parseAuthenticationToken(json);
+                account.setAccessToken(response.get("access_token"), response.get("access_token_expiration"));
+                account.saveLoginInformation();
+
+                getCategoriesThread();
             }
         }, new Response.ErrorListener() {
 

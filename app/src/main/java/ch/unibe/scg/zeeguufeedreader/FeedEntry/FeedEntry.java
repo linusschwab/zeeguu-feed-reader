@@ -26,7 +26,7 @@ public class FeedEntry {
     @DatabaseField(generatedId = true)
     private int id;
 
-    @DatabaseField(foreign = true, columnName = "feed_id", columnDefinition = "integer references feeds(id) on delete cascade")
+    @DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "feed_id", columnDefinition = "integer references feeds(id) on delete cascade")
     private Feed feed;
 
     @DatabaseField(columnName = "feedly_id")
@@ -50,7 +50,7 @@ public class FeedEntry {
     @DatabaseField(columnName = "date")
     private Date date;
 
-    @DatabaseField(columnName = "unread")
+    @DatabaseField(columnName = "read")
     private boolean read;
 
     @DatabaseField(columnName = "favorite")

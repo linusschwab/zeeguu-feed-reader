@@ -18,6 +18,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
+import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAccount;
 import ch.unibe.scg.zeeguufeedreader.R;
 
 /**
@@ -36,7 +37,8 @@ public class FeedOverviewFragment extends Fragment {
      *  Callback interface that must be implemented by the container activity
      */
     public interface FeedOverviewCallbacks {
-        void displayFeedEntryList(Feed feed);
+        void displayFeedEntryList(Category category, Feed feed);
+        FeedlyAccount getFeedlyAccount();
     }
 
     /**
@@ -61,11 +63,26 @@ public class FeedOverviewFragment extends Fragment {
         View mainView = (View) inflater.inflate(R.layout.fragment_feed_overview, container, false);
         expandableListView = (ExpandableListView) mainView.findViewById(R.id.feed_overview_listview);
 
+        expandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
+            @Override
+            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+                // TODO: Implement for normal categories
+                Category category = adapter.getGroup(groupPosition);
+
+                if (category instanceof DefaultCategory) {
+                    callback.displayFeedEntryList(category, null);
+                    return true;
+                }
+
+                return false;
+            }
+        });
+
         expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View view, int groupPosition, int childPosition, long id) {
                 Feed feed = adapter.getChild(groupPosition, childPosition);
-                callback.displayFeedEntryList(feed);
+                callback.displayFeedEntryList(null, feed);
                 return true;
             }
         });
@@ -117,9 +134,11 @@ public class FeedOverviewFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        // Recalculate unread count
+        // Recalculate unread count (and update default categories)
         new Thread(new Runnable() {
             public void run() {
+                callback.getFeedlyAccount().updateDefaultCategories();
+
                 for (Category category : categories)
                     category.getUnreadCount();
 

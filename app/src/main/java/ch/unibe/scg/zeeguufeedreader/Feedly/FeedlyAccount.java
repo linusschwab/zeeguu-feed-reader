@@ -1,23 +1,20 @@
 package ch.unibe.scg.zeeguufeedreader.Feedly;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.j256.ormlite.dao.Dao;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import ch.unibe.scg.zeeguufeedreader.Database.CategoryFeed;
-import ch.unibe.scg.zeeguufeedreader.Database.DatabaseHelper;
 import ch.unibe.scg.zeeguufeedreader.Database.QueryHelper;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.DefaultCategory;
 import ch.unibe.scg.zeeguufeedreader.R;
 
 /**
@@ -123,6 +120,30 @@ public class FeedlyAccount {
         callback.saveLong(R.string.pref_feedly_access_token_expiration, (long) 0);
     }
 
+    // Default categories (not saved in the database)
+    public void setUpDefaultCategories() {
+        DefaultCategory all = new DefaultCategory(activity.getResources().getString(R.string.default_category_all));
+        DefaultCategory favorite = new DefaultCategory(activity.getResources().getString(R.string.default_category_favorite));
+        //DefaultCategory uncategorized = new DefaultCategory("Uncategorized");
+
+        all.setEntries(new ArrayList<>(queryHelper.getAllEntries()));
+        favorite.setEntries(new ArrayList<>(queryHelper.getFavoriteEntries()));
+
+        categories.add(0, all);
+        categories.add(1, favorite);
+    }
+
+    public void updateDefaultCategories() {
+        ArrayList<DefaultCategory> defaultCategories = getDefaultCategories();
+
+        for (DefaultCategory category : defaultCategories) {
+            if (category.getName().equals(activity.getResources().getString(R.string.default_category_all)))
+                category.setEntries(new ArrayList<FeedEntry>(queryHelper.getAllEntries()));
+            else if (category.getName().equals(activity.getResources().getString(R.string.default_category_favorite)))
+                category.setEntries(new ArrayList<FeedEntry>(queryHelper.getFavoriteEntries()));
+        }
+    }
+
     // Database Methods
     public void saveCategory(Category category) {
         try {
@@ -161,13 +182,15 @@ public class FeedlyAccount {
             Log.e(FeedlyAccount.class.getName(), "Can't load categories", e);
             throw new RuntimeException(e);
         }
+
+        setUpDefaultCategories();
     }
 
     public void synchronizeCategories(ArrayList<Category> categoriesNew) {
         if (categoriesNew.size() == 0)
             return;
 
-        ArrayList<Category> categoriesExisting = new ArrayList<>(categories);
+        ArrayList<Category> categoriesExisting = getNormalCategories();
 
         for (Category categoryNew : categoriesNew) {
             Category categoryExisting = getCategoryById(categoryNew.getFeedlyId());
@@ -310,6 +333,8 @@ public class FeedlyAccount {
             if (entryExisting == null)
                 saveFeedEntry(entryNew);
         }
+
+        onSynchronizationFinished();
     }
 
     public void linkCategoryFeed(Category category, Feed feed) {
@@ -342,6 +367,10 @@ public class FeedlyAccount {
             Log.e(FeedlyAccount.class.getName(), "Can't load category feed link", e);
             throw new RuntimeException(e);
         }
+    }
+
+    public void onSynchronizationFinished() {
+        updateDefaultCategories();
     }
 
     // Boolean Checks
@@ -411,9 +440,31 @@ public class FeedlyAccount {
         return categories;
     }
 
+    public ArrayList<DefaultCategory> getDefaultCategories() {
+        ArrayList<DefaultCategory> defaultCategories = new ArrayList<>();
+
+        for (Category category : categories) {
+            if (category instanceof DefaultCategory)
+                defaultCategories.add((DefaultCategory) category);
+        }
+
+        return defaultCategories;
+    }
+
+    public ArrayList<Category> getNormalCategories() {
+        ArrayList<Category> normalCategories = new ArrayList<>();
+
+        for (Category category : categories) {
+            if (!(category instanceof DefaultCategory))
+                normalCategories.add(category);
+        }
+
+        return normalCategories;
+    }
+
     public Category getCategoryById(String feedlyId) {
         for (Category category : categories) {
-            if (category.getFeedlyId().equals(feedlyId))
+            if (category.getFeedlyId() != null && category.getFeedlyId().equals(feedlyId))
                 return category;
         }
         return null;

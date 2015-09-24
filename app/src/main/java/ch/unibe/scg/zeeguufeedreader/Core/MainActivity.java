@@ -27,9 +27,11 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
 
+import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryPagerAdapter;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.DefaultCategory;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAuthenticationFragment;
 import ch.unibe.scg.zeeguufeedreader.Preferences.SettingsActivity;
@@ -352,13 +354,29 @@ public class MainActivity extends BaseActivity implements
 
     // Feed entry fragment navigation
     @Override
-    public void displayFeedEntryList(Feed feed) {
-        feedEntryListFragment.setFeed(feed);
-        feed.setColor(Tools.getDominantColor(feed.getFavicon()));
-        switchFragmentBackstack(feedEntryListFragment, "feedEntryList", feed.getName());
+    public void displayFeedEntryList(Category category, Feed feed) {
+        if (category != null) {
+            if (category instanceof DefaultCategory) {
+                DefaultCategory defaultCategory = (DefaultCategory) category;
+                feedEntryListFragment.setEntries(defaultCategory.getEntries());
+                switchFragmentBackstack(feedEntryListFragment, "feedEntryList", category.getName());
+            }
+        }
+        else if (feed != null) {
+            feedEntryListFragment.setFeed(feed);
+            feed.setColor(Tools.getDominantColor(feed.getFavicon()));
+            switchFragmentBackstack(feedEntryListFragment, "feedEntryList", feed.getName());
+        }
 
         if (!isPanelLoaded && feedEntryListFragment.hasEntries()) {
-            pagerAdapter.setFeed(feed);
+            if (feed != null)
+                pagerAdapter.setFeed(feed);
+            else {
+                if (category instanceof DefaultCategory) {
+                    DefaultCategory defaultCategory = (DefaultCategory) category;
+                    pagerAdapter.setEntries(defaultCategory.getEntries());
+                }
+            }
             pagerAdapter.notifyDataSetChanged();
 
             viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -438,14 +456,20 @@ public class MainActivity extends BaseActivity implements
 
     @Override
     public void displayFeedEntry(Feed feed, int position) {
-        if (!feed.equals(pagerAdapter.getFeed())) {
+        viewPager.setCurrentItem(position);
+        panelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+    }
+
+    @Override
+    public void updateFeedEntries(ArrayList<FeedEntry> entries, Feed feed) {
+        if (feed != null && !feed.equals(pagerAdapter.getFeed())) {
             pagerAdapter.setFeed(feed);
             pagerAdapter.notifyDataSetChanged();
         }
-
-        viewPager.setCurrentItem(position);
-
-        panelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+        else if (entries != null && entries.size() != 0) {
+            pagerAdapter.setEntries(entries);
+            pagerAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override

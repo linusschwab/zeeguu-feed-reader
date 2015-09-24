@@ -65,6 +65,10 @@
 
     <string name="action_refresh">Refresh</string>
 
+    <!-- Default categories -->
+    <string name="default_category_all">All articles</string>
+    <string name="default_category_favorite">Saved for later</string>
+
     <!-- Shared preference keys -->
     <string name="pref_feedly">pref_feedly</string>
     <string name="pref_feedly_email">pref_feedly_email</string>

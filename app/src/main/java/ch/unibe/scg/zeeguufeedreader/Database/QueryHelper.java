@@ -59,6 +59,26 @@ public class QueryHelper {
         return feedDao.query(feedsForCategoryQuery);
     }
 
+    public List<FeedEntry> getAllEntries() {
+        try {
+            return callback.getDatabaseHelper().getFeedEntryDao().queryForAll();
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get all feed entries", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<FeedEntry> getFavoriteEntries() {
+        try {
+            return callback.getDatabaseHelper().getFeedEntryDao().queryForEq("favorite", true);
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get favorite feed entries", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public Category getCategoryByFeedlyId(String feedlyId) {
         try {
             Dao<Category, Integer> categoryDao = callback.getDatabaseHelper().getCategoryDao();

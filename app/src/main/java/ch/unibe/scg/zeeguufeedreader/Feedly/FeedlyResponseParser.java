@@ -33,10 +33,13 @@ public class FeedlyResponseParser {
      */
     public static Map<String, String> parseAuthenticationToken(JSONObject json) {
         try {
-            String refreshToken = json.getString("refresh_token");
+            String refreshToken = "";
+            if (json.has("refresh_token"))
+                refreshToken = json.getString("refresh_token");
 
             String accessToken = json.getString("access_token");
 
+            // Calculate expiration time
             long timestamp = System.currentTimeMillis() / 1000;
             long expiresIn = Long.parseLong(json.getString("expires_in"));
             String expirationTime = Long.toString(timestamp + expiresIn);
