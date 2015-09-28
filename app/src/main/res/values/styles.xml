@@ -3,8 +3,9 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Action Bar overlay for sliding panel -->
-        <item name="android:windowActionBarOverlay">true</item>
+        <item name="windowActionBar">false</item>
         <item name="windowActionBarOverlay">true</item>
+        <item name="windowNoTitle">true</item>
 
         <!-- EditText -->
         <item name="colorControlActivated">@color/accent_color_red</item>
@@ -19,6 +20,9 @@
         <!-- Action Mode position -->
         <item name="android:windowActionModeOverlay">true</item>
         <item name="windowActionModeOverlay">true</item>
+
+        <item name="actionModeBackground">@color/action_bar_gray</item>
+        <item name="actionBarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
     </style>
 
 </resources>

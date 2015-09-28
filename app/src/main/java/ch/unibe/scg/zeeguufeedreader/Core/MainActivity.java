@@ -113,6 +113,10 @@ public class MainActivity extends BaseActivity implements
         setUpToolbar();
         setUpNavigationDrawer(navigationView);
 
+        // Hide statusbar background on Android < API 21
+        if (android.os.Build.VERSION.SDK_INT < 21)
+            statusbarBackground.setVisibility(View.GONE);
+
         // Display Feed Overview
         if (savedInstanceState == null)
             switchFragment(feedOverviewFragment, "feedOverview", getString(R.string.title_feed_overview));

@@ -7,7 +7,6 @@
         <item name="windowNoTitle">true</item>
         <item name="android:windowTranslucentStatus">true</item>
 
-
         <!-- EditText -->
         <item name="colorControlActivated">@color/accent_color_red</item>
         <!-- <item name="colorControlHighlight">@color/red</item> -->
