@@ -68,6 +68,7 @@
     <!-- Default categories -->
     <string name="default_category_all">All articles</string>
     <string name="default_category_favorite">Saved for later</string>
+    <string name="category_uncategorized">Uncategorized</string>
 
     <!-- Shared preference keys -->
     <string name="pref_feedly">pref_feedly</string>

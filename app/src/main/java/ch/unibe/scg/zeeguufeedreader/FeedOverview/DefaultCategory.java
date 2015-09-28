@@ -1,5 +1,7 @@
 package ch.unibe.scg.zeeguufeedreader.FeedOverview;
 
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import ch.unibe.scg.zeeguufeedreader.Core.ContextManager;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
@@ -43,7 +46,8 @@ public class DefaultCategory extends Category {
         }
 
         // Set list icon
-        holder.icon.setImageDrawable(ContextManager.getContext().getResources().getDrawable(R.drawable.ic_list));
+
+        holder.icon.setImageDrawable(ContextCompat.getDrawable(ContextManager.getContext(), R.drawable.ic_list));
 
         // Name and unread count
         holder.name.setText(getName().toUpperCase());
@@ -69,6 +73,7 @@ public class DefaultCategory extends Category {
     }
 
     public void setEntries(ArrayList<FeedEntry> entries) {
+        Collections.sort(entries);
         this.entries = entries;
     }
 

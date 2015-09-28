@@ -10,7 +10,9 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
+import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.R;
 
 @DatabaseTable(tableName = "categories")
@@ -34,6 +36,8 @@ public class Category {
      (Workaround because ormlite does not directly support m:m relations)
      */
     private ArrayList<Feed> feeds = new ArrayList<>();
+
+    private ArrayList<FeedEntry> entries = new ArrayList<>();
 
     private int unreadCount;
 
@@ -108,17 +112,23 @@ public class Category {
     // Feeds
     public void setFeeds(ArrayList<Feed> feeds) {
         this.feeds = feeds;
-        calculateUnreadCount();
+
+        entries = new ArrayList<>();
+        for (Feed feed : feeds)
+            entries.addAll(feed.getEntries());
+
+        Collections.sort(entries);
     }
 
     public void addFeed(Feed feed) {
         feeds.add(feed);
-        calculateUnreadCount();
+        entries.addAll(feed.getEntries());
+        Collections.sort(entries);
     }
 
     public Feed removeFeed(int position) {
         Feed feed = feeds.remove(position);
-        calculateUnreadCount();
+        entries.removeAll(feed.getEntries());
 
         return feed;
     }
@@ -129,6 +139,10 @@ public class Category {
 
     public int getFeedCount() {
         return feeds.size();
+    }
+
+    public ArrayList<FeedEntry> getEntries() {
+        return entries;
     }
 
     public int getUnreadCount() {

@@ -1,6 +1,7 @@
 package ch.unibe.scg.zeeguufeedreader.FeedOverview;
 
 import android.app.Activity;
+import android.content.Context;
 import android.database.DataSetObserver;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -24,7 +26,8 @@ import ch.unibe.scg.zeeguufeedreader.R;
 /**
  *  Home fragment, displays all feeds and categories.
  */
-public class FeedOverviewFragment extends Fragment {
+public class FeedOverviewFragment extends Fragment implements
+        FeedOverviewListAdapter.FeedOverviewListAdapterCallbacks {
 
     ArrayList<Category> categories = new ArrayList<>();
 
@@ -65,7 +68,7 @@ public class FeedOverviewFragment extends Fragment {
 
         expandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             @Override
-            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+            public boolean onGroupClick(ExpandableListView parent, View view, int groupPosition, long id) {
                 // TODO: Implement for normal categories
                 Category category = adapter.getGroup(groupPosition);
 
@@ -94,7 +97,7 @@ public class FeedOverviewFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        adapter = new FeedOverviewListAdapter(getActivity(), categories);
+        adapter = new FeedOverviewListAdapter(getActivity(), this, categories);
         expandableListView.setAdapter(adapter);
     }
 
@@ -105,6 +108,10 @@ public class FeedOverviewFragment extends Fragment {
 
     public void setCategories(ArrayList<Category> categories) {
         this.categories = categories;
+    }
+
+    public void displayFeedEntryList(Category category) {
+        callback.displayFeedEntryList(category, null);
     }
 
     @Override

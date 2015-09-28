@@ -1,21 +1,40 @@
 package ch.unibe.scg.zeeguufeedreader.FeedOverview;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+
+import ch.unibe.scg.zeeguufeedreader.Core.ContextManager;
+import ch.unibe.scg.zeeguufeedreader.R;
 
 public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
 
     private ArrayList<Category> categories;
     private LayoutInflater inflater;
 
-    public FeedOverviewListAdapter(Activity activity, ArrayList<Category> categories) {
+    private FeedOverviewListAdapterCallbacks callback;
+
+    public interface FeedOverviewListAdapterCallbacks {
+        void displayFeedEntryList(Category category);
+    }
+
+    public FeedOverviewListAdapter(Activity activity, Fragment fragment, ArrayList<Category> categories) {
         this.categories = categories;
         this.inflater = activity.getLayoutInflater();
+
+        // Make sure that the interface is implemented in the fragment
+        try {
+            callback = (FeedOverviewListAdapterCallbacks) fragment;
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Fragment must implement FeedOverviewListAdapterCallbacks");
+        }
     }
 
     @Override
@@ -55,7 +74,21 @@ public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
-        return categories.get(groupPosition).getView(inflater, convertView, parent);
+        final Category category = categories.get(groupPosition);
+
+        View categoryView = category.getView(inflater, convertView, parent);
+        TextView categoryName = (TextView) categoryView.findViewById(R.id.category_name);
+
+        if (!(category instanceof DefaultCategory)) {
+            categoryName.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    callback.displayFeedEntryList(category);
+                }
+            });
+        }
+
+        return categoryView;
     }
 
     @Override

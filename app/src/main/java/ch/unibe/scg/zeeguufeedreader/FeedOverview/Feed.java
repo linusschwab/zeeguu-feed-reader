@@ -14,6 +14,7 @@ import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import ch.unibe.scg.zeeguufeedreader.Core.Tools;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
@@ -128,7 +129,13 @@ public class Feed {
     }
 
     public ArrayList<FeedEntry> getEntries() {
-        return new ArrayList<>(entries);
+        if (entries != null) {
+            ArrayList<FeedEntry> entriesList = new ArrayList<>(entries);
+            Collections.sort(entriesList);
+            return entriesList;
+        }
+        else
+            return new ArrayList<>();
     }
 
     public ArrayList<FeedEntry> getUnreadEntries() {
@@ -137,6 +144,8 @@ public class Feed {
         for (FeedEntry entry : entries)
             if (!entry.isRead())
                 unreadEntries.add(entry);
+
+        Collections.sort(unreadEntries);
 
         return unreadEntries;
     }

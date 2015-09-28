@@ -38,6 +38,11 @@ public class FeedlyAccount {
     private ArrayList<Category> categories = new ArrayList<>();
     private ArrayList<Feed> feeds = new ArrayList<>();
 
+    // Special Categories
+    private DefaultCategory all;
+    private DefaultCategory favorite;
+    private Category uncategorized;
+
     // Database access objects
     private Dao<Category, Integer> categoryDao;
     private Dao<CategoryFeed, Integer> categoryFeedDao;
@@ -122,9 +127,8 @@ public class FeedlyAccount {
 
     // Default categories (not saved in the database)
     public void setUpDefaultCategories() {
-        DefaultCategory all = new DefaultCategory(activity.getResources().getString(R.string.default_category_all));
-        DefaultCategory favorite = new DefaultCategory(activity.getResources().getString(R.string.default_category_favorite));
-        //DefaultCategory uncategorized = new DefaultCategory("Uncategorized");
+        all = new DefaultCategory(activity.getResources().getString(R.string.default_category_all));
+        favorite = new DefaultCategory(activity.getResources().getString(R.string.default_category_favorite));
 
         all.setEntries(new ArrayList<>(queryHelper.getAllEntries()));
         favorite.setEntries(new ArrayList<>(queryHelper.getFavoriteEntries()));
@@ -134,14 +138,8 @@ public class FeedlyAccount {
     }
 
     public void updateDefaultCategories() {
-        ArrayList<DefaultCategory> defaultCategories = getDefaultCategories();
-
-        for (DefaultCategory category : defaultCategories) {
-            if (category.getName().equals(activity.getResources().getString(R.string.default_category_all)))
-                category.setEntries(new ArrayList<FeedEntry>(queryHelper.getAllEntries()));
-            else if (category.getName().equals(activity.getResources().getString(R.string.default_category_favorite)))
-                category.setEntries(new ArrayList<FeedEntry>(queryHelper.getFavoriteEntries()));
-        }
+        all.setEntries(new ArrayList<FeedEntry>(queryHelper.getAllEntries()));
+        favorite.setEntries(new ArrayList<FeedEntry>(queryHelper.getFavoriteEntries()));
     }
 
     // Database Methods
@@ -184,6 +182,10 @@ public class FeedlyAccount {
         }
 
         setUpDefaultCategories();
+
+        // Uncategorized
+        uncategorized = new Category(activity.getResources().getString(R.string.category_uncategorized));
+        categories.add(uncategorized);
     }
 
     public void synchronizeCategories(ArrayList<Category> categoriesNew) {
@@ -212,7 +214,8 @@ public class FeedlyAccount {
 
         // Delete categories that don't exist on the server any more
         for (Category categoryExisting : categoriesExisting) {
-            deleteCategory(categoryExisting);
+            if (!categoryExisting.getName().equals(activity.getResources().getString(R.string.category_uncategorized)))
+                deleteCategory(categoryExisting);
         }
     }
 
@@ -253,6 +256,8 @@ public class FeedlyAccount {
             Log.e(FeedlyAccount.class.getName(), "Can't load feeds", e);
             throw new RuntimeException(e);
         }
+
+        uncategorized.setFeeds(getFeedsWithoutCategory());
     }
 
     public void synchronizeFeeds(ArrayList<Feed> feedsNew) {
@@ -282,6 +287,10 @@ public class FeedlyAccount {
                 ArrayList<Category> categoriesToLink = feedNew.getCategoriesToLink();
                 for (Category category : categoriesToLink)
                     linkCategoryFeed(category, feedNew);
+
+                // Add to uncategorized if no categories
+                if (categoriesToLink.size() == 0)
+                    uncategorized.addFeed(feedNew);
             }
         }
 
@@ -289,7 +298,6 @@ public class FeedlyAccount {
         for (Feed feedExisting : feedsExisting) {
             deleteFeed(feedExisting);
         }
-
     }
 
     public void saveFeedEntry(FeedEntry entry) {
@@ -367,6 +375,8 @@ public class FeedlyAccount {
             Log.e(FeedlyAccount.class.getName(), "Can't load category feed link", e);
             throw new RuntimeException(e);
         }
+
+        uncategorized.setFeeds(getFeedsWithoutCategory());
     }
 
     public void onSynchronizationFinished() {
@@ -480,5 +490,15 @@ public class FeedlyAccount {
                 return feed;
         }
         return null;
+    }
+
+    private ArrayList<Feed> getFeedsWithoutCategory() {
+        ArrayList<Feed> feedsWithoutCategory = new ArrayList<>();
+
+        for (Feed feed : feeds)
+            if (feed.getCategories().size() == 0)
+                feedsWithoutCategory.add(feed);
+
+        return feedsWithoutCategory;
     }
 }
