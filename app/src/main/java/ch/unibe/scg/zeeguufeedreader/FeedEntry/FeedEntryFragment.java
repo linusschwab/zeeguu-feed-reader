@@ -163,7 +163,7 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
         String css = Utility.assetToString(getActivity(), "css/style.css");
 
         if (title != null && content != null) {
-            String html = "<html><head><style>" + css + "</style></head><body>" +
+            String html = "<html><head><style>" + css + "</style><title>" + title + "</title></head><body>" +
                           "<a class='entry_title' href='" + url + "'><div class='entry_header'>" +
                           "<span class='entry_info'>" + date + "</span>" +
                           "<h1>" + title + "</h1>" +
