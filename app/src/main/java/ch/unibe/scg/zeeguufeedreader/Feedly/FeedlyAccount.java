@@ -7,6 +7,7 @@ import com.j256.ormlite.dao.Dao;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import ch.unibe.scg.zeeguufeedreader.Database.CategoryFeed;
@@ -33,6 +34,9 @@ public class FeedlyAccount {
     private String refreshToken;
     private String accessToken;
     private long accessTokenExpiration;
+
+    private long lastReadSync;
+    private long lastFavoriteSync;
 
     // Subscriptions
     private ArrayList<Category> categories = new ArrayList<>();
@@ -103,6 +107,8 @@ public class FeedlyAccount {
         refreshToken = callback.loadString(R.string.pref_feedly_refresh_token);
         accessToken = callback.loadString(R.string.pref_feedly_access_token);
         accessTokenExpiration = callback.loadLong(R.string.pref_feedly_access_token_expiration);
+        lastReadSync = callback.loadLong(R.string.pref_feedly_last_read_sync);
+        lastFavoriteSync = callback.loadLong(R.string.pref_feedly_last_favorite_sync);
     }
 
     public void logout() {
@@ -123,6 +129,8 @@ public class FeedlyAccount {
         callback.saveString(R.string.pref_feedly_refresh_token, "");
         callback.saveString(R.string.pref_feedly_access_token, "");
         callback.saveLong(R.string.pref_feedly_access_token_expiration, (long) 0);
+        callback.saveLong(R.string.pref_feedly_last_read_sync, (long) 0);
+        callback.saveLong(R.string.pref_feedly_last_favorite_sync, (long) 0);
     }
 
     // Default categories (not saved in the database)
@@ -313,6 +321,12 @@ public class FeedlyAccount {
         }
     }
 
+    public void saveFeedEntries(ArrayList<FeedEntry> entries) {
+        for (FeedEntry entry : entries) {
+            saveFeedEntry(entry);
+        }
+    }
+
     public void deleteFeedEntry(FeedEntry entry) {
         try {
             feedEntryDao.delete(entry);
@@ -376,11 +390,28 @@ public class FeedlyAccount {
             throw new RuntimeException(e);
         }
 
+        updateDefaultCategories();
         uncategorized.setFeeds(getFeedsWithoutCategory());
     }
 
     public void onSynchronizationFinished() {
         updateDefaultCategories();
+    }
+
+    // Mark as read
+    public void markFeedsAsRead(ArrayList<Feed> feeds) {
+        for (Feed feed : feeds) {
+            ArrayList<FeedEntry> entries = feed.getEntries();
+            Date date = new Date(feed.getReadEntriesDate());
+            for (FeedEntry entry : entries) {
+                // TODO: Make use of sorted entries
+                // Entry older than date -> is read
+                if (entry.getDate().compareTo(date) < 0) {
+                    entry.syncRead(true);
+                    saveFeedEntry(entry);
+                }
+            }
+        }
     }
 
     // Boolean Checks
@@ -445,6 +476,24 @@ public class FeedlyAccount {
         this.accessTokenExpiration = Long.parseLong(accessTokenExpiration);
     }
 
+    public void readSyncFinished() {
+        lastReadSync = System.currentTimeMillis();
+        callback.saveLong(R.string.pref_feedly_last_read_sync, lastReadSync);
+    }
+
+    public void favoriteSyncFinished() {
+        lastFavoriteSync = System.currentTimeMillis();
+        callback.saveLong(R.string.pref_feedly_last_favorite_sync, lastFavoriteSync);
+    }
+
+    public long getLastReadSync() {
+        return lastReadSync;
+    }
+
+    public long getLastFavoriteSync() {
+        return lastFavoriteSync;
+    }
+
     // Subscriptions
     public ArrayList<Category> getCategories() {
         return categories;
@@ -500,5 +549,25 @@ public class FeedlyAccount {
                 feedsWithoutCategory.add(feed);
 
         return feedsWithoutCategory;
+    }
+
+    public FeedEntry getEntryById(String feedlyId) {
+        return queryHelper.getFeedEntryByFeedlyId(feedlyId);
+    }
+
+    public ArrayList<FeedEntry> getLatestReadEntries(long newerThan) {
+        return new ArrayList<>(queryHelper.getLatestReadEntries(newerThan));
+    }
+
+    public ArrayList<FeedEntry> getLatestUnreadEntries(long newerThan) {
+        return new ArrayList<>(queryHelper.getLatestUnreadEntries(newerThan));
+    }
+
+    public ArrayList<FeedEntry> getLatestFavoritedEntries(long newerThan) {
+        return new ArrayList<>(queryHelper.getLatestFavoritedEntries(newerThan));
+    }
+
+    public ArrayList<FeedEntry> getLatestUnfavoritedEntries(long newerThan) {
+        return new ArrayList<>(queryHelper.getLatestUnfavoritedEntries(newerThan));
     }
 }

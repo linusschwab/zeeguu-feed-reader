@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
@@ -182,6 +183,7 @@ public class FeedlyResponseParser {
                     content,
                     json.getJSONArray("alternate").getJSONObject(0).getString("href"),
                     author,
+                    json.getBoolean("unread"),
                     json.getLong("published"));
             entry.setFeedlyId(json.getString("id"));
 
@@ -198,6 +200,105 @@ public class FeedlyResponseParser {
         }
 
         return null;
+    }
+
+    /**
+     * @param json: https://developer.feedly.com/v3/markers/#get-the-latest-read-operations-to-sync-local-cache
+     */
+    public static ArrayList<Feed> parseReadFeeds(JSONObject json, FeedlyAccount account) {
+        ArrayList<Feed> feeds = new ArrayList<>();
+
+        try {
+            if (json.has("feeds")) {
+                JSONArray jsonArray = json.getJSONArray("feeds");
+                for (int i=0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    Feed feed = account.getFeedById(jsonObject.getString("id"));
+                    feed.setReadEntriesDate(jsonObject.getLong("asOf"));
+
+                    feeds.add(feed);
+                }
+            }
+        }
+        catch (JSONException e) {
+            Log.e("feedly_parse_read_feeds", e.getMessage());
+            e.printStackTrace();
+        }
+
+        return feeds;
+    }
+
+    /**
+     * @param json: https://developer.feedly.com/v3/markers/#get-the-latest-read-operations-to-sync-local-cache
+     */
+    public static ArrayList<FeedEntry> parseReadFeedEntries(JSONObject json, FeedlyAccount account) {
+        ArrayList<FeedEntry> entries = new ArrayList<>();
+
+        try {
+            if (json.has("entries")) {
+                JSONArray jsonArray = json.getJSONArray("entries");
+                for (int i=0; i < jsonArray.length(); i++) {
+                    FeedEntry entry = account.getEntryById(jsonArray.getString(i));
+                    if (entry != null && json.getLong("updated") > entry.getReadUpdate()) {
+                        entry.syncRead(true);
+                        entries.add(entry);
+                    }
+                }
+            }
+
+            if (json.has("unread")) {
+                JSONArray jsonArray = json.getJSONArray("unread");
+                for (int i=0; i < jsonArray.length(); i++) {
+                    FeedEntry entry = account.getEntryById(jsonArray.getString(i));
+                    if (entry != null && json.getLong("updated") > entry.getReadUpdate()) {
+                        entry.syncRead(false);
+                        entries.add(entry);
+                    }
+                }
+            }
+        }
+        catch (JSONException e) {
+            Log.e("feedly_parse_read_entry", e.getMessage());
+            e.printStackTrace();
+        }
+
+        return entries;
+    }
+
+    /**
+     * @param json: https://developer.feedly.com/v3/markers/#get-the-latest-tagged-entry-ids
+     */
+    public static ArrayList<FeedEntry> parseTags(JSONObject json, FeedlyAccount account) {
+        ArrayList<FeedEntry> entries = new ArrayList<>();
+
+        try {
+            json = json.getJSONObject("taggedEntries");
+            Iterator<String> keys = json.keys();
+
+            // Search for favorited entries
+            while (keys.hasNext()) {
+                String key = keys.next();
+
+                if (key.contains("global.saved")) {
+                    JSONArray jsonArray = json.getJSONArray(key);
+
+                    for (int i=0; i < jsonArray.length(); i++) {
+                        FeedEntry entry = account.getEntryById(jsonArray.getString(i));
+
+                        if (entry != null) {
+                            entry.syncFavorite(true);
+                            entries.add(entry);
+                        }
+                    }
+                }
+            }
+        }
+        catch (JSONException e) {
+            Log.e("feedly_parse_tags", e.getMessage());
+            e.printStackTrace();
+        }
+
+        return entries;
     }
 
     public static String parseErrorMessage(VolleyError error) {

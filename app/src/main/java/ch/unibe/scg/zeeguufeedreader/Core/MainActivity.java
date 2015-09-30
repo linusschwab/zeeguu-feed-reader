@@ -360,7 +360,7 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void displayFeedEntryList(Category category, Feed feed) {
         if (category != null) {
-            feedEntryListFragment.setEntries(category.getEntries());
+            feedEntryListFragment.setEntries(category.getUnreadEntries());
             switchFragmentBackstack(feedEntryListFragment, "feedEntryList", category.getName());
         }
         else if (feed != null) {
@@ -372,8 +372,8 @@ public class MainActivity extends BaseActivity implements
         if (!isPanelLoaded && feedEntryListFragment.hasEntries()) {
             if (feed != null)
                 pagerAdapter.setFeed(feed);
-            else
-                 pagerAdapter.setEntries(category.getEntries());
+            else if (category != null)
+                 pagerAdapter.setEntries(category.getUnreadEntries());
             pagerAdapter.notifyDataSetChanged();
 
             viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {

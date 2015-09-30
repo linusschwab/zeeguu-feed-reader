@@ -79,6 +79,46 @@ public class QueryHelper {
         }
     }
 
+    public List<FeedEntry> getLatestReadEntries(long newerThan) {
+        try {
+            return callback.getDatabaseHelper().getFeedEntryDao().query(buildLatestReadEntriesQuery(newerThan, true));
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get latest read feed entries", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<FeedEntry> getLatestUnreadEntries(long newerThan) {
+        try {
+            return callback.getDatabaseHelper().getFeedEntryDao().query(buildLatestReadEntriesQuery(newerThan, false));
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get latest unread feed entries", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<FeedEntry> getLatestFavoritedEntries(long newerThan) {
+        try {
+            return callback.getDatabaseHelper().getFeedEntryDao().query(buildLatestFavoriteEntriesQuery(newerThan, true));
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get latest favorited feed entries", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<FeedEntry> getLatestUnfavoritedEntries(long newerThan) {
+        try {
+            return callback.getDatabaseHelper().getFeedEntryDao().query(buildLatestFavoriteEntriesQuery(newerThan, false));
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get latest unfavorited feed entries", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public Category getCategoryByFeedlyId(String feedlyId) {
         try {
             Dao<Category, Integer> categoryDao = callback.getDatabaseHelper().getCategoryDao();
@@ -105,6 +145,22 @@ public class QueryHelper {
         }
         catch (SQLException e) {
             Log.e(QueryHelper.class.getName(), "Can't get feed by feedly id", e);
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
+
+    public FeedEntry getFeedEntryByFeedlyId(String feedlyId) {
+        try {
+            Dao<FeedEntry, Integer> feedEntryDao = callback.getDatabaseHelper().getFeedEntryDao();
+            List<FeedEntry> result = feedEntryDao.queryForEq("feedly_id", feedlyId);
+
+            if (result.size() != 0)
+                return result.get(0);
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get entry by feedly id", e);
             throw new RuntimeException(e);
         }
 
@@ -148,5 +204,21 @@ public class QueryHelper {
         // Where the id matches the feed_id from the inner query
         feedQueryBuilder.where().in("id", categoryFeedQueryBuilder);
         return feedQueryBuilder.prepare();
+    }
+
+    private PreparedQuery<FeedEntry> buildLatestReadEntriesQuery(long newerThan, boolean read) throws SQLException {
+        Dao<FeedEntry, Integer> feedEntryDao = callback.getDatabaseHelper().getFeedEntryDao();
+        QueryBuilder<FeedEntry, Integer> feedEntryQueryBuilder = feedEntryDao.queryBuilder();
+
+        feedEntryQueryBuilder.where().between("read_update", newerThan, System.currentTimeMillis()).and().eq("read", read);
+        return feedEntryQueryBuilder.prepare();
+    }
+
+    private PreparedQuery<FeedEntry> buildLatestFavoriteEntriesQuery(long newerThan, boolean favorite) throws SQLException {
+        Dao<FeedEntry, Integer> feedEntryDao = callback.getDatabaseHelper().getFeedEntryDao();
+        QueryBuilder<FeedEntry, Integer> feedEntryQueryBuilder = feedEntryDao.queryBuilder();
+
+        feedEntryQueryBuilder.where().between("favorite_update", newerThan, System.currentTimeMillis()).and().eq("favorite", favorite);
+        return feedEntryQueryBuilder.prepare();
     }
 }

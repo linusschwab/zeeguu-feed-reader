@@ -1,6 +1,7 @@
 package ch.unibe.scg.zeeguufeedreader.FeedEntry;
 
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -53,19 +54,26 @@ public class FeedEntry implements Comparable<FeedEntry> {
     @DatabaseField(columnName = "read")
     private boolean read;
 
+    @DatabaseField(columnName = "read_update")
+    private long readUpdate;
+
     @DatabaseField(columnName = "favorite")
     private boolean favorite;
+
+    @DatabaseField(columnName = "favorite_update")
+    private long favoriteUpdate;
 
     public FeedEntry() {
         // Empty constructor needed by ormlite
     }
 
     // TODO: Change constructor?
-    public FeedEntry(String title, String content, String url, String author, long timestamp) {
+    public FeedEntry(String title, String content, String url, String author, boolean unread, long timestamp) {
         this.title = title;
         this.content = content;
         this.url = url;
         this.author = author;
+        this.read = !unread;
         this.date = new Date(timestamp);
     }
 
@@ -195,6 +203,10 @@ public class FeedEntry implements Comparable<FeedEntry> {
         this.author = author;
     }
 
+    public Date getDate() {
+        return date;
+    }
+
     public String getDateFull() {
         DateFormat dateFull = new SimpleDateFormat("EEEE, dd.MM.yyyy");
         return dateFull.format(date);
@@ -223,6 +235,15 @@ public class FeedEntry implements Comparable<FeedEntry> {
 
     public void setRead(boolean read) {
         this.read = read;
+        readUpdate = System.currentTimeMillis();
+    }
+
+    public void syncRead(boolean read) {
+        this.read = read;
+    }
+
+    public long getReadUpdate() {
+        return readUpdate;
     }
 
     public boolean isFavorite() {
@@ -231,6 +252,15 @@ public class FeedEntry implements Comparable<FeedEntry> {
 
     public void setFavorite(boolean favorite) {
         this.favorite = favorite;
+        favoriteUpdate = System.currentTimeMillis();
+    }
+
+    public void syncFavorite(boolean favorite) {
+        this.favorite = favorite;
+    }
+
+    public long getFavoriteUpdate() {
+        return favoriteUpdate;
     }
 
     @Override

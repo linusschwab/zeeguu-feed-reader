@@ -20,10 +20,6 @@ import ch.unibe.scg.zeeguufeedreader.R;
  */
 public class DefaultCategory extends Category {
 
-    private ArrayList<FeedEntry> entries = new ArrayList<>();
-
-    private int unreadCount;
-
     public DefaultCategory(String name) {
         super(name);
     }
@@ -68,10 +64,6 @@ public class DefaultCategory extends Category {
     }
 
     // Getter/Setter
-    public ArrayList<FeedEntry> getEntries() {
-        return entries;
-    }
-
     public void setEntries(ArrayList<FeedEntry> entries) {
         Collections.sort(entries);
         this.entries = entries;

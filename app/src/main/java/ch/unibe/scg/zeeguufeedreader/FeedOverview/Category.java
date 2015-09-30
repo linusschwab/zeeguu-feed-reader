@@ -37,9 +37,9 @@ public class Category {
      */
     private ArrayList<Feed> feeds = new ArrayList<>();
 
-    private ArrayList<FeedEntry> entries = new ArrayList<>();
+    protected ArrayList<FeedEntry> entries = new ArrayList<>();
 
-    private int unreadCount;
+    protected int unreadCount;
 
     public Category() {
         // Empty constructor needed by ormlite
@@ -143,6 +143,18 @@ public class Category {
 
     public ArrayList<FeedEntry> getEntries() {
         return entries;
+    }
+
+    public ArrayList<FeedEntry> getUnreadEntries() {
+        ArrayList<FeedEntry> unreadEntries = new ArrayList<>();
+
+        for (FeedEntry entry : entries)
+            if (!entry.isRead())
+                unreadEntries.add(entry);
+
+        Collections.sort(unreadEntries);
+
+        return unreadEntries;
     }
 
     public int getUnreadCount() {

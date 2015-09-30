@@ -63,6 +63,8 @@ public class Feed {
      */
     private ArrayList<Category> categoriesToLink = new ArrayList<>();
 
+    private long readEntriesDate;
+
     private int unreadCount;
 
     public Feed() {
@@ -211,6 +213,14 @@ public class Feed {
 
     public void setColor(int color) {
         this.color = color;
+    }
+
+    public long getReadEntriesDate() {
+        return readEntriesDate;
+    }
+
+    public void setReadEntriesDate(long readEntriesDate) {
+        this.readEntriesDate = readEntriesDate;
     }
 
     public int getUnreadCount() {

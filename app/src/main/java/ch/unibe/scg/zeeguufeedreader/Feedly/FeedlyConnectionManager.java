@@ -421,6 +421,11 @@ public class FeedlyConnectionManager {
                 // Parse and synchronize entries
                 ArrayList<FeedEntry> entries = FeedlyResponseParser.parseAllFeedEntries(response, account);
                 account.synchronizeFeedEntries(entries);
+
+                // Sync read/favorited entries
+                getLatestReadOperations(account.getLastReadSync());
+                getLatestTags(account.getLastFavoriteSync());
+
                 account.loadCategoryFeed();
 
                 timer.stop();
@@ -447,6 +452,162 @@ public class FeedlyConnectionManager {
             public Map<String, String> getHeaders() throws AuthFailureError {
                 return authorizationHeader();
             }
+        };
+
+        queue.add(request);
+    }
+
+    /**
+     * Get the tags (marked entries etc.) newer than the defined timestamp
+     *
+     * GET /v3/markers/reads
+     */
+    public void getLatestReadOperations(long newerThan) {
+        if (!isNetworkAvailable())
+            return; // ignore here
+
+        String url = URL + "/v3/markers/reads" + "?newerThan=" + newerThan;
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET,
+                url, null, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+                ArrayList<Feed> feeds = FeedlyResponseParser.parseReadFeeds(response, account);
+                ArrayList<FeedEntry> entries = FeedlyResponseParser.parseReadFeedEntries(response, account);
+
+                account.markFeedsAsRead(feeds);
+                account.saveFeedEntries(entries);
+
+                // Sync local read operations with Feedly
+                markEntriesAsRead(account.getLatestReadEntries(account.getLastReadSync()));
+                markEntriesAsUnread(account.getLatestUnreadEntries(account.getLastReadSync()));
+
+                account.readSyncFinished();
+            }
+
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("feedly_get_latest_reads", FeedlyResponseParser.parseErrorMessage(error));
+            }
+
+        }) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return authorizationHeader();
+            }
+
+        };
+
+        queue.add(request);
+    }
+
+    /**
+     * Get the tags (marked entries etc.) newer than the defined timestamp
+     *
+     * GET /v3/markers/tags
+     */
+    public void getLatestTags(long newerThan) {
+        if (!isNetworkAvailable())
+            return; // ignore here
+
+        String url = URL + "/v3/markers/tags" + "?newerThan=" + newerThan;
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET,
+                url, null, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+                ArrayList<FeedEntry> entries = FeedlyResponseParser.parseTags(response, account);
+                account.saveFeedEntries(entries);
+
+                // Sync existing favorites with Feedly
+                markEntriesAsFavorited(account.getLatestFavoritedEntries(account.getLastFavoriteSync()));
+                markEntriesAsUnfavorited(account.getLatestUnfavoritedEntries(account.getLastFavoriteSync()));
+
+                account.favoriteSyncFinished();
+            }
+
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("feedly_get_latest_tags", FeedlyResponseParser.parseErrorMessage(error));
+            }
+
+        }) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return authorizationHeader();
+            }
+
+        };
+
+        queue.add(request);
+    }
+
+    public void markEntriesAsRead(final ArrayList<FeedEntry> entries) {
+        markEntriesAs("markAsRead", entries);
+    }
+
+    public void markEntriesAsUnread(final ArrayList<FeedEntry> entries) {
+        markEntriesAs("keepUnread", entries);
+    }
+
+    public void markEntriesAsFavorited(final ArrayList<FeedEntry> entries) {
+        markEntriesAs("markAsSaved", entries);
+    }
+
+    public void markEntriesAsUnfavorited(final ArrayList<FeedEntry> entries) {
+        markEntriesAs("markAsUnsaved", entries);
+    }
+
+    /**
+     * Mark entries as read/unread or saved/unsaved (favorite) on the Feedly server
+     *
+     * POST /v3/markers
+     */
+    private void markEntriesAs(final String action, final ArrayList<FeedEntry> entries) {
+        if (!isNetworkAvailable())
+            return; // ignore here
+
+        String url = URL + "/v3/markers";
+
+        JSONObject params = new JSONObject();
+        try {
+            params.put("action", action);
+            params.put("type", "entries");
+            params.put("entryIds", getFeedlyIds(entries));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST,
+                url, params, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject json) {
+                // TODO: Check if ok
+            }
+
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("feedly_mark_as", FeedlyResponseParser.parseErrorMessage(error));
+            }
+
+        }) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return authorizationHeader();
+            }
+
         };
 
         queue.add(request);
@@ -524,6 +685,15 @@ public class FeedlyConnectionManager {
         });
 
         queue.add(request);
+    }
+
+    // Helper methods
+    private JSONArray getFeedlyIds(ArrayList<FeedEntry> entries) {
+        ArrayList<String> feedlyIds = new ArrayList<>();
+        for (FeedEntry entry : entries)
+            feedlyIds.add(entry.getFeedlyId());
+
+        return new JSONArray(feedlyIds);
     }
 
     // Boolean Checks
