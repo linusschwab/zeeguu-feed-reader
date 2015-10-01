@@ -1,7 +1,9 @@
 package ch.unibe.scg.zeeguufeedreader.FeedEntry;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +37,8 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
     private TextView panelEntryTitle;
     private TextView panelFeedTitle;
     private ImageView panelFavicon;
+
+    private int headerColor;
 
     // Position in the ViewPager
     private int position;
@@ -88,6 +92,9 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
         panelEntryTitle = (TextView) mainView.findViewById(R.id.panel_entry_title);
         panelFeedTitle = (TextView) mainView.findViewById(R.id.panel_feed_title);
         panelFavicon = (ImageView) mainView.findViewById(R.id.panel_favicon);
+
+        if (headerColor != 0)
+            onPanelExpandend(headerColor);
 
         setTitle();
 
@@ -225,6 +232,28 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
 
     public RelativeLayout getPanelHeader() {
         return panelHeader;
+    }
+
+    public void setHeaderColor(int headerColor) {
+        this.headerColor = headerColor;
+    }
+
+    public void onPanelExpandend(int color) {
+        // Set panel color
+        panelHeader.setBackgroundColor(Tools.transparency(color, 0.9));
+
+        // Set text color
+        panelEntryTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
+        panelFeedTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
+    }
+
+    public void onPanelCollapsed() {
+        // Set panel color
+        panelHeader.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
+
+        // Set text color
+        panelEntryTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.text_primary));
+        panelFeedTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.text_primary));
     }
 
     public int getPosition() {

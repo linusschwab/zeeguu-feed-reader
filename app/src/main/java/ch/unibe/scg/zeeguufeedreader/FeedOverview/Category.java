@@ -1,9 +1,13 @@
 package ch.unibe.scg.zeeguufeedreader.FeedOverview;
 
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.j256.ormlite.field.DatabaseField;
@@ -12,6 +16,7 @@ import com.j256.ormlite.table.DatabaseTable;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import ch.unibe.scg.zeeguufeedreader.Core.ContextManager;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.R;
 
@@ -30,6 +35,8 @@ public class Category {
 
     @DatabaseField(columnName = "is_expanded")
     private boolean isExpanded;
+
+    private boolean border;
 
     /*
      Only for read access, feeds stored in this list do not get saved in the database!
@@ -56,6 +63,7 @@ public class Category {
             convertView = inflater.inflate(R.layout.category, parent, false);
             holder = new CategoryViewHolder();
 
+            holder.border = (RelativeLayout) convertView.findViewById(R.id.category_border);
             holder.icon = (ImageView) convertView.findViewById(R.id.category_icon);
             holder.name = (TextView) convertView.findViewById(R.id.category_name);
             holder.unread = (TextView) convertView.findViewById(R.id.category_unread_count);
@@ -67,13 +75,21 @@ public class Category {
         }
 
         // Expanded/Collapsed icon
-        if (isExpanded)
+        if (isExpanded) {
             holder.icon.setImageResource(R.drawable.ic_action_collapse);
-        else
+            holder.border.setVisibility(View.VISIBLE);
+        }
+        else {
             holder.icon.setImageResource(R.drawable.ic_action_expand);
 
+            if (border)
+                holder.border.setVisibility(View.VISIBLE);
+            else
+                holder.border.setVisibility(View.INVISIBLE);
+        }
+
         // Name and unread count
-        holder.name.setText(name.toUpperCase());
+        holder.name.setText(name);
         holder.unread.setText("" + unreadCount);
 
         return convertView;
@@ -179,8 +195,13 @@ public class Category {
         isExpanded = false;
     }
 
+    public void setBorder(boolean border) {
+        this.border = border;
+    }
+
     // View Holder, see: https://developer.android.com/training/improving-layouts/smooth-scrolling.html#ViewHolder
     static class CategoryViewHolder {
+        RelativeLayout border;
         ImageView icon;
         TextView name;
         TextView unread;

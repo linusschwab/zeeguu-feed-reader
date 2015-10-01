@@ -78,6 +78,8 @@ public class MainActivity extends BaseActivity implements
     private FeedEntryPagerAdapter pagerAdapter;
     private boolean isPanelLoaded = false;
 
+    private int currentActionBarColor;
+
     // Fragments
     private FeedOverviewFragment feedOverviewFragment;
     private FeedEntryListFragment feedEntryListFragment;
@@ -117,6 +119,8 @@ public class MainActivity extends BaseActivity implements
         viewPager = (ViewPager) findViewById(R.id.panel);
         pagerAdapter = new FeedEntryPagerAdapter(fragmentManager);
         viewPager.setAdapter(pagerAdapter);
+
+        currentActionBarColor = ContextCompat.getColor(this, R.color.action_bar_gray);
 
         setUpToolbar();
         setUpNavigationDrawer();
@@ -259,6 +263,7 @@ public class MainActivity extends BaseActivity implements
                 drawer.setStatusBarColor(Tools.darken(color, 0.25));
             }
             actionBar.setBackgroundDrawable(new ColorDrawable(color));
+            currentActionBarColor = color;
         }
     }
 
@@ -447,6 +452,18 @@ public class MainActivity extends BaseActivity implements
                 public void onPageSelected(int position) {
                     panelLayout.setDragView(getCurrentFeedEntryFragment().getPanelHeader());
                     feedEntryListFragment.markEntryAsRead(position, getFeedlyConnectionManager().getAccount());
+
+                    // TODO: Improve for first scroll (maybe move to FeedEntry with callback at onCreateView())
+                    if (panelLayout.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
+                        getCurrentFeedEntryFragment().onPanelExpandend(currentActionBarColor);
+                        if (position != 0)
+                            getFeedEntryFragment(position-1).setHeaderColor(currentActionBarColor);
+                        if (position != feedEntryListFragment.getCount()-1)
+                            getFeedEntryFragment(position+1).setHeaderColor(currentActionBarColor);
+                    }
+                    else if (panelLayout.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED) {
+                        getCurrentFeedEntryFragment().onPanelCollapsed();
+                    }
                 }
 
                 @Override
@@ -470,6 +487,10 @@ public class MainActivity extends BaseActivity implements
         return (FeedEntryFragment) pagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
     }
 
+    private FeedEntryFragment getFeedEntryFragment(int position) {
+        return (FeedEntryFragment) pagerAdapter.instantiateItem(viewPager, position);
+    }
+
     private void setUpSlidingPanel() {
         panelLayout.setPanelHeight((int) Tools.dpToPx(this, 68));
         panelLayout.setShadowHeight((int) Tools.dpToPx(this, 4));
@@ -486,13 +507,13 @@ public class MainActivity extends BaseActivity implements
 
             @Override
             public void onPanelCollapsed(View view) {
-                getCurrentFeedEntryFragment().getPanelHeader().setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.white));
+                getCurrentFeedEntryFragment().onPanelCollapsed();
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
             }
 
             @Override
             public void onPanelExpanded(View view) {
-                getCurrentFeedEntryFragment().getPanelHeader().setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.transparent_white));
+                getCurrentFeedEntryFragment().onPanelExpandend(currentActionBarColor);
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 
                 // Check if first page is read

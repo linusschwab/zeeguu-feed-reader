@@ -42,7 +42,7 @@ public class FeedlyConnectionManager {
     private final String redirectUri = "http://localhost";
 
     private final String clientId = "sandbox";
-    private final String clientSecret = "YNXZHOH3GPYO6DF7B43K"; // (expires on October 1st 2015)
+    private final String clientSecret = "L5L3EBB9XMVLA8OETMO3"; // (expires on December 1st 2015)
 
     private RequestQueue queue;
     private FeedlyAccount account;

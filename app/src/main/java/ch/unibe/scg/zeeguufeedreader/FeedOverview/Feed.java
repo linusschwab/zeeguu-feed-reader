@@ -232,6 +232,21 @@ public class Feed {
         this.unreadCount = unreadCount;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Feed feed = (Feed) o;
+
+        return !(name != null ? !name.equals(feed.name) : feed.name != null);
+    }
+
+    @Override
+    public int hashCode() {
+        return name != null ? name.hashCode() : 0;
+    }
+
     // View Holder, see: https://developer.android.com/training/improving-layouts/smooth-scrolling.html#ViewHolder
     static class FeedViewHolder {
         ImageView favicon;

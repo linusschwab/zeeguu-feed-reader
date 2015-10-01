@@ -77,11 +77,24 @@ public class Tools {
         return Color.argb(alpha, red, green, blue);
     }
 
+    public static int transparency(int color, double fraction) {
+        int red = Color.red(color);
+        int green = Color.green(color);
+        int blue = Color.blue(color);
+        int alpha = setTransparency(fraction);
+
+        return Color.argb(alpha, red, green, blue);
+    }
+
     private static int darkenColor(int color, double fraction) {
         return (int)Math.max(color - (color * fraction), 0);
     }
 
     private static int lightenColor(int color, double fraction) {
-        return (int) Math.min(color + (color * fraction), 255);
+        return (int)Math.min(color + (color * fraction), 255);
+    }
+
+    private static int setTransparency(double fraction) {
+        return (int)Math.max((255 * fraction), 0);
     }
 }

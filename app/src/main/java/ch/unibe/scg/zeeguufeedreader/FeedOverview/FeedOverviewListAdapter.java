@@ -12,6 +12,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import ch.unibe.scg.zeeguufeedreader.Core.ContextManager;
+import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAccount;
 import ch.unibe.scg.zeeguufeedreader.R;
 
 public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
@@ -23,6 +24,7 @@ public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
 
     public interface FeedOverviewListAdapterCallbacks {
         void displayFeedEntryList(Category category);
+        FeedlyAccount getFeedlyAccount();
     }
 
     public FeedOverviewListAdapter(Activity activity, Fragment fragment, ArrayList<Category> categories) {
@@ -102,15 +104,29 @@ public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public void onGroupCollapsed(int groupPosition) {
-        super.onGroupCollapsed(groupPosition);
-        categories.get(groupPosition).collapse();
+    public void onGroupExpanded(int groupPosition) {
+        super.onGroupExpanded(groupPosition);
+        Category category = categories.get(groupPosition);
+        if (!category.isExpanded()) {
+            category.expand();
+            callback.getFeedlyAccount().saveCategory(category);
+        }
+
+        // Border
+        if (categories.size() > groupPosition+1)
+            categories.get(groupPosition+1).setBorder(true);
     }
 
     @Override
-    public void onGroupExpanded(int groupPosition) {
-        super.onGroupExpanded(groupPosition);
-        categories.get(groupPosition).expand();
+    public void onGroupCollapsed(int groupPosition) {
+        super.onGroupCollapsed(groupPosition);
+        Category category = categories.get(groupPosition);
+        category.collapse();
+        callback.getFeedlyAccount().saveCategory(category);
+
+        // Border
+        if (categories.size() > groupPosition+1)
+            categories.get(groupPosition+1).setBorder(false);
     }
 
     public void setCategories(ArrayList<Category> categories) {

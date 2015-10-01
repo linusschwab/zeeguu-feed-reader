@@ -68,8 +68,6 @@ public class FeedEntryListFragment extends Fragment implements
         // Inflate the layout for this fragment
         View mainView = (View) inflater.inflate(R.layout.fragment_feed_entry_list, container, false);
         listView = (ListView) mainView.findViewById(R.id.feed_entry_listview);
-        listView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
-        listView.setDrawSelectorOnTop(true);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -121,6 +119,10 @@ public class FeedEntryListFragment extends Fragment implements
         newEntries = true;
     }
 
+    public Feed getFeed() {
+        return feed;
+    }
+
     public void setEntries(ArrayList<FeedEntry> entries) {
         this.entries = entries;
         feed = null;
@@ -136,6 +138,10 @@ public class FeedEntryListFragment extends Fragment implements
             return feed.getUnreadEntries().size() != 0;
         else
             return entries != null && entries.size() != 0;
+    }
+
+    public int getCount() {
+        return adapter.getCount();
     }
 
     public void markEntryAsRead(int position, FeedlyAccount account) {

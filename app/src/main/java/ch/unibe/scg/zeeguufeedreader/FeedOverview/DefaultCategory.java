@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class DefaultCategory extends Category {
             convertView = inflater.inflate(R.layout.category, parent, false);
             holder = new CategoryViewHolder();
 
+            holder.border = (RelativeLayout) convertView.findViewById(R.id.category_border);
             holder.icon = (ImageView) convertView.findViewById(R.id.category_icon);
             holder.name = (TextView) convertView.findViewById(R.id.category_name);
             holder.unread = (TextView) convertView.findViewById(R.id.category_unread_count);
@@ -42,11 +44,11 @@ public class DefaultCategory extends Category {
         }
 
         // Set list icon
-
         holder.icon.setImageDrawable(ContextCompat.getDrawable(ContextManager.getContext(), R.drawable.ic_list));
+        holder.border.setVisibility(View.INVISIBLE);
 
         // Name and unread count
-        holder.name.setText(getName().toUpperCase());
+        holder.name.setText(getName());
         holder.unread.setText("" + unreadCount);
 
         return convertView;

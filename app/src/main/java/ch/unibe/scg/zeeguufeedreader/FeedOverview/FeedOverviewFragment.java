@@ -99,6 +99,11 @@ public class FeedOverviewFragment extends Fragment implements
 
         adapter = new FeedOverviewListAdapter(getActivity(), this, categories);
         expandableListView.setAdapter(adapter);
+
+        // Restore expanded state
+        for (int i = 0; i < categories.size(); i++)
+            if(categories.get(i).isExpanded())
+                expandableListView.expandGroup(i);
     }
 
     public void updateSubscriptions(ArrayList<Category> categories) {
@@ -112,6 +117,10 @@ public class FeedOverviewFragment extends Fragment implements
 
     public void displayFeedEntryList(Category category) {
         callback.displayFeedEntryList(category, null);
+    }
+
+    public FeedlyAccount getFeedlyAccount() {
+        return callback.getFeedlyAccount();
     }
 
     @Override
