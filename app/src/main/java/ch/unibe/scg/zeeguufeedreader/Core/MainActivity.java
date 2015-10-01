@@ -7,8 +7,8 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
-import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
@@ -20,9 +20,20 @@ import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 
+import com.mikepenz.fontawesome_typeface_library.FontAwesome;
+import com.mikepenz.materialdrawer.AccountHeader;
+import com.mikepenz.materialdrawer.AccountHeaderBuilder;
+import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.interfaces.OnCheckedChangeListener;
+import com.mikepenz.materialdrawer.model.DividerDrawerItem;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
+import com.mikepenz.materialdrawer.model.SwitchDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
@@ -31,7 +42,6 @@ import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryPagerAdapter;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
-import ch.unibe.scg.zeeguufeedreader.FeedOverview.DefaultCategory;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAuthenticationFragment;
 import ch.unibe.scg.zeeguufeedreader.Preferences.SettingsActivity;
@@ -55,11 +65,12 @@ public class MainActivity extends BaseActivity implements
         ZeeguuWebViewInterface.ZeeguuWebViewInterfaceCallbacks,
         ZeeguuWebViewFragment.ZeeguuWebViewCallbacks {
 
-    // Navigation
+    // Drawer
+    private Drawer drawer;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
-    private RelativeLayout statusbarBackground;
-    private NavigationView navigationView;
+
+    // Layout
     private SlidingUpPanelLayout panelLayout;
     private FrameLayout contentFrame;
 
@@ -100,9 +111,6 @@ public class MainActivity extends BaseActivity implements
 
         // Layout
         setContentView(R.layout.activity_main);
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        statusbarBackground = (RelativeLayout) findViewById(R.id.statusbar_background);
         panelLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
         contentFrame = (FrameLayout) findViewById(R.id.content);
 
@@ -111,26 +119,86 @@ public class MainActivity extends BaseActivity implements
         viewPager.setAdapter(pagerAdapter);
 
         setUpToolbar();
-        setUpNavigationDrawer(navigationView);
-
-        // Hide statusbar background on Android < API 21
-        if (android.os.Build.VERSION.SDK_INT < 21)
-            statusbarBackground.setVisibility(View.GONE);
+        setUpNavigationDrawer();
 
         // Display Feed Overview
         if (savedInstanceState == null)
-            switchFragment(feedOverviewFragment, "feedOverview", getString(R.string.title_feed_overview));
+            drawer.setSelection(101, true);
     }
 
-    private void setUpNavigationDrawer(NavigationView navigationView) {
+    private void setUpNavigationDrawer() {
         ActionBar actionBar = getSupportActionBar();
 
+        // Header
+        AccountHeader accountHeader = new AccountHeaderBuilder()
+                .withActivity(this)
+                .withHeaderBackground(R.color.zeeguu_red)
+                .addProfiles(new ProfileDrawerItem().withName("Test User").withEmail("test@test.de"))
+                .withSelectionListEnabled(false)
+                .build();
+
+        // Drawer
+        drawer = new DrawerBuilder()
+                .withActivity(this)
+                .withToolbar(toolbar)
+                .withAccountHeader(accountHeader)
+                .build();
+
+        // Menu items
+        int selectedColor = ContextCompat.getColor(this, R.color.zeeguu_red);
+        PrimaryDrawerItem feedOverview = new PrimaryDrawerItem()
+                .withIcon(FontAwesome.Icon.faw_home)
+                .withName(R.string.title_feed_overview)
+                .withSelectedTextColor(selectedColor)
+                .withSelectedIconColor(selectedColor)
+                .withIdentifier(101);
+        PrimaryDrawerItem myWords = new PrimaryDrawerItem()
+                .withIcon(FontAwesome.Icon.faw_book)
+                .withName(R.string.title_my_words)
+                .withSelectedTextColor(selectedColor)
+                .withSelectedIconColor(selectedColor)
+                .withIdentifier(102);
+
+        SwitchDrawerItem unreadSwitch = new SwitchDrawerItem()
+                .withName(R.string.menu_unread_switch)
+                .withSelectable(false)
+                .withIdentifier(201);
+        PrimaryDrawerItem settings = new PrimaryDrawerItem()
+                .withName(R.string.title_settings)
+                .withSelectable(false)
+                .withIdentifier(202);
+
+        drawer.addItems(
+                feedOverview,
+                myWords,
+                new DividerDrawerItem(),
+                unreadSwitch,
+                settings
+        );
+
+        drawer.setOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+            @Override
+            public boolean onItemClick(View view, int position, IDrawerItem iDrawerItem) {
+                return selectDrawerItem(view, position, iDrawerItem);
+            }
+        });
+
+        unreadSwitch.withOnCheckedChangeListener(new OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(IDrawerItem iDrawerItem, CompoundButton compoundButton, boolean activated) {
+                toggleUnreadSwitch(activated);
+            }
+        });
+
+        // Drawer toggle
         if (toolbar != null && actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
 
+            drawerLayout = drawer.getDrawerLayout();
+
             drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar,
                     R.string.navigation_drawer_open,  R.string.navigation_drawer_close);
-            drawerLayout.setDrawerListener(drawerToggle);
+            drawer.setActionBarDrawerToggle(drawerToggle);
 
             toolbar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
@@ -142,42 +210,34 @@ public class MainActivity extends BaseActivity implements
                 }
             });
         }
-
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(MenuItem menuItem) {
-                selectDrawerItem(menuItem);
-                return true;
-            }
-        });
-
-        // TODO: Navigation drawer login
-        MenuItem navigation_feedly = navigationView.getMenu().findItem(R.id.navigation_feedly);
-        navigation_feedly.setVisible(false);
-        MenuItem navigation_zeeguu = navigationView.getMenu().findItem(R.id.navigation_zeeguu);
-        navigation_zeeguu.setVisible(false);
-
     }
 
-    private void selectDrawerItem(MenuItem menuItem) {
-        CharSequence title = menuItem.getTitle();
+    private boolean selectDrawerItem(View view, int position, IDrawerItem iDrawerItem) {
 
         // Update the main content by replacing fragments
-        switch (menuItem.getItemId()) {
-            case R.id.navigation_feed_overview:
-                switchFragment(feedOverviewFragment, "feedOverview", title);
+        switch (iDrawerItem.getIdentifier()) {
+            case 101:
+                switchFragment(feedOverviewFragment, "feedOverview", getString(R.string.title_feed_overview));
                 break;
-            case R.id.navigation_my_words:
-                switchFragment(myWordsFragment, "myWords", title);
+            case 102:
+                switchFragment(myWordsFragment, "myWords", getString(R.string.title_my_words));
                 break;
-            case R.id.navigation_settings:
+            case 201:
+                break;
+            case 202:
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 break;
         }
 
-        menuItem.setChecked(true);
-        drawerLayout.closeDrawers();
+        if (!(iDrawerItem instanceof SwitchDrawerItem))
+            drawer.closeDrawer();
+
+        return true;
+    }
+
+    private void toggleUnreadSwitch(boolean activated) {
+
     }
 
     /**
@@ -195,8 +255,9 @@ public class MainActivity extends BaseActivity implements
         // Set color
         if (color != 0) {
             // TODO: Check compatibility with older Android versions
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                statusbarBackground.setBackgroundColor(color);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                drawer.setStatusBarColor(Tools.darken(color, 0.25));
+            }
             actionBar.setBackgroundDrawable(new ColorDrawable(color));
         }
     }
@@ -204,7 +265,7 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void resetActionBar() {
         // Use default colors
-        setActionBar(false, getResources().getColor(R.color.action_bar_gray));
+        setActionBar(false, ContextCompat.getColor(this, R.color.action_bar_gray));
     }
 
     private void animateBackArrow(final boolean displayBackButton) {
@@ -294,8 +355,8 @@ public class MainActivity extends BaseActivity implements
             return;
         }
 
-        if (drawerLayout.isDrawerOpen(navigationView)) {
-            drawerLayout.closeDrawers();
+        if (drawer.isDrawerOpen()) {
+            drawer.closeDrawer();
             return;
         }
 
@@ -425,13 +486,13 @@ public class MainActivity extends BaseActivity implements
 
             @Override
             public void onPanelCollapsed(View view) {
-                getCurrentFeedEntryFragment().getPanelHeader().setBackgroundColor(getResources().getColor(R.color.white));
+                getCurrentFeedEntryFragment().getPanelHeader().setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.white));
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
             }
 
             @Override
             public void onPanelExpanded(View view) {
-                getCurrentFeedEntryFragment().getPanelHeader().setBackgroundColor(getResources().getColor(R.color.transparent_white));
+                getCurrentFeedEntryFragment().getPanelHeader().setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.transparent_white));
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 
                 // Check if first page is read

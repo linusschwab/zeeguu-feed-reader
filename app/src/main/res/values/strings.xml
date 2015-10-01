@@ -45,6 +45,7 @@
     <!-- Menu titles -->
     <string name="menu_login_feedly">Feedly Login</string>
     <string name="menu_login_zeeguu">Zeeguu Login</string>
+    <string name="menu_unread_switch">Show unread only</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

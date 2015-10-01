@@ -2,6 +2,7 @@ package ch.unibe.scg.zeeguufeedreader.FeedEntry;
 
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -99,14 +100,14 @@ public class FeedEntry implements Comparable<FeedEntry> {
 
         // Read/Unread
         if (read) {
-            holder.published.setTextColor(ContextManager.getContext().getResources().getColor(R.color.silver));
-            holder.title.setTextColor(ContextManager.getContext().getResources().getColor(R.color.gray));
-            holder.summary.setTextColor(ContextManager.getContext().getResources().getColor(R.color.silver));
+            holder.published.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.silver));
+            holder.title.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.gray));
+            holder.summary.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.silver));
         }
         else {
-            holder.published.setTextColor(ContextManager.getContext().getResources().getColor(R.color.gray));
-            holder.title.setTextColor(ContextManager.getContext().getResources().getColor(R.color.darkgray));
-            holder.summary.setTextColor(ContextManager.getContext().getResources().getColor(R.color.gray));
+            holder.published.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.gray));
+            holder.title.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.darkgray));
+            holder.summary.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.gray));
         }
 
         // Favicon
@@ -138,7 +139,7 @@ public class FeedEntry implements Comparable<FeedEntry> {
         // Favorite
         if (favorite) {
             holder.favorite.setVisibility(View.VISIBLE);
-            holder.favorite.setImageDrawable(ContextManager.getContext().getResources().getDrawable(R.drawable.ic_star));
+            holder.favorite.setImageResource(R.drawable.ic_star);
         }
         else {
             holder.favorite.setVisibility(View.GONE);
