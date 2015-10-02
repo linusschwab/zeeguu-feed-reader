@@ -1,5 +1,6 @@
 package ch.unibe.scg.zeeguufeedreader.FeedEntry;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.support.v13.app.FragmentStatePagerAdapter;
@@ -17,8 +18,17 @@ public class FeedEntryPagerAdapter extends FragmentStatePagerAdapter {
     private Feed feed;
     private ArrayList<FeedEntry> entries = new ArrayList<>();
 
-    public FeedEntryPagerAdapter(FragmentManager fragmentManager) {
+    private FeedEntryCallbacks callback;
+
+    public FeedEntryPagerAdapter(FragmentManager fragmentManager, Activity activity) {
         super(fragmentManager);
+
+        // Make sure that the interface is implemented in the activity
+        try {
+            callback = (FeedEntryCallbacks) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Activity must implement FeedEntryCallbacks");
+        }
     }
 
     @Override
@@ -61,8 +71,10 @@ public class FeedEntryPagerAdapter extends FragmentStatePagerAdapter {
         this.feed = feed;
 
         if (feed != null) {
-            // TODO: Read/Unread switch
-            entries = feed.getUnreadEntries();
+            if (callback.getFeedlyAccount().showUnreadOnly())
+                entries = feed.getUnreadEntries();
+            else
+                entries = feed.getEntries();
         }
     }
 

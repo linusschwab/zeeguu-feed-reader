@@ -56,7 +56,7 @@ public class Category {
         this.name = name;
     }
 
-    View getView(LayoutInflater inflater, View convertView, ViewGroup parent) {
+    public View getView(LayoutInflater inflater, View convertView, ViewGroup parent, boolean unread) {
         CategoryViewHolder holder;
 
         if (convertView == null) {
@@ -90,7 +90,11 @@ public class Category {
 
         // Name and unread count
         holder.name.setText(name);
-        holder.unread.setText("" + unreadCount);
+
+        if (unread)
+            holder.unread.setText("" + unreadCount);
+        else
+            holder.unread.setText("" + getEntriesCount());
 
         return convertView;
     }
@@ -132,14 +136,11 @@ public class Category {
         entries = new ArrayList<>();
         for (Feed feed : feeds)
             entries.addAll(feed.getEntries());
-
-        Collections.sort(entries);
     }
 
     public void addFeed(Feed feed) {
         feeds.add(feed);
         entries.addAll(feed.getEntries());
-        Collections.sort(entries);
     }
 
     public Feed removeFeed(int position) {
@@ -158,6 +159,7 @@ public class Category {
     }
 
     public ArrayList<FeedEntry> getEntries() {
+        Collections.sort(entries);
         return entries;
     }
 
@@ -178,8 +180,8 @@ public class Category {
         return unreadCount;
     }
 
-    public void setUnreadCount(int unreadCount) {
-        this.unreadCount = unreadCount;
+    public int getEntriesCount() {
+        return entries.size();
     }
 
     // Expanded
@@ -197,6 +199,25 @@ public class Category {
 
     public void setBorder(boolean border) {
         this.border = border;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Category category = (Category) o;
+
+        if (feedlyId != null ? !feedlyId.equals(category.feedlyId) : category.feedlyId != null)
+            return false;
+        return !(name != null ? !name.equals(category.name) : category.name != null);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = feedlyId != null ? feedlyId.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result;
     }
 
     // View Holder, see: https://developer.android.com/training/improving-layouts/smooth-scrolling.html#ViewHolder

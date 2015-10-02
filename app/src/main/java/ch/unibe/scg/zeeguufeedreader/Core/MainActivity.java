@@ -39,6 +39,7 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import java.util.ArrayList;
 
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
+import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryCallbacks;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryPagerAdapter;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
@@ -59,6 +60,7 @@ import ch.unibe.zeeguulibrary.MyWords.MyWordsFragment;
  */
 public class MainActivity extends BaseActivity implements
         FeedOverviewFragment.FeedOverviewCallbacks,
+        FeedEntryCallbacks,
         FeedEntryListFragment.FeedEntryListCallbacks,
         FeedlyAuthenticationFragment.FeedlyAuthenticationCallbacks,
         MyWordsFragment.ZeeguuFragmentMyWordsCallbacks,
@@ -117,7 +119,7 @@ public class MainActivity extends BaseActivity implements
         contentFrame = (FrameLayout) findViewById(R.id.content);
 
         viewPager = (ViewPager) findViewById(R.id.panel);
-        pagerAdapter = new FeedEntryPagerAdapter(fragmentManager);
+        pagerAdapter = new FeedEntryPagerAdapter(fragmentManager, this);
         viewPager.setAdapter(pagerAdapter);
 
         currentActionBarColor = ContextCompat.getColor(this, R.color.action_bar_gray);
@@ -190,7 +192,12 @@ public class MainActivity extends BaseActivity implements
         unreadSwitch.withOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(IDrawerItem iDrawerItem, CompoundButton compoundButton, boolean activated) {
-                toggleUnreadSwitch(activated);
+                getFeedlyAccount().toggleUnreadSwitch(activated);
+
+                // Update view
+                feedOverviewFragment.notifyDataSetChanged();
+                if (feedEntryListFragment.isVisible())
+                    feedEntryListFragment.onUnreadSwitch();
             }
         });
 
@@ -238,10 +245,6 @@ public class MainActivity extends BaseActivity implements
             drawer.closeDrawer();
 
         return true;
-    }
-
-    private void toggleUnreadSwitch(boolean activated) {
-
     }
 
     /**
@@ -408,11 +411,17 @@ public class MainActivity extends BaseActivity implements
         return panelLayout.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED;
     }
 
+    /**
+     *  Connectionmanager and Account is not available before the activity is created!
+     */
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         // Sync the toggle state after onRestoreInstanceState has occurred.
         drawerToggle.syncState();
+
+        SwitchDrawerItem item = (SwitchDrawerItem) drawer.getDrawerItem(201);
+        item.withChecked(getFeedlyAccount().showUnreadOnly());
     }
 
     @Override
@@ -426,7 +435,10 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void displayFeedEntryList(Category category, Feed feed) {
         if (category != null) {
-            feedEntryListFragment.setEntries(category.getUnreadEntries());
+            if (getFeedlyAccount().showUnreadOnly())
+                feedEntryListFragment.setEntries(category.getUnreadEntries());
+            else
+                feedEntryListFragment.setEntries(category.getEntries());
             switchFragmentBackstack(feedEntryListFragment, "feedEntryList", category.getName());
         }
         else if (feed != null) {
@@ -438,8 +450,12 @@ public class MainActivity extends BaseActivity implements
         if (!isPanelLoaded && feedEntryListFragment.hasEntries()) {
             if (feed != null)
                 pagerAdapter.setFeed(feed);
-            else if (category != null)
-                 pagerAdapter.setEntries(category.getUnreadEntries());
+            else if (category != null) {
+                if (getFeedlyAccount().showUnreadOnly())
+                    pagerAdapter.setEntries(category.getUnreadEntries());
+                else
+                    pagerAdapter.setEntries(category.getEntries());
+            }
             pagerAdapter.notifyDataSetChanged();
 
             viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {

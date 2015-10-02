@@ -63,6 +63,9 @@ public class Feed {
      */
     private ArrayList<Category> categoriesToLink = new ArrayList<>();
 
+    /*
+     Timestamp, all entries older than that are marked as read. Used for the Feedly synchronization.
+     */
     private long readEntriesDate;
 
     private int unreadCount;
@@ -75,7 +78,7 @@ public class Feed {
         this.name = name;
     }
 
-    public View getView(LayoutInflater inflater, View convertView, ViewGroup parent) {
+    public View getView(LayoutInflater inflater, View convertView, ViewGroup parent, boolean unread) {
         FeedViewHolder holder;
 
         if (convertView == null) {
@@ -93,7 +96,11 @@ public class Feed {
         }
 
         holder.name.setText(name);
-        holder.unread.setText("" + unreadCount);
+
+        if (unread)
+            holder.unread.setText("" + unreadCount);
+        else
+            holder.unread.setText("" + getEntriesCount());
 
         if (favicon != null) {
             holder.favicon.setVisibility(View.VISIBLE);
@@ -228,8 +235,8 @@ public class Feed {
         return unreadCount;
     }
 
-    public void setUnreadCount(int unreadCount) {
-        this.unreadCount = unreadCount;
+    public int getEntriesCount() {
+        return entries.size();
     }
 
     @Override

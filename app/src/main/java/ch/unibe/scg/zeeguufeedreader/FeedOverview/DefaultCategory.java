@@ -25,7 +25,8 @@ public class DefaultCategory extends Category {
         super(name);
     }
 
-    View getView(LayoutInflater inflater, View convertView, ViewGroup parent) {
+    @Override
+    public View getView(LayoutInflater inflater, View convertView, ViewGroup parent, boolean unread) {
         CategoryViewHolder holder;
 
         if (convertView == null) {
@@ -49,7 +50,11 @@ public class DefaultCategory extends Category {
 
         // Name and unread count
         holder.name.setText(getName());
-        holder.unread.setText("" + unreadCount);
+
+        if (unread)
+            holder.unread.setText("" + unreadCount);
+        else
+            holder.unread.setText("" + getEntriesCount());
 
         return convertView;
     }
@@ -67,10 +72,10 @@ public class DefaultCategory extends Category {
 
     // Getter/Setter
     public void setEntries(ArrayList<FeedEntry> entries) {
-        Collections.sort(entries);
         this.entries = entries;
     }
 
+    @Override
     public int getUnreadCount() {
         calculateUnreadCount();
         return unreadCount;

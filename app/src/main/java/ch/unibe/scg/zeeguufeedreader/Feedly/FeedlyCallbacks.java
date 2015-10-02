@@ -21,4 +21,6 @@ public interface FeedlyCallbacks {
     String loadString(int prefKey);
     void saveLong(int prefKey, Long value);
     Long loadLong(int prefKey);
+    void saveBoolean(int prefKey, boolean value);
+    boolean loadBoolean(int prefKey, boolean defaultValue);
 }

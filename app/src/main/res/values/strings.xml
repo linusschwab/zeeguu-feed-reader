@@ -81,6 +81,7 @@
     <string name="pref_feedly_access_token_expiration">pref_feedly_access_token_expiration</string>
     <string name="pref_feedly_last_read_sync">pref_feedly_last_read_sync</string>
     <string name="pref_feedly_last_favorite_sync">pref_feedly_last_favorite_sync</string>
+    <string name="pref_feedly_show_unread_only">pref_feedly_show_unread_only</string>
 
     <string name="pref_zeeguu">pref_zeeguu</string>
 

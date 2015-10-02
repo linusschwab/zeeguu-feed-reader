@@ -78,7 +78,7 @@ public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
         final Category category = categories.get(groupPosition);
 
-        View categoryView = category.getView(inflater, convertView, parent);
+        View categoryView = category.getView(inflater, convertView, parent, callback.getFeedlyAccount().showUnreadOnly());
         TextView categoryName = (TextView) categoryView.findViewById(R.id.category_name);
 
         if (!(category instanceof DefaultCategory)) {
@@ -95,7 +95,7 @@ public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-        return categories.get(groupPosition).getFeed(childPosition).getView(inflater, convertView, parent);
+        return categories.get(groupPosition).getFeed(childPosition).getView(inflater, convertView, parent, callback.getFeedlyAccount().showUnreadOnly());
     }
 
     @Override

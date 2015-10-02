@@ -153,11 +153,10 @@ public class FeedlyAccount {
     // Database Methods
     public void saveCategory(Category category) {
         try {
-            if (category.getId() == 0) {
+            if (category.getId() == 0 && !category.equals(uncategorized)) {
                 categoryDao.create(category);
                 categories.add(category);
-            }
-            else
+            } else
                 categoryDao.update(category);
         }
         catch (SQLException e) {
@@ -414,6 +413,10 @@ public class FeedlyAccount {
         }
     }
 
+    public void toggleUnreadSwitch(boolean activated) {
+        callback.saveBoolean(R.string.pref_feedly_show_unread_only, activated);
+    }
+
     // Boolean Checks
     // TODO: Write tests!
     public boolean isUserLoggedIn() {
@@ -433,6 +436,10 @@ public class FeedlyAccount {
         long currentTime = System.currentTimeMillis() / 1000;
 
         return currentTime > expirationTime;
+    }
+
+    public boolean showUnreadOnly() {
+        return callback.loadBoolean(R.string.pref_feedly_show_unread_only, true);
     }
 
     // Getters and Setters

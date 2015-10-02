@@ -105,12 +105,19 @@ public class FeedEntryListFragment extends Fragment implements
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        if (feed != null && feed.getEntries() != null)
-            // TODO: Read/Unread switch
-            entries = feed.getUnreadEntries();
+        updateFeedEntries();
 
         adapter = new FeedEntryListAdapter(getActivity(), entries);
         listView.setAdapter(adapter);
+    }
+
+    private void updateFeedEntries() {
+        if (feed != null && feed.getEntries() != null) {
+            if (callback.getFeedlyAccount().showUnreadOnly())
+                entries = feed.getUnreadEntries();
+            else
+                entries = feed.getEntries();
+        }
     }
 
     public void setFeed(Feed feed) {
@@ -170,6 +177,16 @@ public class FeedEntryListFragment extends Fragment implements
             View view = listView.getChildAt(i);
             adapter.getView(i, view, listView);
         }
+    }
+
+    public void onUnreadSwitch() {
+        // Feed
+        updateFeedEntries();
+        // Category
+        // TODO: Category
+        adapter.setEntries(entries);
+
+        adapter.notifyDataSetChanged();
     }
 
     public FeedlyAccount getFeedlyAccount() {

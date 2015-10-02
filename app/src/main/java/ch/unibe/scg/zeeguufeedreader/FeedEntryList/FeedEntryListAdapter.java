@@ -40,4 +40,13 @@ public class FeedEntryListAdapter extends BaseAdapter implements ListAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         return entries.get(position).getView(inflater, convertView, parent);
     }
+
+    // Getter/Setter
+    public ArrayList<FeedEntry> getEntries() {
+        return entries;
+    }
+
+    public void setEntries(ArrayList<FeedEntry> entries) {
+        this.entries = entries;
+    }
 }

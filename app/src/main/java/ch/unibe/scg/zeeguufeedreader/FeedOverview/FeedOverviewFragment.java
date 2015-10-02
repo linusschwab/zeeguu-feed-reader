@@ -115,6 +115,10 @@ public class FeedOverviewFragment extends Fragment implements
         this.categories = categories;
     }
 
+    public void notifyDataSetChanged() {
+        adapter.notifyDataSetChanged();
+    }
+
     public void displayFeedEntryList(Category category) {
         callback.displayFeedEntryList(category, null);
     }

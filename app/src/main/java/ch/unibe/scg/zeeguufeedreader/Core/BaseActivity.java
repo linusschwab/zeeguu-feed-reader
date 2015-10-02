@@ -65,6 +65,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        databaseHelper = getDatabaseHelper();
         restoreDataFragment();
 
         // Dialogs
@@ -72,8 +73,6 @@ public abstract class BaseActivity extends AppCompatActivity implements
 
         // Data fragment
         createDataFragment();
-
-        databaseHelper = getDatabaseHelper();
     }
 
     // Set up
@@ -258,6 +257,16 @@ public abstract class BaseActivity extends AppCompatActivity implements
 
     public Long loadLong(int prefKey) {
         return sharedPref.getLong(getResources().getString(prefKey), 0);
+    }
+
+    public void saveBoolean(int prefKey, boolean value) {
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(getResources().getString(prefKey), value);
+        editor.apply();
+    }
+
+    public boolean loadBoolean(int prefKey, boolean defaultValue) {
+        return sharedPref.getBoolean(getResources().getString(prefKey), defaultValue);
     }
 
     public void hideKeyboard() {
