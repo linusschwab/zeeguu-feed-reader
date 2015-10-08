@@ -8,13 +8,13 @@ import android.support.v7.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
+import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAccount;
 import ch.unibe.scg.zeeguufeedreader.R;
@@ -33,19 +33,6 @@ public class FeedEntryListFragment extends Fragment implements
 
     private ActionMode mode;
     private int selectedItem = -1;
-
-    /**
-     *  Callback interface that must be implemented by the container activity
-     */
-    public interface FeedEntryListCallbacks {
-        void setActionBar(boolean displayBackButton, int actionBarColor);
-        void resetActionBar();
-
-        FeedlyAccount getFeedlyAccount();
-
-        void displayFeedEntry(Feed feed, int position);
-        void updateFeedEntries(ArrayList<FeedEntry> entries, Feed feed);
-    }
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -75,6 +62,10 @@ public class FeedEntryListFragment extends Fragment implements
                 if (newEntries) {
                     callback.updateFeedEntries(entries, feed);
                     newEntries = false;
+                    updateEntry(adapter.getItem(position), position);
+                }
+                else if (!callback.getPagerEntry(position).equals(adapter.getItem(position))) {
+                    callback.updateFeedEntries(entries, feed);
                 }
                 if (position != selectedItem)
                     callback.displayFeedEntry(feed, position);
@@ -151,14 +142,46 @@ public class FeedEntryListFragment extends Fragment implements
         return adapter.getCount();
     }
 
-    public void markEntryAsRead(int position, FeedlyAccount account) {
-        // Mark as read
-        FeedEntry entry = getEntry(position);
-        entry.setRead(true);
-        account.saveFeedEntry(entry);
+    public void updateEntry(FeedEntry entryPager, int position) {
+        if (position < adapter.getCount()) {
+            FeedEntry entryList = getEntry(position);
 
-        // Refresh view
-        updateView(position);
+            if (entryPager.equals(entryList)) {
+                markEntryAsRead(entryList);
+                updateView(position);
+            }
+            else {
+                if (feed.equals(entryPager.getFeed())) {
+                    int positionList = getEntryPosition(entryPager);
+                    if (positionList != -1) {
+                        markEntryAsRead(getEntry(positionList));
+                        updateView(positionList);
+                    }
+                }
+                else
+                    markEntryAsRead(entryPager);
+            }
+        }
+        else if (!feed.equals(entryPager.getFeed()))
+            markEntryAsRead(entryPager);
+    }
+
+    /**
+     * @return position of entry or -1 if not found
+     */
+    public int getEntryPosition(FeedEntry entry) {
+        for (int i = 0; i < adapter.getCount(); i++) {
+            if (adapter.getItem(i).equals(entry))
+                return i;
+        }
+        return -1;
+    }
+
+    public void markEntryAsRead(FeedEntry entry) {
+        if (!entry.isRead()) {
+            entry.setRead(true);
+            callback.getFeedlyAccount().saveFeedEntry(entry);
+        }
     }
 
     public void updateView(int position) {
@@ -184,8 +207,8 @@ public class FeedEntryListFragment extends Fragment implements
         updateFeedEntries();
         // Category
         // TODO: Category
-        adapter.setEntries(entries);
 
+        adapter.setEntries(entries);
         adapter.notifyDataSetChanged();
     }
 
@@ -204,7 +227,7 @@ public class FeedEntryListFragment extends Fragment implements
 
         // Make sure that the interface is implemented in the container activity
         try {
-            callback = (FeedEntryListCallbacks) activity;
+            callback = (ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListCallbacks) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException("Activity must implement FeedEntryListCallbacks");
         }

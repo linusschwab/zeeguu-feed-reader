@@ -1,48 +1,29 @@
 package ch.unibe.scg.zeeguufeedreader.FeedOverview;
 
 import android.app.Activity;
-import android.content.Context;
-import android.database.DataSetObserver;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAccount;
 import ch.unibe.scg.zeeguufeedreader.R;
 
 /**
  *  Home fragment, displays all feeds and categories.
  */
-public class FeedOverviewFragment extends Fragment implements
-        FeedOverviewListAdapter.FeedOverviewListAdapterCallbacks {
+public class FeedOverviewFragment extends Fragment {
 
-    ArrayList<Category> categories = new ArrayList<>();
+    private ArrayList<Category> categories = new ArrayList<>();
 
     private ExpandableListView expandableListView;
     private FeedOverviewListAdapter adapter;
 
     private FeedOverviewCallbacks callback;
-
-    /**
-     *  Callback interface that must be implemented by the container activity
-     */
-    public interface FeedOverviewCallbacks {
-        void displayFeedEntryList(Category category, Feed feed);
-        FeedlyAccount getFeedlyAccount();
-    }
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -97,7 +78,7 @@ public class FeedOverviewFragment extends Fragment implements
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        adapter = new FeedOverviewListAdapter(getActivity(), this, categories);
+        adapter = new FeedOverviewListAdapter(getActivity(), categories);
         expandableListView.setAdapter(adapter);
 
         // Restore expanded state
@@ -119,21 +100,13 @@ public class FeedOverviewFragment extends Fragment implements
         adapter.notifyDataSetChanged();
     }
 
-    public void displayFeedEntryList(Category category) {
-        callback.displayFeedEntryList(category, null);
-    }
-
-    public FeedlyAccount getFeedlyAccount() {
-        return callback.getFeedlyAccount();
-    }
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
         // Make sure that the interface is implemented in the container activity
         try {
-            callback = (FeedOverviewCallbacks) activity;
+            callback = (ch.unibe.scg.zeeguufeedreader.FeedOverview.FeedOverviewCallbacks) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException("Activity must implement FeedOverviewCallbacks");
         }

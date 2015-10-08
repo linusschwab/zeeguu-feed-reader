@@ -320,4 +320,8 @@ public abstract class BaseActivity extends AppCompatActivity implements
     @Override
     public void notifyDataChanged(boolean myWordsChanged) {
     }
+
+    @Override
+    public void feedlyAuthenticationResponse(String response, boolean successful) {
+    }
 }

@@ -9,9 +9,12 @@ import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
  * Callback interface that must be implemented by the container activity
  */
 public interface FeedlyCallbacks {
-    void displayFeedlyAuthentication(String url);
     void displayMessage(String message);
     void setSubscriptions(ArrayList<Category> categories, boolean update);
+
+    // Authentication
+    void displayFeedlyAuthentication(String url);
+    void feedlyAuthenticationResponse(String response, boolean successful);
 
     // Database
     DatabaseHelper getDatabaseHelper();

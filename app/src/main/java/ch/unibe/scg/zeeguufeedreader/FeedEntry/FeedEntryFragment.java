@@ -15,6 +15,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import ch.unibe.scg.zeeguufeedreader.Core.Tools;
+import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAccount;
 import ch.unibe.scg.zeeguufeedreader.R;
 import ch.unibe.zeeguulibrary.Core.Utility;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewClient;
@@ -44,7 +45,7 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
     private int position;
 
     /**
-     * Create a new instance of CountingFragment, providing "position"
+     * Create a new instance of FeedEntryFragment, providing "position"
      * as an argument.
      */
     static FeedEntryFragment newInstance(int position) {

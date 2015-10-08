@@ -235,11 +235,18 @@ public class FeedEntry implements Comparable<FeedEntry> {
     }
 
     public void setRead(boolean read) {
-        this.read = read;
+        syncRead(read);
         readUpdate = System.currentTimeMillis();
     }
 
     public void syncRead(boolean read) {
+        if (this.read != read) {
+            if (read)
+                feed.decreaseUnreadCount();
+            else
+                feed.increaseUnreadCount();
+        }
+
         this.read = read;
     }
 
@@ -271,26 +278,14 @@ public class FeedEntry implements Comparable<FeedEntry> {
 
         FeedEntry entry = (FeedEntry) o;
 
-        if (id != entry.id) return false;
-        if (read != entry.read) return false;
-        if (title != null ? !title.equals(entry.title) : entry.title != null) return false;
-        if (content != null ? !content.equals(entry.content) : entry.content != null) return false;
-        if (summary != null ? !summary.equals(entry.content) : entry.summary != null) return false;
-        if (url != null ? !url.equals(entry.url) : entry.url != null) return false;
-        if (author != null ? !author.equals(entry.author) : entry.author != null) return false;
-        return !(date != null ? !date.equals(entry.date) : entry.date != null);
+        if (feed != null ? !feed.equals(entry.feed) : entry.feed != null) return false;
+        return !(title != null ? !title.equals(entry.title) : entry.title != null);
     }
 
     @Override
     public int hashCode() {
-        int result = title != null ? title.hashCode() : 0;
-        result = 31 * result + (int) (id ^ (id >>> 32));
-        result = 31 * result + (content != null ? content.hashCode() : 0);
-        result = 31 * result + (summary != null ? summary.hashCode() : 0);
-        result = 31 * result + (url != null ? url.hashCode() : 0);
-        result = 31 * result + (author != null ? author.hashCode() : 0);
-        result = 31 * result + (date != null ? date.hashCode() : 0);
-        result = 31 * result + (read ? 1 : 0);
+        int result = feed != null ? feed.hashCode() : 0;
+        result = 31 * result + (title != null ? title.hashCode() : 0);
         return result;
     }
 

@@ -138,16 +138,22 @@ public class FeedlyAccount {
         all = new DefaultCategory(activity.getResources().getString(R.string.default_category_all));
         favorite = new DefaultCategory(activity.getResources().getString(R.string.default_category_favorite));
 
-        all.setEntries(new ArrayList<>(queryHelper.getAllEntries()));
-        favorite.setEntries(new ArrayList<>(queryHelper.getFavoriteEntries()));
+        all.setUnreadCount(queryHelper.getNumberOfUnreadEntries());
+        all.setEntriesCount(queryHelper.getNumberOfEntries());
+
+        //all.setEntries(new ArrayList<>(queryHelper.getAllEntries()));
+        //favorite.setEntries(new ArrayList<>(queryHelper.getFavoriteEntries()));
 
         categories.add(0, all);
         categories.add(1, favorite);
     }
 
     public void updateDefaultCategories() {
-        all.setEntries(new ArrayList<FeedEntry>(queryHelper.getAllEntries()));
-        favorite.setEntries(new ArrayList<FeedEntry>(queryHelper.getFavoriteEntries()));
+        all.setUnreadCount(queryHelper.getNumberOfUnreadEntries());
+        all.setEntriesCount(queryHelper.getNumberOfEntries());
+
+        //all.setEntries(new ArrayList<FeedEntry>(queryHelper.getAllEntries()));
+        //favorite.setEntries(new ArrayList<FeedEntry>(queryHelper.getFavoriteEntries()));
     }
 
     // Database Methods
@@ -241,6 +247,12 @@ public class FeedlyAccount {
         }
     }
 
+    public void saveFeeds(ArrayList<Feed> feeds) {
+        for (Feed feed : feeds) {
+            saveFeed(feed);
+        }
+    }
+
     public void deleteFeed(Feed feed) {
         try {
             feedDao.delete(feed);
@@ -311,8 +323,10 @@ public class FeedlyAccount {
         try {
             if (entry.getId() == 0)
                 feedEntryDao.create(entry);
-            else
+            else {
                 feedEntryDao.update(entry);
+                saveFeed(entry.getFeed());
+            }
         }
         catch (SQLException e) {
             Log.e(FeedlyAccount.class.getName(), "Can't save feed entry: " + entry.getTitle(), e);
@@ -350,9 +364,16 @@ public class FeedlyAccount {
                 throw new RuntimeException(e);
             }
 
-            // Entry exists
-            if (entryExisting == null)
+            // Entry does not exist
+            if (entryExisting == null) {
                 saveFeedEntry(entryNew);
+
+                // Update feed unread and entry count
+                Feed feed = entryNew.getFeed();
+                feed.increaseEntriesCount();
+                if (!entryNew.isRead())
+                    feed.increaseUnreadCount();
+            }
         }
 
         onSynchronizationFinished();
@@ -395,6 +416,7 @@ public class FeedlyAccount {
 
     public void onSynchronizationFinished() {
         updateDefaultCategories();
+        saveFeeds(feeds);
     }
 
     // Mark as read

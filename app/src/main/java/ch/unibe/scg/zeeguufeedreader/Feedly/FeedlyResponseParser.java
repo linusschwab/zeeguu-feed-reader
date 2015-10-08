@@ -149,8 +149,12 @@ public class FeedlyResponseParser {
                 JSONObject jsonFeed = jsonArray.getJSONObject(i);
                 Feed feed = account.getFeedById(jsonFeed.getJSONObject("origin").getString("streamId"));
 
-                if (feed != null)
-                    entries.add(parseSingleFeedEntry(feed, jsonFeed));
+                if (feed != null) {
+                    FeedEntry entry = parseSingleFeedEntry(feed, jsonFeed);
+
+                    if (entry != null)
+                        entries.add(entry);
+                }
             }
         }
         catch (JSONException e) {

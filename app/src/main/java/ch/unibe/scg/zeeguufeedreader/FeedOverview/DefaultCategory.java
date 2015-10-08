@@ -1,7 +1,6 @@
 package ch.unibe.scg.zeeguufeedreader.FeedOverview;
 
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.res.ResourcesCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +9,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import ch.unibe.scg.zeeguufeedreader.Core.ContextManager;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
@@ -54,20 +52,9 @@ public class DefaultCategory extends Category {
         if (unread)
             holder.unread.setText("" + unreadCount);
         else
-            holder.unread.setText("" + getEntriesCount());
+            holder.unread.setText("" + entriesCount);
 
         return convertView;
-    }
-
-    private void calculateUnreadCount() {
-        int unreadCounter = 0;
-
-        for (FeedEntry entry : entries) {
-            if (!entry.isRead())
-                unreadCounter++;
-        }
-
-        unreadCount = unreadCounter;
     }
 
     // Getter/Setter
@@ -75,9 +62,11 @@ public class DefaultCategory extends Category {
         this.entries = entries;
     }
 
-    @Override
-    public int getUnreadCount() {
-        calculateUnreadCount();
-        return unreadCount;
+    public void setUnreadCount(int unreadCount) {
+        this.unreadCount = unreadCount;
+    }
+
+    public void setEntriesCount(int entriesCount) {
+        this.entriesCount = entriesCount;
     }
 }

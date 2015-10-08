@@ -20,22 +20,17 @@ public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
     private ArrayList<Category> categories;
     private LayoutInflater inflater;
 
-    private FeedOverviewListAdapterCallbacks callback;
+    private FeedOverviewCallbacks callback;
 
-    public interface FeedOverviewListAdapterCallbacks {
-        void displayFeedEntryList(Category category);
-        FeedlyAccount getFeedlyAccount();
-    }
-
-    public FeedOverviewListAdapter(Activity activity, Fragment fragment, ArrayList<Category> categories) {
+    public FeedOverviewListAdapter(Activity activity, ArrayList<Category> categories) {
         this.categories = categories;
         this.inflater = activity.getLayoutInflater();
 
         // Make sure that the interface is implemented in the fragment
         try {
-            callback = (FeedOverviewListAdapterCallbacks) fragment;
+            callback = (FeedOverviewCallbacks) activity;
         } catch (ClassCastException e) {
-            throw new ClassCastException("Fragment must implement FeedOverviewListAdapterCallbacks");
+            throw new ClassCastException("Activity must implement FeedOverviewCallbacks");
         }
     }
 
@@ -85,7 +80,7 @@ public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
             categoryName.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    callback.displayFeedEntryList(category);
+                    callback.displayFeedEntryList(category, null);
                 }
             });
         }

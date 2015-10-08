@@ -69,6 +69,26 @@ public class QueryHelper {
         }
     }
 
+    public int getNumberOfEntries() {
+        try {
+            return (int) callback.getDatabaseHelper().getFeedEntryDao().countOf();
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get number of feed entries", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getNumberOfUnreadEntries() {
+        try {
+            return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder().where().eq("read", false).countOf();
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get number of unread feed entries", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public List<FeedEntry> getFavoriteEntries() {
         try {
             return callback.getDatabaseHelper().getFeedEntryDao().queryForEq("favorite", true);

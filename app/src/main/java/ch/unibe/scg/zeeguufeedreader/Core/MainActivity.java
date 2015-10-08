@@ -41,9 +41,11 @@ import java.util.ArrayList;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryCallbacks;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryPagerAdapter;
+import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListCallbacks;
 import ch.unibe.scg.zeeguufeedreader.FeedEntryList.FeedEntryListFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.FeedOverviewCallbacks;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAuthenticationFragment;
 import ch.unibe.scg.zeeguufeedreader.Preferences.SettingsActivity;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuTranslationActionMode;
@@ -59,10 +61,7 @@ import ch.unibe.zeeguulibrary.MyWords.MyWordsFragment;
  *  Activity to display and switch between the fragments
  */
 public class MainActivity extends BaseActivity implements
-        FeedOverviewFragment.FeedOverviewCallbacks,
-        FeedEntryCallbacks,
-        FeedEntryListFragment.FeedEntryListCallbacks,
-        FeedlyAuthenticationFragment.FeedlyAuthenticationCallbacks,
+        FeedOverviewCallbacks, FeedEntryCallbacks, FeedEntryListCallbacks,
         MyWordsFragment.ZeeguuFragmentMyWordsCallbacks,
         ZeeguuWebViewInterface.ZeeguuWebViewInterfaceCallbacks,
         ZeeguuWebViewFragment.ZeeguuWebViewCallbacks {
@@ -467,7 +466,9 @@ public class MainActivity extends BaseActivity implements
                 @Override
                 public void onPageSelected(int position) {
                     panelLayout.setDragView(getCurrentFeedEntryFragment().getPanelHeader());
-                    feedEntryListFragment.markEntryAsRead(position, getFeedlyConnectionManager().getAccount());
+                    //panelLayout.setScrollableView(getCurrentFeedEntryFragment().getWebView());
+
+                    feedEntryListFragment.updateEntry(getCurrentFeedEntryFragment().getEntry(), position);
 
                     // TODO: Improve for first scroll (maybe move to FeedEntry with callback at onCreateView())
                     if (panelLayout.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
@@ -512,6 +513,7 @@ public class MainActivity extends BaseActivity implements
         panelLayout.setShadowHeight((int) Tools.dpToPx(this, 4));
 
         panelLayout.setDragView(getCurrentFeedEntryFragment().getPanelHeader());
+        //panelLayout.setScrollableView(getCurrentFeedEntryFragment().getWebView());
 
         panelLayout.setPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
@@ -533,8 +535,9 @@ public class MainActivity extends BaseActivity implements
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 
                 // Check if first page is read
-                if (getCurrentFeedEntryFragment().getPosition() == 0)
-                    feedEntryListFragment.markEntryAsRead(0, getFeedlyConnectionManager().getAccount());
+                if (getCurrentFeedEntryFragment().getPosition() == 0) {
+                    feedEntryListFragment.updateEntry(getCurrentFeedEntryFragment().getEntry(), 0);
+                }
             }
 
             @Override
@@ -577,6 +580,10 @@ public class MainActivity extends BaseActivity implements
             feedOverviewFragment.updateSubscriptions(categories);
         else
             feedOverviewFragment.setCategories(categories);
+    }
+
+    public FeedEntry getPagerEntry(int position) {
+        return getFeedEntryFragment(position).getEntry();
     }
 
     // Feedly authentication

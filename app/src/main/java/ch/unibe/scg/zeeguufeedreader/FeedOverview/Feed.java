@@ -14,7 +14,6 @@ import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import ch.unibe.scg.zeeguufeedreader.Core.Tools;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
@@ -45,11 +44,17 @@ public class Feed {
     @DatabaseField(columnName = "color")
     private int color;
 
+    @DatabaseField(columnName = "unread_count")
+    private int unreadCount;
+
+    @DatabaseField(columnName = "entries_count")
+    private int entriesCount;
+
     /*
      If eager is set to false then the collection is considered to be "lazy" and will iterate
      over the database using the Dao.iterator() only when a method is called on the collection.
     */
-    @ForeignCollectionField(eager = false)
+    @ForeignCollectionField(eager = false, orderColumnName = "date", orderAscending = false)
     private ForeignCollection<FeedEntry> entries;
 
     /*
@@ -67,8 +72,6 @@ public class Feed {
      Timestamp, all entries older than that are marked as read. Used for the Feedly synchronization.
      */
     private long readEntriesDate;
-
-    private int unreadCount;
 
     public Feed() {
         // Empty constructor needed by ormlite
@@ -112,19 +115,6 @@ public class Feed {
         return convertView;
     }
 
-    private void calculateUnreadCount() {
-        int unreadCounter = 0;
-
-        if (entries != null) {
-            for (FeedEntry entry : entries) {
-                if (entry != null && !entry.isRead())
-                    unreadCounter++;
-            }
-        }
-
-        unreadCount = unreadCounter;
-    }
-
     public String getName() {
         return name;
     }
@@ -138,13 +128,7 @@ public class Feed {
     }
 
     public ArrayList<FeedEntry> getEntries() {
-        if (entries != null) {
-            ArrayList<FeedEntry> entriesList = new ArrayList<>(entries);
-            Collections.sort(entriesList);
-            return entriesList;
-        }
-        else
-            return new ArrayList<>();
+        return new ArrayList<>(entries);
     }
 
     public ArrayList<FeedEntry> getUnreadEntries() {
@@ -153,8 +137,6 @@ public class Feed {
         for (FeedEntry entry : entries)
             if (!entry.isRead())
                 unreadEntries.add(entry);
-
-        Collections.sort(unreadEntries);
 
         return unreadEntries;
     }
@@ -231,12 +213,27 @@ public class Feed {
     }
 
     public int getUnreadCount() {
-        calculateUnreadCount();
         return unreadCount;
     }
 
+    public void increaseUnreadCount() {
+        unreadCount++;
+    }
+
+    public void decreaseUnreadCount() {
+        unreadCount--;
+    }
+
     public int getEntriesCount() {
-        return entries.size();
+        return entriesCount;
+    }
+
+    public void increaseEntriesCount() {
+        entriesCount++;
+    }
+
+    public void decreaseEntriesCount() {
+        entriesCount--;
     }
 
     @Override

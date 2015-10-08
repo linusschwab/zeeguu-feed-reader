@@ -69,7 +69,6 @@ public class FeedlyConnectionManager {
         account.load();
         account.loadCategories();
         account.loadFeeds();
-
         callback.setSubscriptions(account.getCategories(), false);
 
         timer.start();

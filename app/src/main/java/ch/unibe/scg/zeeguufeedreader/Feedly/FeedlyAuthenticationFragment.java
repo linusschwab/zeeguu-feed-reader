@@ -18,14 +18,7 @@ public class FeedlyAuthenticationFragment extends Fragment {
     private WebView webView;
     private String url;
 
-    private FeedlyAuthenticationCallbacks callback;
-
-    /**
-     * Callback interface that must be implemented by the container activity
-     */
-    public interface FeedlyAuthenticationCallbacks {
-        void feedlyAuthenticationResponse(String response, boolean successful);
-    }
+    private FeedlyCallbacks callback;
 
     /**
      * The system calls this when creating the fragment. Within your implementation, you should
@@ -61,9 +54,9 @@ public class FeedlyAuthenticationFragment extends Fragment {
 
         // Make sure that the interface is implemented in the container activity
         try {
-            callback = (FeedlyAuthenticationCallbacks) activity;
+            callback = (FeedlyCallbacks) activity;
         } catch (ClassCastException e) {
-            throw new ClassCastException("Activity must implement FeedlyAuthenticationCallbacks");
+            throw new ClassCastException("Activity must implement FeedlyCallbacks");
         }
     }
 

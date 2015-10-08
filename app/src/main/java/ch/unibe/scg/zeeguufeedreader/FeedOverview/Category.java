@@ -1,8 +1,5 @@
 package ch.unibe.scg.zeeguufeedreader.FeedOverview;
 
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +13,6 @@ import com.j256.ormlite.table.DatabaseTable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import ch.unibe.scg.zeeguufeedreader.Core.ContextManager;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.R;
 
@@ -46,7 +42,11 @@ public class Category {
 
     protected ArrayList<FeedEntry> entries = new ArrayList<>();
 
+    /*
+     Not saved in database, calculated from feed read/unread count
+     */
     protected int unreadCount;
+    protected int entriesCount;
 
     public Category() {
         // Empty constructor needed by ormlite
@@ -92,7 +92,7 @@ public class Category {
         holder.name.setText(name);
 
         if (unread)
-            holder.unread.setText("" + unreadCount);
+            holder.unread.setText("" + getUnreadCount());
         else
             holder.unread.setText("" + getEntriesCount());
 
@@ -107,6 +107,16 @@ public class Category {
         }
 
         unreadCount = unreadCounter;
+    }
+
+    private void calculateEntriesCount() {
+        int entriesCounter = 0;
+
+        for (Feed feed : feeds) {
+            entriesCounter += feed.getEntriesCount();
+        }
+
+        entriesCount = entriesCounter;
     }
 
     public String getName() {
@@ -132,21 +142,14 @@ public class Category {
     // Feeds
     public void setFeeds(ArrayList<Feed> feeds) {
         this.feeds = feeds;
-
-        entries = new ArrayList<>();
-        for (Feed feed : feeds)
-            entries.addAll(feed.getEntries());
     }
 
     public void addFeed(Feed feed) {
         feeds.add(feed);
-        entries.addAll(feed.getEntries());
     }
 
     public Feed removeFeed(int position) {
         Feed feed = feeds.remove(position);
-        entries.removeAll(feed.getEntries());
-
         return feed;
     }
 
@@ -158,19 +161,26 @@ public class Category {
         return feeds.size();
     }
 
-    public ArrayList<FeedEntry> getEntries() {
+    public void updateEntries() {
+        entries = new ArrayList<>();
+        for (Feed feed : feeds)
+            entries.addAll(feed.getEntries());
+
         Collections.sort(entries);
+    }
+
+    public ArrayList<FeedEntry> getEntries() {
+        updateEntries();
         return entries;
     }
 
     public ArrayList<FeedEntry> getUnreadEntries() {
         ArrayList<FeedEntry> unreadEntries = new ArrayList<>();
 
+        updateEntries();
         for (FeedEntry entry : entries)
             if (!entry.isRead())
                 unreadEntries.add(entry);
-
-        Collections.sort(unreadEntries);
 
         return unreadEntries;
     }
@@ -181,7 +191,8 @@ public class Category {
     }
 
     public int getEntriesCount() {
-        return entries.size();
+        calculateEntriesCount();
+        return entriesCount;
     }
 
     // Expanded
