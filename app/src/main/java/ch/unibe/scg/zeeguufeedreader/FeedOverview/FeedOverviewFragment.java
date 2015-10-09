@@ -81,15 +81,13 @@ public class FeedOverviewFragment extends Fragment {
         adapter = new FeedOverviewListAdapter(getActivity(), categories);
         expandableListView.setAdapter(adapter);
 
-        // Restore expanded state
-        for (int i = 0; i < categories.size(); i++)
-            if(categories.get(i).isExpanded())
-                expandableListView.expandGroup(i);
+        restoreExpandedState();
     }
 
     public void updateSubscriptions(ArrayList<Category> categories) {
         adapter.setCategories(categories);
         this.categories = categories;
+        restoreExpandedState();
     }
 
     public void setCategories(ArrayList<Category> categories) {
@@ -98,6 +96,13 @@ public class FeedOverviewFragment extends Fragment {
 
     public void notifyDataSetChanged() {
         adapter.notifyDataSetChanged();
+        restoreExpandedState();
+    }
+
+    private void restoreExpandedState() {
+        for (int i = 0; i < adapter.getCategories().size(); i++)
+            if(adapter.getCategories().get(i).isExpanded())
+                expandableListView.expandGroup(i);
     }
 
     @Override

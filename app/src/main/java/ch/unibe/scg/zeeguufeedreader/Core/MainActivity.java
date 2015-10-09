@@ -94,7 +94,6 @@ public class MainActivity extends BaseActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
         // Initialize fragments
         feedOverviewFragment = (FeedOverviewFragment) fragmentManager.findFragmentByTag("feedOverview");
@@ -111,6 +110,8 @@ public class MainActivity extends BaseActivity implements
 
         myWordsFragment = (MyWordsFragment) fragmentManager.findFragmentByTag("myWords");
         if (myWordsFragment == null) myWordsFragment = new MyWordsFragment();
+
+        super.onCreate(savedInstanceState);
 
         // Layout
         setContentView(R.layout.activity_main);

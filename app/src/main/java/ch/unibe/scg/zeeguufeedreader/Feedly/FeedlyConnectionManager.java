@@ -65,39 +65,10 @@ public class FeedlyConnectionManager {
 
         queue = Volley.newRequestQueue(activity);
 
-        // Load user information
-        account.load();
-        account.loadCategories();
-        account.loadFeeds();
-        callback.setSubscriptions(account.getCategories(), false);
+        loadUserData();
 
         timer.start();
-
-        // TODO: Don't display login on app start
-        // Get missing information from server
-        if (!account.isUserLoggedIn())
-            getAuthenticationCode();
-        else if (!account.isUserInSession())
-            getAuthenticationToken(account.getAuthenticationCode());
-        else if (account.isAccessTokenExpired())
-            refreshAccessToken();
-        else
-            getCategoriesThread();
-    }
-
-    private void getCategoriesThread() {
-        // TODO: Make sure that the worker thread does not slow down the UI thread
-        Thread thread = new Thread(new Runnable() {
-            public void run() {
-                getCategories();
-
-                // TODO: Directly get favicon after feed is added
-                getAllFavicons();
-            }
-        });
-
-        thread.setPriority(Thread.MIN_PRIORITY);
-        thread.start();
+        synchronize();
     }
 
     /**
@@ -108,6 +79,33 @@ public class FeedlyConnectionManager {
         this.activity = activity;
         callback = (FeedlyCallbacks) activity;
         account.onRestore(activity);
+    }
+
+    private void loadUserData() {
+        // Load user information
+        account.load();
+        account.loadCategories();
+        account.loadFeeds();
+        callback.setSubscriptions(account.getCategories(), false);
+    }
+
+    private void synchronize() {
+        Thread thread = new Thread(new Runnable() {
+            public void run() {
+                // Get missing information from server
+                if (!account.isUserLoggedIn())
+                    getAuthenticationCode();
+                else if (!account.isUserInSession())
+                    getAuthenticationToken(account.getAuthenticationCode());
+                else if (account.isAccessTokenExpired())
+                    refreshAccessToken();
+                else
+                    getCategories();
+            }
+        });
+
+        thread.setPriority(Thread.MIN_PRIORITY);
+        thread.start();
     }
 
     /**
@@ -217,7 +215,7 @@ public class FeedlyConnectionManager {
                 account.setAccessToken(response.get("access_token"), response.get("access_token_expiration"));
                 account.saveLoginInformation();
 
-                getCategoriesThread();
+                synchronize();
             }
         }, new Response.ErrorListener() {
 
@@ -292,12 +290,19 @@ public class FeedlyConnectionManager {
                 url, null, new Response.Listener<JSONArray>() {
 
             @Override
-            public void onResponse(JSONArray response) {
-                // Parse and synchronize categories
-                ArrayList<Category> categories = FeedlyResponseParser.parseCategories(response);
-                account.synchronizeCategories(categories);
+            public void onResponse(final JSONArray response) {
+                Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        // Parse and synchronize categories
+                        ArrayList<Category> categories = FeedlyResponseParser.parseCategories(response);
+                        account.synchronizeCategories(categories);
 
-                getSubscriptions();
+                        getSubscriptions();
+                    }
+                });
+
+                thread.setPriority(Thread.MIN_PRIORITY);
+                thread.start();
             }
 
         }, new Response.ErrorListener() {
@@ -333,12 +338,20 @@ public class FeedlyConnectionManager {
                 url, null, new Response.Listener<JSONArray>() {
 
             @Override
-            public void onResponse(JSONArray response) {
-                // Parse and synchronize feeds
-                ArrayList<Feed> feeds = FeedlyResponseParser.parseSubscriptions(response, account);
-                account.synchronizeFeeds(feeds);
+            public void onResponse(final JSONArray response) {
+                Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        // Parse and synchronize feeds
+                        ArrayList<Feed> feeds = FeedlyResponseParser.parseSubscriptions(response, account);
+                        account.synchronizeFeeds(feeds);
 
-                getAllFeedEntries(500);
+                        getAllFavicons();
+                        getAllFeedEntries(500);
+                    }
+                });
+
+                thread.setPriority(Thread.MIN_PRIORITY);
+                thread.start();
             }
 
         }, new Response.ErrorListener() {
@@ -416,26 +429,33 @@ public class FeedlyConnectionManager {
                 url, null, new Response.Listener<JSONObject>() {
 
             @Override
-            public void onResponse(JSONObject response) {
-                // Parse and synchronize entries
-                ArrayList<FeedEntry> entries = FeedlyResponseParser.parseAllFeedEntries(response, account);
-                account.synchronizeFeedEntries(entries);
-
-                // Sync read/favorited entries
-                getLatestReadOperations(account.getLastReadSync());
-                getLatestTags(account.getLastFavoriteSync());
-
-                account.loadCategoryFeed();
-
-                timer.stop();
-
-                // Update UI
-                activity.runOnUiThread(new Runnable() {
+            public void onResponse(final JSONObject response) {
+                Thread thread = new Thread(new Runnable() {
                     public void run() {
-                        callback.setSubscriptions(account.getCategories(), true);
-                        callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated) + " (" + timer.getTimeElapsed() + ")");
+                        // Parse and synchronize entries
+                        ArrayList<FeedEntry> entries = FeedlyResponseParser.parseAllFeedEntries(response, account);
+                        account.synchronizeFeedEntries(entries);
+
+                        // Sync read/favorited entries
+                        getLatestReadOperations(account.getLastReadSync());
+                        getLatestTags(account.getLastFavoriteSync());
+
+                        account.loadCategoryFeed();
+
+                        timer.stop();
+
+                        // Update UI
+                        activity.runOnUiThread(new Runnable() {
+                            public void run() {
+                                callback.setSubscriptions(account.getCategories(), true);
+                                callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated) + " (" + timer.getTimeElapsed() + ")");
+                            }
+                        });
                     }
                 });
+
+                thread.setPriority(Thread.MIN_PRIORITY);
+                thread.start();
             }
 
         }, new Response.ErrorListener() {
@@ -471,18 +491,25 @@ public class FeedlyConnectionManager {
                 url, null, new Response.Listener<JSONObject>() {
 
             @Override
-            public void onResponse(JSONObject response) {
-                ArrayList<Feed> feeds = FeedlyResponseParser.parseReadFeeds(response, account);
-                ArrayList<FeedEntry> entries = FeedlyResponseParser.parseReadFeedEntries(response, account);
+            public void onResponse(final JSONObject response) {
+                Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        ArrayList<Feed> feeds = FeedlyResponseParser.parseReadFeeds(response, account);
+                        ArrayList<FeedEntry> entries = FeedlyResponseParser.parseReadFeedEntries(response, account);
 
-                account.markFeedsAsRead(feeds);
-                account.saveFeedEntries(entries);
+                        account.markFeedsAsRead(feeds);
+                        account.saveFeedEntries(entries);
 
-                // Sync local read operations with Feedly
-                markEntriesAsRead(account.getLatestReadEntries(account.getLastReadSync()));
-                markEntriesAsUnread(account.getLatestUnreadEntries(account.getLastReadSync()));
+                        // Sync local read operations with Feedly
+                        markEntriesAsRead(account.getLatestReadEntries(account.getLastReadSync()));
+                        markEntriesAsUnread(account.getLatestUnreadEntries(account.getLastReadSync()));
 
-                account.readSyncFinished();
+                        account.readSyncFinished();
+                    }
+                });
+
+                thread.setPriority(Thread.MIN_PRIORITY);
+                thread.start();
             }
 
         }, new Response.ErrorListener() {
@@ -519,15 +546,22 @@ public class FeedlyConnectionManager {
                 url, null, new Response.Listener<JSONObject>() {
 
             @Override
-            public void onResponse(JSONObject response) {
-                ArrayList<FeedEntry> entries = FeedlyResponseParser.parseTags(response, account);
-                account.saveFeedEntries(entries);
+            public void onResponse(final JSONObject response) {
+                Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        ArrayList<FeedEntry> entries = FeedlyResponseParser.parseTags(response, account);
+                        account.saveFeedEntries(entries);
 
-                // Sync existing favorites with Feedly
-                markEntriesAsFavorited(account.getLatestFavoritedEntries(account.getLastFavoriteSync()));
-                markEntriesAsUnfavorited(account.getLatestUnfavoritedEntries(account.getLastFavoriteSync()));
+                        // Sync existing favorites with Feedly
+                        markEntriesAsFavorited(account.getLatestFavoritedEntries(account.getLastFavoriteSync()));
+                        markEntriesAsUnfavorited(account.getLatestUnfavoritedEntries(account.getLastFavoriteSync()));
 
-                account.favoriteSyncFinished();
+                        account.favoriteSyncFinished();
+                    }
+                });
+
+                thread.setPriority(Thread.MIN_PRIORITY);
+                thread.start();
             }
 
         }, new Response.ErrorListener() {

@@ -1,29 +1,28 @@
 package ch.unibe.scg.zeeguufeedreader.FeedOverview;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import ch.unibe.scg.zeeguufeedreader.Core.ContextManager;
-import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAccount;
 import ch.unibe.scg.zeeguufeedreader.R;
 
 public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
 
     private ArrayList<Category> categories;
+    private ArrayList<Category> categoriesVisible;
+
     private LayoutInflater inflater;
 
     private FeedOverviewCallbacks callback;
 
     public FeedOverviewListAdapter(Activity activity, ArrayList<Category> categories) {
         this.categories = categories;
+        this.categoriesVisible = categories;
         this.inflater = activity.getLayoutInflater();
 
         // Make sure that the interface is implemented in the fragment
@@ -36,42 +35,42 @@ public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getGroupCount() {
-        return categories.size();
+        return categoriesVisible.size();
     }
 
     @Override
     public int getChildrenCount(int groupPosition) {
-        return categories.get(groupPosition).getFeedCount();
+        return categoriesVisible.get(groupPosition).getFeedCount(callback.getFeedlyAccount().showUnreadOnly());
     }
 
     @Override
     public Category getGroup(int groupPosition) {
-        return categories.get(groupPosition);
+        return categoriesVisible.get(groupPosition);
     }
 
     @Override
     public Feed getChild(int groupPosition, int childPosition) {
-        return categories.get(groupPosition).getFeed(childPosition);
+        return categoriesVisible.get(groupPosition).getFeed(childPosition);
     }
 
     @Override
     public long getGroupId(int groupPosition) {
-        return categories.get(groupPosition).getId();
+        return categoriesVisible.get(groupPosition).getId();
     }
 
     @Override
     public long getChildId(int groupPosition, int childPosition) {
-        return categories.get(groupPosition).getFeed(childPosition).getId();
+        return categoriesVisible.get(groupPosition).getFeed(childPosition).getId();
     }
 
     @Override
     public boolean hasStableIds() {
-        return false;
+        return true;
     }
 
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
-        final Category category = categories.get(groupPosition);
+        final Category category = categoriesVisible.get(groupPosition);
 
         View categoryView = category.getView(inflater, convertView, parent, callback.getFeedlyAccount().showUnreadOnly());
         TextView categoryName = (TextView) categoryView.findViewById(R.id.category_name);
@@ -90,7 +89,7 @@ public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-        return categories.get(groupPosition).getFeed(childPosition).getView(inflater, convertView, parent, callback.getFeedlyAccount().showUnreadOnly());
+        return categoriesVisible.get(groupPosition).getFeed(childPosition).getView(inflater, convertView, parent, callback.getFeedlyAccount().showUnreadOnly());
     }
 
     @Override
@@ -101,31 +100,68 @@ public class FeedOverviewListAdapter extends BaseExpandableListAdapter {
     @Override
     public void onGroupExpanded(int groupPosition) {
         super.onGroupExpanded(groupPosition);
-        Category category = categories.get(groupPosition);
+        Category category = categoriesVisible.get(groupPosition);
         if (!category.isExpanded()) {
             category.expand();
             callback.getFeedlyAccount().saveCategory(category);
         }
 
-        // Border
-        if (categories.size() > groupPosition+1)
-            categories.get(groupPosition+1).setBorder(true);
+        setBorder(groupPosition, true);
     }
 
     @Override
     public void onGroupCollapsed(int groupPosition) {
         super.onGroupCollapsed(groupPosition);
-        Category category = categories.get(groupPosition);
+        Category category = categoriesVisible.get(groupPosition);
         category.collapse();
         callback.getFeedlyAccount().saveCategory(category);
 
-        // Border
-        if (categories.size() > groupPosition+1)
-            categories.get(groupPosition+1).setBorder(false);
+        setBorder(groupPosition, false);
     }
 
+    private void setBorder(int position, boolean border) {
+        if (categoriesVisible.size() > position+1)
+            categoriesVisible.get(position+1).setBorder(border);
+    }
+
+    @Override
+    public void notifyDataSetChanged() {
+        hideEmptyCategories();
+
+        super.notifyDataSetChanged();
+    }
+
+    private void hideEmptyCategories() {
+        categoriesVisible = new ArrayList<>(categories);
+
+        // Remove empty categories
+        if (callback.getFeedlyAccount().showUnreadOnly()) {
+            for (Category category : categories)
+                if (category.getUnreadCount() == 0 && !(category instanceof DefaultCategory))
+                    categoriesVisible.remove(category);
+        }
+        else {
+            for (Category category : categories)
+                if (category.getEntriesCount() == 0 && !(category instanceof DefaultCategory))
+                    categoriesVisible.remove(category);
+        }
+
+        // Update borders
+        for (Category category : categoriesVisible) {
+            if (category.isExpanded())
+                setBorder(categoriesVisible.indexOf(category), true);
+            else
+                setBorder(categoriesVisible.indexOf(category), false);
+        }
+    }
+
+    // Getter-/Setter
     public void setCategories(ArrayList<Category> categories) {
         this.categories = categories;
         notifyDataSetChanged();
+    }
+
+    public ArrayList<Category> getCategories() {
+        return categoriesVisible;
     }
 }
