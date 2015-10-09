@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 
+import com.j256.ormlite.android.apptools.OpenHelperManager;
+
+import ch.unibe.scg.zeeguufeedreader.Database.DatabaseHelper;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyConnectionManager;
 import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
 
@@ -11,6 +14,7 @@ public class DataFragment extends Fragment {
     // Stored data
     private ZeeguuConnectionManager zeeguuConnectionManager;
     private FeedlyConnectionManager feedlyConnectionManager;
+    private DatabaseHelper databaseHelper;
 
     // This method is only called once for this fragment
     @Override
@@ -25,6 +29,7 @@ public class DataFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         zeeguuConnectionManager = new ZeeguuConnectionManager(getActivity());
         feedlyConnectionManager = new FeedlyConnectionManager(getActivity());
+        databaseHelper = getDatabaseHelper();
     }
 
     public void onRestore(Activity activity) {
@@ -39,6 +44,22 @@ public class DataFragment extends Fragment {
             feedlyConnectionManager.onRestore(activity);
         else
             feedlyConnectionManager = new FeedlyConnectionManager(activity);
+
+        // Databasehelper
+        databaseHelper = getDatabaseHelper();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        /*
+		 * Release the database helper when done.
+		 */
+        if (databaseHelper != null) {
+            OpenHelperManager.releaseHelper();
+            databaseHelper = null;
+        }
     }
 
     // Getters and Setters
@@ -46,15 +67,14 @@ public class DataFragment extends Fragment {
         return zeeguuConnectionManager;
     }
 
-    public void setZeeguuConnectionManager(ZeeguuConnectionManager zeeguuConnectionManager) {
-        this.zeeguuConnectionManager = zeeguuConnectionManager;
-    }
-
     public FeedlyConnectionManager getFeedlyConnectionManager() {
         return feedlyConnectionManager;
     }
 
-    public void setFeedlyConnectionManager(FeedlyConnectionManager feedlyConnectionManager) {
-        this.feedlyConnectionManager = feedlyConnectionManager;
+    public DatabaseHelper getDatabaseHelper() {
+        if (databaseHelper == null) {
+            databaseHelper = OpenHelperManager.getHelper(getActivity(), DatabaseHelper.class);
+        }
+        return databaseHelper;
     }
 }

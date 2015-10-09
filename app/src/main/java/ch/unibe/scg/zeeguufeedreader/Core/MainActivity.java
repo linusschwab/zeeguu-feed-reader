@@ -593,7 +593,9 @@ public class MainActivity extends BaseActivity implements
         feedlyAuthenticationFragment.setUrl(url);
 
         CharSequence title = getString(R.string.title_feedly_authentication);
-        switchFragmentBackstack(feedlyAuthenticationFragment, "feedlyAuthentication", title);
+        switchFragment(feedlyAuthenticationFragment, "feedlyAuthentication", title);
+
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
     }
 
     @Override
@@ -607,7 +609,7 @@ public class MainActivity extends BaseActivity implements
         CharSequence title = getString(R.string.title_feed_overview);
         switchFragment(feedOverviewFragment, "feedOverview", title);
 
-        getFeedlyConnectionManager().getCategories();
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
     }
 
     // Messages

@@ -12,8 +12,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import com.j256.ormlite.android.apptools.OpenHelperManager;
-
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -40,12 +38,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
         ZeeguuSettingsFragment.ZeeguuSettingsCallbacks,
         ZeeguuDialogCallbacks {
 
-    /**
-     * Cache the database helper in the class.
-     */
-    private DatabaseHelper databaseHelper = null;
-
-    private DataFragment dataFragment;
+    private static DataFragment dataFragment;
 
     protected Toolbar toolbar;
 
@@ -65,7 +58,6 @@ public abstract class BaseActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        databaseHelper = getDatabaseHelper();
         restoreDataFragment();
 
         // Dialogs
@@ -81,14 +73,16 @@ public abstract class BaseActivity extends AppCompatActivity implements
             // Add the fragment
             dataFragment = new DataFragment();
             addFragment(dataFragment, "data");
-            // Create objects, store in data fragment
-            //dataFragment.setZeeguuConnectionManager(this);
         }
     }
 
     private void restoreDataFragment() {
-        dataFragment = (DataFragment) fragmentManager.findFragmentByTag("data");
-        if (dataFragment != null) dataFragment.onRestore(this);
+        if (dataFragment == null)
+            dataFragment = (DataFragment) fragmentManager.findFragmentByTag("data");
+
+        // Check again, fragmentManager returns null if not found
+        if (dataFragment != null)
+            dataFragment.onRestore(this);
     }
 
     private void createDialogs() {
@@ -111,16 +105,8 @@ public abstract class BaseActivity extends AppCompatActivity implements
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-		/*
-		 * Release the database helper when done.
-		 */
-        if (databaseHelper != null) {
-            OpenHelperManager.releaseHelper();
-            databaseHelper = null;
-        }
+    public DatabaseHelper getDatabaseHelper() {
+        return dataFragment.getDatabaseHelper();
     }
 
     @Override
@@ -147,6 +133,14 @@ public abstract class BaseActivity extends AppCompatActivity implements
                 backStackTitle.push(title);
             }
         }
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+
+        // Make sure that the callback always points to the correct activity
+        restoreDataFragment();
     }
 
     @Override
@@ -278,16 +272,6 @@ public abstract class BaseActivity extends AppCompatActivity implements
         }
     }
 
-    /**
-     * Get the database helper from the manager once per class.
-     */
-    public DatabaseHelper getDatabaseHelper() {
-        if (databaseHelper == null) {
-            databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
-        }
-        return databaseHelper;
-    }
-
     // TODO: Move methods from MainActivity to BaseActivity?
     @Override
     public void setTranslation(String translation) {
@@ -323,5 +307,13 @@ public abstract class BaseActivity extends AppCompatActivity implements
 
     @Override
     public void feedlyAuthenticationResponse(String response, boolean successful) {
+    }
+
+    @Override
+    public void setActionBar(boolean displayBackButton, int actionBarColor) {
+    }
+
+    @Override
+    public void resetActionBar() {
     }
 }

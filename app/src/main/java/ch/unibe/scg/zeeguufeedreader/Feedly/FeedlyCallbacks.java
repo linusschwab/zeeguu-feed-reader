@@ -12,6 +12,9 @@ public interface FeedlyCallbacks {
     void displayMessage(String message);
     void setSubscriptions(ArrayList<Category> categories, boolean update);
 
+    void setActionBar(boolean displayBackButton, int actionBarColor);
+    void resetActionBar();
+
     // Authentication
     void displayFeedlyAuthentication(String url);
     void feedlyAuthenticationResponse(String response, boolean successful);

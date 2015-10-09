@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -116,6 +117,20 @@ public class FeedlyAuthenticationFragment extends Fragment {
             return false;
         } else
             return true;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        callback.setActionBar(true, ContextCompat.getColor(getActivity(), R.color.feedly_green));
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        callback.resetActionBar();
     }
 
     public String getUrl() {

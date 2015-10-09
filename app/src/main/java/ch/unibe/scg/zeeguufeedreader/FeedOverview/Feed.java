@@ -128,7 +128,10 @@ public class Feed {
     }
 
     public ArrayList<FeedEntry> getEntries() {
-        return new ArrayList<>(entries);
+        if (entries != null)
+            return new ArrayList<>(entries);
+        else
+            return new ArrayList<>();
     }
 
     public ArrayList<FeedEntry> getUnreadEntries() {

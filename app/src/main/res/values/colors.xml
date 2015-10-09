@@ -39,4 +39,6 @@
     <color name="action_mode_gray">#303030</color>
     <color name="accent_color_red">#BB2546</color>
     <color name="text_primary">#8A000000</color>
+
+    <color name="feedly_green">#2BB24C</color>
 </resources>

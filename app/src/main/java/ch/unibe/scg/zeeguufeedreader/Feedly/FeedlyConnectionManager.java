@@ -49,12 +49,15 @@ public class FeedlyConnectionManager {
     private Activity activity;
     private FeedlyCallbacks callback;
 
+    private boolean synchronizing;
+
     // Timer to measure synchronization duration
     Timer timer = new Timer();
 
     public FeedlyConnectionManager(Activity activity) {
         this.activity = activity;
         this.account = new FeedlyAccount(activity);
+        synchronizing = false;
 
         // Make sure that the interface is implemented in the container activity
         try {
@@ -89,7 +92,7 @@ public class FeedlyConnectionManager {
         callback.setSubscriptions(account.getCategories(), false);
     }
 
-    private void synchronize() {
+    public void synchronize() {
         Thread thread = new Thread(new Runnable() {
             public void run() {
                 // Get missing information from server
@@ -101,11 +104,17 @@ public class FeedlyConnectionManager {
                     refreshAccessToken();
                 else
                     getCategories();
+
+                synchronizing = true;
             }
         });
 
         thread.setPriority(Thread.MIN_PRIORITY);
         thread.start();
+    }
+
+    private void onSynchronizationFinished() {
+        synchronizing = false;
     }
 
     /**
@@ -170,6 +179,8 @@ public class FeedlyConnectionManager {
                 account.setAccessToken(response.get("access_token"), response.get("access_token_expiration"));
                 account.setUserId(response.get("user_id"));
                 account.saveLoginInformation();
+
+                synchronize();
             }
 
         }, new Response.ErrorListener() {
@@ -443,6 +454,7 @@ public class FeedlyConnectionManager {
                         account.loadCategoryFeed();
 
                         timer.stop();
+                        onSynchronizationFinished();
 
                         // Update UI
                         activity.runOnUiThread(new Runnable() {
@@ -735,6 +747,10 @@ public class FeedlyConnectionManager {
         ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected();
+    }
+
+    public boolean isSynchronizing() {
+        return synchronizing;
     }
 
     private boolean isInputValid(String input) {
