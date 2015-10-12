@@ -45,7 +45,7 @@ public class FeedEntryListActionMode implements ActionMode.Callback {
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
         // Inflate a menu resource providing context menu items
         MenuInflater inflater = mode.getMenuInflater();
-        inflater.inflate(R.menu.feed_entry_list, menu);
+        inflater.inflate(R.menu.feed_entry_list_action_mode, menu);
 
         if (!entry.isRead()) {
             MenuItem read_unread_toggle = menu.findItem(R.id.action_read_unread_toggle);

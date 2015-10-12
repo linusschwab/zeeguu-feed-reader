@@ -99,6 +99,26 @@ public class QueryHelper {
         }
     }
 
+    public int getNumberOfFavoriteEntries() {
+        try {
+            return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder().where().eq("favorite", true).countOf();
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get number of feed entries", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getNumberOfUnreadFavoriteEntries() {
+        try {
+            return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder().where().eq("favorite", true).and().eq("read", false).countOf();
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get number of unread feed entries", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public List<FeedEntry> getLatestReadEntries(long newerThan) {
         try {
             return callback.getDatabaseHelper().getFeedEntryDao().query(buildLatestReadEntriesQuery(newerThan, true));

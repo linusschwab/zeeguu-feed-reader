@@ -224,7 +224,7 @@ public class Feed {
     }
 
     public void decreaseUnreadCount() {
-        unreadCount--;
+        if (unreadCount != 0) unreadCount--;
     }
 
     public int getEntriesCount() {

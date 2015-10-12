@@ -70,7 +70,6 @@ public class FeedlyConnectionManager {
 
         loadUserData();
 
-        timer.start();
         synchronize();
     }
 
@@ -93,8 +92,9 @@ public class FeedlyConnectionManager {
     }
 
     public void synchronize() {
-        Thread thread = new Thread(new Runnable() {
-            public void run() {
+        if (!synchronizing) {
+            Thread thread = new Thread(new Runnable() {
+                public void run() {
                 // Get missing information from server
                 if (!account.isUserLoggedIn())
                     getAuthenticationCode();
@@ -104,13 +104,15 @@ public class FeedlyConnectionManager {
                     refreshAccessToken();
                 else
                     getCategories();
+                }
+            });
 
-                synchronizing = true;
-            }
-        });
+            thread.setPriority(Thread.MIN_PRIORITY);
+            thread.start();
 
-        thread.setPriority(Thread.MIN_PRIORITY);
-        thread.start();
+            synchronizing = true;
+            timer.start();
+        }
     }
 
     private void onSynchronizationFinished() {

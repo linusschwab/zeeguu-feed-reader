@@ -239,6 +239,10 @@ public class FeedEntry implements Comparable<FeedEntry> {
         readUpdate = System.currentTimeMillis();
     }
 
+    public void updateRead(boolean read) {
+        this.read = read;
+    }
+
     public void syncRead(boolean read) {
         if (this.read != read) {
             if (read)

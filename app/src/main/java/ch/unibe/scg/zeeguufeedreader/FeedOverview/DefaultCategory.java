@@ -62,8 +62,16 @@ public class DefaultCategory extends Category {
         this.entries = entries;
     }
 
+    public int getUnreadCount() {
+        return unreadCount;
+    }
+
     public void setUnreadCount(int unreadCount) {
         this.unreadCount = unreadCount;
+    }
+
+    public int getEntriesCount() {
+        return entriesCount;
     }
 
     public void setEntriesCount(int entriesCount) {

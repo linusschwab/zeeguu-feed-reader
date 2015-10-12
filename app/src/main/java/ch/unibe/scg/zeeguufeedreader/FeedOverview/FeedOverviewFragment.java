@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
@@ -22,6 +25,8 @@ public class FeedOverviewFragment extends Fragment {
 
     private ExpandableListView expandableListView;
     private FeedOverviewListAdapter adapter;
+
+    private MenuItem refreshItem;
 
     private FeedOverviewCallbacks callback;
 
@@ -71,7 +76,34 @@ public class FeedOverviewFragment extends Fragment {
             }
         });
 
+        // Specific menu for this fragment
+        setHasOptionsMenu(true);
+
         return mainView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.feed_overview, menu);
+
+        this.refreshItem = menu.findItem(R.id.action_refresh);
+
+        if (callback.getFeedlyConnectionManager().isSynchronizing())
+            callback.animateRefreshButton(menu.findItem(R.id.action_refresh));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                callback.getFeedlyConnectionManager().synchronize();
+                callback.animateRefreshButton(item);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -92,6 +124,23 @@ public class FeedOverviewFragment extends Fragment {
 
     public void setCategories(ArrayList<Category> categories) {
         this.categories = categories;
+    }
+
+    public void updateUnreadCount() {
+        new Thread(new Runnable() {
+            public void run() {
+                for (Category category : categories)
+                    category.getUnreadCount();
+
+                if (isAdded()) {
+                    getActivity().runOnUiThread(new Runnable() {
+                        public void run() {
+                        adapter.notifyDataSetChanged();
+                        }
+                    });
+                }
+            }
+        }).start();
     }
 
     public void notifyDataSetChanged() {
@@ -137,17 +186,15 @@ public class FeedOverviewFragment extends Fragment {
             public void run() {
                 callback.getFeedlyAccount().updateDefaultCategories();
 
-                for (Category category : categories)
-                    category.getUnreadCount();
-
-                if (isAdded()) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        public void run() {
-                            adapter.notifyDataSetChanged();
-                        }
-                    });
-                }
+                updateUnreadCount();
             }
         }).start();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        callback.stopRefreshAnimation(refreshItem);
     }
 }

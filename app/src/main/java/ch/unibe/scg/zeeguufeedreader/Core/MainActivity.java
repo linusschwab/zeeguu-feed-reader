@@ -19,6 +19,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
@@ -309,18 +311,53 @@ public class MainActivity extends BaseActivity implements
         animator.start();
     }
 
+    public void animateRefreshButton(final MenuItem item) {
+        Animation rotationAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_clockwise);
+
+        rotationAnimation.setAnimationListener(
+            new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    supportInvalidateOptionsMenu();
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                    // Stop animation
+                    if (!getFeedlyConnectionManager().isSynchronizing())
+                        stopRefreshAnimation(item);
+                }
+            }
+        );
+
+        rotationAnimation.setRepeatCount(Animation.INFINITE);
+
+        // Start animation
+        if (getFeedlyConnectionManager().isSynchronizing()) {
+            item.setActionView(R.layout.action_view_refresh);
+            View actionView = item.getActionView();
+            if (actionView != null) {
+                actionView.startAnimation(rotationAnimation);
+            }
+        }
+    }
+
+    public void stopRefreshAnimation(MenuItem item) {
+        View actionView = item.getActionView();
+        if (actionView != null) actionView.clearAnimation();
+        item.setActionView(null);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        //if (!navigationDrawerFragment.isDrawerOpen()) {
-            // Only show items in the action bar relevant to this screen
-            // if the drawer is not showing. Otherwise, let the drawer
-            // decide what to show in the action bar.
-        getMenuInflater().inflate(R.menu.global, menu);
-            //restoreActionBar();
-            return true;
-        //}
+        //getMenuInflater().inflate(R.menu.main, menu);
 
-        //return super.onCreateOptionsMenu(menu);
+        return super.onCreateOptionsMenu(menu)
+        //return true;
     }
 
     @Override
@@ -332,12 +369,6 @@ public class MainActivity extends BaseActivity implements
 
         // Drawer Toggle
         if (drawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-
-        // TODO: Remove settings from menu
-        if (id == R.id.action_settings) {
-            //switchFragment(settingsFragment, "settings", getString(R.string.title_settings));
             return true;
         }
 
@@ -435,10 +466,7 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void displayFeedEntryList(Category category, Feed feed) {
         if (category != null) {
-            if (getFeedlyAccount().showUnreadOnly())
-                feedEntryListFragment.setEntries(category.getUnreadEntries());
-            else
-                feedEntryListFragment.setEntries(category.getEntries());
+            feedEntryListFragment.setCategory(category);
             switchFragmentBackstack(feedEntryListFragment, "feedEntryList", category.getName());
         }
         else if (feed != null) {
@@ -476,7 +504,7 @@ public class MainActivity extends BaseActivity implements
                         getCurrentFeedEntryFragment().onPanelExpandend(currentActionBarColor);
                         if (position != 0)
                             getFeedEntryFragment(position-1).setHeaderColor(currentActionBarColor);
-                        if (position != feedEntryListFragment.getCount()-1)
+                        if (position != pagerAdapter.getCount()-1)
                             getFeedEntryFragment(position+1).setHeaderColor(currentActionBarColor);
                     }
                     else if (panelLayout.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED) {
@@ -528,6 +556,8 @@ public class MainActivity extends BaseActivity implements
             public void onPanelCollapsed(View view) {
                 getCurrentFeedEntryFragment().onPanelCollapsed();
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+
+                feedOverviewFragment.updateUnreadCount();
             }
 
             @Override

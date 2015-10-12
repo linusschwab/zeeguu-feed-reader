@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -14,7 +17,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
-import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryFragment;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAccount;
 import ch.unibe.scg.zeeguufeedreader.R;
@@ -26,8 +29,11 @@ public class FeedEntryListFragment extends Fragment implements
     private FeedEntryListAdapter adapter;
 
     private Feed feed;
+    private Category category;
     private ArrayList<FeedEntry> entries = new ArrayList<>();
     private boolean newEntries;
+
+    private MenuItem refreshItem;
 
     private FeedEntryListCallbacks callback;
 
@@ -89,7 +95,37 @@ public class FeedEntryListFragment extends Fragment implements
             }
         });
 
+        // Specific menu for this fragment
+        setHasOptionsMenu(true);
+
         return mainView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.feed_entry_list, menu);
+
+        this.refreshItem = menu.findItem(R.id.action_refresh);
+
+        if (callback.getFeedlyConnectionManager().isSynchronizing())
+            callback.animateRefreshButton(menu.findItem(R.id.action_refresh));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.action_mark_as_read_all:
+                markAllEntriesAsRead();
+                return true;
+            case R.id.action_refresh:
+                callback.getFeedlyConnectionManager().synchronize();
+                callback.animateRefreshButton(item);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -97,9 +133,32 @@ public class FeedEntryListFragment extends Fragment implements
         super.onActivityCreated(savedInstanceState);
 
         updateFeedEntries();
+        updateCategoryEntries();
 
         adapter = new FeedEntryListAdapter(getActivity(), entries);
         listView.setAdapter(adapter);
+    }
+
+    public void setFeed(Feed feed) {
+        this.feed = feed;
+        this.category = null;
+        entries = new ArrayList<>();
+        newEntries = true;
+    }
+
+    public Feed getFeed() {
+        return feed;
+    }
+
+    public void setCategory(Category category) {
+        this.feed = null;
+        this.category = category;
+        entries = new ArrayList<>();
+        newEntries = true;
+    }
+
+    public Category getCategory() {
+        return category;
     }
 
     private void updateFeedEntries() {
@@ -111,20 +170,13 @@ public class FeedEntryListFragment extends Fragment implements
         }
     }
 
-    public void setFeed(Feed feed) {
-        this.feed = feed;
-        entries = new ArrayList<>();
-        newEntries = true;
-    }
-
-    public Feed getFeed() {
-        return feed;
-    }
-
-    public void setEntries(ArrayList<FeedEntry> entries) {
-        this.entries = entries;
-        feed = null;
-        newEntries = true;
+    private void updateCategoryEntries() {
+        if (category != null) {
+            if (callback.getFeedlyAccount().showUnreadOnly())
+                entries = category.getUnreadEntries();
+            else
+                entries = category.getEntries();
+        }
     }
 
     public FeedEntry getEntry(int position) {
@@ -148,6 +200,7 @@ public class FeedEntryListFragment extends Fragment implements
 
             if (entryPager.equals(entryList)) {
                 markEntryAsRead(entryList);
+                entryPager.updateRead(true);
                 updateView(position);
             }
             else {
@@ -184,6 +237,24 @@ public class FeedEntryListFragment extends Fragment implements
         }
     }
 
+    public void markAllEntriesAsRead() {
+        new Thread(new Runnable() {
+            public void run() {
+                if (entries != null && entries.size() != 0)
+                    for (FeedEntry entry : entries)
+                        markEntryAsRead(entry);
+
+                if (isAdded()) {
+                    getActivity().runOnUiThread(new Runnable() {
+                        public void run() {
+                        updateVisibleViews();
+                        }
+                    });
+                }
+            }
+        }).start();
+    }
+
     public void updateView(int position) {
         adapter.notifyDataSetChanged();
         View view = listView.getChildAt(position);
@@ -206,7 +277,8 @@ public class FeedEntryListFragment extends Fragment implements
         // Feed
         updateFeedEntries();
         // Category
-        // TODO: Category
+        updateCategoryEntries();
+        // TODO: DefaultCategory
 
         adapter.setEntries(entries);
         adapter.notifyDataSetChanged();
@@ -257,6 +329,7 @@ public class FeedEntryListFragment extends Fragment implements
             callback.setActionBar(true, feed.getColor());
         else
             callback.setActionBar(true, 0);
+        // TODO: Category color?
     }
 
     @Override
@@ -264,5 +337,6 @@ public class FeedEntryListFragment extends Fragment implements
         super.onStop();
 
         callback.resetActionBar();
+        callback.stopRefreshAnimation(refreshItem);
     }
 }

@@ -86,12 +86,12 @@ public class Tools {
         return Color.argb(alpha, red, green, blue);
     }
 
-    private static int darkenColor(int color, double fraction) {
-        return (int)Math.max(color - (color * fraction), 0);
-    }
-
     private static int lightenColor(int color, double fraction) {
         return (int)Math.min(color + (color * fraction), 255);
+    }
+
+    private static int darkenColor(int color, double fraction) {
+        return (int)Math.max(color - (color * fraction), 0);
     }
 
     private static int setTransparency(double fraction) {

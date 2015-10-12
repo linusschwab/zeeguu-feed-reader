@@ -138,8 +138,11 @@ public class FeedlyAccount {
         all = new DefaultCategory(activity.getResources().getString(R.string.default_category_all));
         favorite = new DefaultCategory(activity.getResources().getString(R.string.default_category_favorite));
 
-        all.setUnreadCount(queryHelper.getNumberOfUnreadEntries());
         all.setEntriesCount(queryHelper.getNumberOfEntries());
+        all.setUnreadCount(queryHelper.getNumberOfUnreadEntries());
+
+        favorite.setEntriesCount(queryHelper.getNumberOfFavoriteEntries());
+        favorite.setUnreadCount(queryHelper.getNumberOfUnreadFavoriteEntries());
 
         //all.setEntries(new ArrayList<>(queryHelper.getAllEntries()));
         //favorite.setEntries(new ArrayList<>(queryHelper.getFavoriteEntries()));
@@ -149,8 +152,11 @@ public class FeedlyAccount {
     }
 
     public void updateDefaultCategories() {
-        all.setUnreadCount(queryHelper.getNumberOfUnreadEntries());
         all.setEntriesCount(queryHelper.getNumberOfEntries());
+        all.setUnreadCount(queryHelper.getNumberOfUnreadEntries());
+
+        favorite.setEntriesCount(queryHelper.getNumberOfFavoriteEntries());
+        favorite.setUnreadCount(queryHelper.getNumberOfUnreadFavoriteEntries());
 
         //all.setEntries(new ArrayList<FeedEntry>(queryHelper.getAllEntries()));
         //favorite.setEntries(new ArrayList<FeedEntry>(queryHelper.getFavoriteEntries()));
