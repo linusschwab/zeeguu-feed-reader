@@ -63,6 +63,43 @@ public class FeedlyResponseParser {
     }
 
     /**
+     * @param json: https://developer.feedly.com/v3/profile/#get-the-profile-of-the-user
+     */
+    public static Map<String, String> parseProfile(JSONObject json) {
+        Map<String, String> profile = new HashMap<>();
+
+        try {
+            String id = json.getString("id");
+            profile.put("id", id);
+
+            String name = "";
+            if (json.has("fullName"))
+                name = json.getString("fullName");
+            else if (json.has("givenName") && json.has("familyName"))
+                name = json.getString("givenName") + " " + json.getString("familyName");
+            profile.put("name", name);
+
+            String email = "";
+            if (json.has("email"))
+                email = json.getString("email");
+            profile.put("email", email);
+
+            String picture = "";
+            if (json.has("picture"))
+                picture = json.getString("picture");
+            profile.put("picture", picture);
+
+            return profile;
+        }
+        catch (JSONException e) {
+            Log.e("feedly_parse_profile", e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    /**
      * @param jsonArray: https://developer.feedly.com/v3/categories/#get-the-list-of-all-categories
      */
     public static ArrayList<Category> parseCategories(JSONArray jsonArray) {

@@ -62,6 +62,20 @@ public class DefaultCategory extends Category {
         this.entries = entries;
     }
 
+    public ArrayList<FeedEntry> getEntries() {
+        return entries;
+    }
+
+    public ArrayList<FeedEntry> getUnreadEntries() {
+        ArrayList<FeedEntry> unreadEntries = new ArrayList<>();
+
+        for (FeedEntry entry : entries)
+            if (!entry.isRead())
+                unreadEntries.add(entry);
+
+        return unreadEntries;
+    }
+
     public int getUnreadCount() {
         return unreadCount;
     }

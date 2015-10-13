@@ -70,7 +70,8 @@ public class FeedlyConnectionManager {
 
         loadUserData();
 
-        synchronize();
+        if (callback.loadBoolean(R.string.pref_feedly_synchronize, true))
+            synchronize();
     }
 
     /**
@@ -89,6 +90,9 @@ public class FeedlyConnectionManager {
         account.loadCategories();
         account.loadFeeds();
         callback.setSubscriptions(account.getCategories(), false);
+
+        if (account.isProfileSet())
+            callback.setAccountHeader(account.getName(), account.getEmail(), account.getPicture());
     }
 
     public void synchronize() {
@@ -102,6 +106,8 @@ public class FeedlyConnectionManager {
                     getAuthenticationToken(account.getAuthenticationCode());
                 else if (account.isAccessTokenExpired())
                     refreshAccessToken();
+                else if (!account.isProfileSet())
+                    getUserProfile();
                 else
                     getCategories();
                 }
@@ -182,6 +188,7 @@ public class FeedlyConnectionManager {
                 account.setUserId(response.get("user_id"));
                 account.saveLoginInformation();
 
+                synchronizing = false;
                 synchronize();
             }
 
@@ -228,6 +235,7 @@ public class FeedlyConnectionManager {
                 account.setAccessToken(response.get("access_token"), response.get("access_token_expiration"));
                 account.saveLoginInformation();
 
+                synchronizing = false;
                 synchronize();
             }
         }, new Response.ErrorListener() {
@@ -283,6 +291,62 @@ public class FeedlyConnectionManager {
                 Log.e("feedly_revoke_token", FeedlyResponseParser.parseErrorMessage(error));
             }
         }) {
+        };
+
+        queue.add(request);
+    }
+
+    /**
+     * Get the Feedly profile of the user
+     *
+     * GET /v3/profile
+     */
+    public void getUserProfile() {
+        if (!isNetworkAvailable())
+            return; // ignore here
+
+        String url = URL + "/v3/profile";
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET,
+                url, null, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(final JSONObject json) {
+                Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        Map<String, String> profile = FeedlyResponseParser.parseProfile(json);
+
+                        if (profile != null) {
+                            account.setUserId(profile.get("id"));
+                            account.setEmail(profile.get("email"));
+                            account.setName(profile.get("name"));
+                            getPicture(profile.get("picture"));
+                        }
+
+                        account.saveLoginInformation();
+
+                        getCategories();
+                    }
+                });
+
+                thread.setPriority(Thread.MIN_PRIORITY);
+                thread.start();
+            }
+
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("feedly_get_profile", FeedlyResponseParser.parseErrorMessage(error));
+            }
+
+        }) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return authorizationHeader();
+            }
+
         };
 
         queue.add(request);
@@ -696,6 +760,9 @@ public class FeedlyConnectionManager {
         }
     }
 
+    /**
+     * Gets the favicon, either from the feed url directly or from Google
+     */
     public void getFavicon(final Feed feed, final boolean direct) {
         String url = feed.getUrl();
         String faviconUrl;
@@ -713,9 +780,16 @@ public class FeedlyConnectionManager {
         ImageRequest request = new ImageRequest(faviconUrl, new Response.Listener<Bitmap>() {
 
             @Override
-            public void onResponse(Bitmap response) {
-                feed.setFavicon(response);
-                account.saveFeed(feed);
+            public void onResponse(final Bitmap response) {
+                Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        feed.setFavicon(response);
+                        account.saveFeed(feed);
+                    }
+                });
+
+                thread.setPriority(Thread.MIN_PRIORITY);
+                thread.start();
             }
 
         }, 128, 128, ImageView.ScaleType.CENTER, Bitmap.Config.ALPHA_8, new Response.ErrorListener() {
@@ -727,6 +801,44 @@ public class FeedlyConnectionManager {
                     getFavicon(feed, false);
                 else
                     Log.e("feedly_get_favicon", error.toString());
+            }
+
+        });
+
+        queue.add(request);
+    }
+
+    /**
+     * Gets the Feedly profile picture
+     */
+    public void getPicture(String url) {
+
+        ImageRequest request = new ImageRequest(url, new Response.Listener<Bitmap>() {
+
+            @Override
+            public void onResponse(final Bitmap response) {
+                Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        account.setPicture(response);
+                        account.saveLoginInformation();
+
+                        activity.runOnUiThread(new Runnable() {
+                            public void run() {
+                                callback.setAccountHeader(account.getName(), account.getEmail(), account.getPicture());
+                            }
+                        });
+                    }
+                });
+
+                thread.setPriority(Thread.MIN_PRIORITY);
+                thread.start();
+            }
+
+        }, 512, 512, ImageView.ScaleType.CENTER, Bitmap.Config.ALPHA_8, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("feedly_get_picture", error.toString());
             }
 
         });

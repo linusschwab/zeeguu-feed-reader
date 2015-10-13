@@ -278,7 +278,6 @@ public class FeedEntryListFragment extends Fragment implements
         updateFeedEntries();
         // Category
         updateCategoryEntries();
-        // TODO: DefaultCategory
 
         adapter.setEntries(entries);
         adapter.notifyDataSetChanged();

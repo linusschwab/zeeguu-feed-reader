@@ -3,8 +3,13 @@
     <ch.unibe.scg.zeeguufeedreader.Preferences.PreferenceCategoryCustom
         android:title="@string/settings_feedly_title">
         <Preference
-            android:key="pref_feedly_account"
+            android:key="@string/pref_feedly_account"
             android:title="@string/settings_feedly_account_title"
             android:summary="@string/settings_feedly_account_summary" />
+        <CheckBoxPreference
+            android:key="@string/pref_feedly_synchronize"
+            android:title="@string/settings_feedly_synchronize_title"
+            android:summary="@string/settings_feedly_synchronize_summary"
+            android:defaultValue="true" />
     </ch.unibe.scg.zeeguufeedreader.Preferences.PreferenceCategoryCustom>
 </PreferenceScreen>

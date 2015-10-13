@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -315,5 +316,9 @@ public abstract class BaseActivity extends AppCompatActivity implements
 
     @Override
     public void resetActionBar() {
+    }
+
+    @Override
+    public void setAccountHeader(String name, String email, Bitmap picture) {
     }
 }

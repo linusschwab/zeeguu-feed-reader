@@ -61,7 +61,8 @@ public class QueryHelper {
 
     public List<FeedEntry> getAllEntries() {
         try {
-            return callback.getDatabaseHelper().getFeedEntryDao().queryForAll();
+            return callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
+                    .orderBy("date", false).query();
         }
         catch (SQLException e) {
             Log.e(QueryHelper.class.getName(), "Can't get all feed entries", e);
@@ -81,7 +82,8 @@ public class QueryHelper {
 
     public int getNumberOfUnreadEntries() {
         try {
-            return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder().where().eq("read", false).countOf();
+            return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
+                    .where().eq("read", false).countOf();
         }
         catch (SQLException e) {
             Log.e(QueryHelper.class.getName(), "Can't get number of unread feed entries", e);
@@ -91,7 +93,8 @@ public class QueryHelper {
 
     public List<FeedEntry> getFavoriteEntries() {
         try {
-            return callback.getDatabaseHelper().getFeedEntryDao().queryForEq("favorite", true);
+            return callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
+                    .orderBy("date", false).where().eq("favorite", true).query();
         }
         catch (SQLException e) {
             Log.e(QueryHelper.class.getName(), "Can't get favorite feed entries", e);
@@ -101,7 +104,8 @@ public class QueryHelper {
 
     public int getNumberOfFavoriteEntries() {
         try {
-            return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder().where().eq("favorite", true).countOf();
+            return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
+                    .where().eq("favorite", true).countOf();
         }
         catch (SQLException e) {
             Log.e(QueryHelper.class.getName(), "Can't get number of feed entries", e);
@@ -111,7 +115,8 @@ public class QueryHelper {
 
     public int getNumberOfUnreadFavoriteEntries() {
         try {
-            return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder().where().eq("favorite", true).and().eq("read", false).countOf();
+            return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
+                    .where().eq("favorite", true).and().eq("read", false).countOf();
         }
         catch (SQLException e) {
             Log.e(QueryHelper.class.getName(), "Can't get number of unread feed entries", e);

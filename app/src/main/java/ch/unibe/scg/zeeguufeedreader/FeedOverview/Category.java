@@ -181,7 +181,7 @@ public class Category {
     }
 
 
-    public void updateEntries() {
+    private void updateEntries() {
         entries = new ArrayList<>();
         for (Feed feed : feeds)
             entries.addAll(feed.getEntries());

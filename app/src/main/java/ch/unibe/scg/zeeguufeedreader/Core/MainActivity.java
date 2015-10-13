@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.support.design.widget.Snackbar;
@@ -72,6 +73,7 @@ public class MainActivity extends BaseActivity implements
     private Drawer drawer;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
+    private AccountHeader accountHeader;
 
     // Layout
     private SlidingUpPanelLayout panelLayout;
@@ -138,10 +140,9 @@ public class MainActivity extends BaseActivity implements
         ActionBar actionBar = getSupportActionBar();
 
         // Header
-        AccountHeader accountHeader = new AccountHeaderBuilder()
+        accountHeader = new AccountHeaderBuilder()
                 .withActivity(this)
                 .withHeaderBackground(R.color.zeeguu_red)
-                .addProfiles(new ProfileDrawerItem().withName("Test User").withEmail("test@test.de"))
                 .withSelectionListEnabled(false)
                 .build();
 
@@ -223,6 +224,11 @@ public class MainActivity extends BaseActivity implements
                 }
             });
         }
+    }
+
+    public void setAccountHeader(String name, String email, Bitmap picture) {
+        accountHeader.addProfiles(new ProfileDrawerItem().withName(name).withEmail(email).withIcon(picture));
+        drawer.setHeader(accountHeader.getView());
     }
 
     private boolean selectDrawerItem(View view, int position, IDrawerItem iDrawerItem) {
@@ -356,7 +362,7 @@ public class MainActivity extends BaseActivity implements
     public boolean onCreateOptionsMenu(Menu menu) {
         //getMenuInflater().inflate(R.menu.main, menu);
 
-        return super.onCreateOptionsMenu(menu)
+        return super.onCreateOptionsMenu(menu);
         //return true;
     }
 

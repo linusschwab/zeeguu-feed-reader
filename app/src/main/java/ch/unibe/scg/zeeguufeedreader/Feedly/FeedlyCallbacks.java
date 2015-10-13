@@ -1,5 +1,7 @@
 package ch.unibe.scg.zeeguufeedreader.Feedly;
 
+import android.graphics.Bitmap;
+
 import java.util.ArrayList;
 
 import ch.unibe.scg.zeeguufeedreader.Database.DatabaseHelper;
@@ -14,6 +16,8 @@ public interface FeedlyCallbacks {
 
     void setActionBar(boolean displayBackButton, int actionBarColor);
     void resetActionBar();
+
+    void setAccountHeader(String name, String email, Bitmap picture);
 
     // Authentication
     void displayFeedlyAuthentication(String url);

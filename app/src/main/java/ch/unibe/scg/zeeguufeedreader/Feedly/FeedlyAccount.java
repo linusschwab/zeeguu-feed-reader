@@ -1,6 +1,8 @@
 package ch.unibe.scg.zeeguufeedreader.Feedly;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.util.Base64;
 import android.util.Log;
 
 import com.j256.ormlite.dao.Dao;
@@ -10,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import ch.unibe.scg.zeeguufeedreader.Core.Tools;
 import ch.unibe.scg.zeeguufeedreader.Database.CategoryFeed;
 import ch.unibe.scg.zeeguufeedreader.Database.QueryHelper;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
@@ -29,6 +32,8 @@ public class FeedlyAccount {
     // User Information
     private String email;
     private String userId;
+    private String name;
+    private String picture;
 
     private String authenticationCode;
     private String refreshToken;
@@ -94,6 +99,8 @@ public class FeedlyAccount {
     public void saveLoginInformation() {
         callback.saveString(R.string.pref_feedly_email, email);
         callback.saveString(R.string.pref_feedly_user_id, userId);
+        callback.saveString(R.string.pref_feedly_name, name);
+        callback.saveString(R.string.pref_feedly_picture, picture);
         callback.saveString(R.string.pref_feedly_authentication_code, authenticationCode);
         callback.saveString(R.string.pref_feedly_refresh_token, refreshToken);
         callback.saveString(R.string.pref_feedly_access_token, accessToken);
@@ -103,6 +110,8 @@ public class FeedlyAccount {
     public void load() {
         email = callback.loadString(R.string.pref_feedly_email);
         userId = callback.loadString(R.string.pref_feedly_user_id);
+        name = callback.loadString(R.string.pref_feedly_name);
+        picture = callback.loadString(R.string.pref_feedly_picture);
         authenticationCode = callback.loadString(R.string.pref_feedly_authentication_code);
         refreshToken = callback.loadString(R.string.pref_feedly_refresh_token);
         accessToken = callback.loadString(R.string.pref_feedly_access_token);
@@ -115,6 +124,8 @@ public class FeedlyAccount {
         // Delete variables
         email = "";
         userId = "";
+        name = "";
+        picture = "";
         authenticationCode = "";
         refreshToken = "";
         accessToken = "";
@@ -125,6 +136,8 @@ public class FeedlyAccount {
         // Delete shared preferences
         callback.saveString(R.string.pref_feedly_email, "");
         callback.saveString(R.string.pref_feedly_user_id, "");
+        callback.saveString(R.string.pref_feedly_name, "");
+        callback.saveString(R.string.pref_feedly_picture, "");
         callback.saveString(R.string.pref_feedly_authentication_code, "");
         callback.saveString(R.string.pref_feedly_refresh_token, "");
         callback.saveString(R.string.pref_feedly_access_token, "");
@@ -138,14 +151,13 @@ public class FeedlyAccount {
         all = new DefaultCategory(activity.getResources().getString(R.string.default_category_all));
         favorite = new DefaultCategory(activity.getResources().getString(R.string.default_category_favorite));
 
+        updateDefaultCategoryEntries();
+
         all.setEntriesCount(queryHelper.getNumberOfEntries());
         all.setUnreadCount(queryHelper.getNumberOfUnreadEntries());
 
         favorite.setEntriesCount(queryHelper.getNumberOfFavoriteEntries());
         favorite.setUnreadCount(queryHelper.getNumberOfUnreadFavoriteEntries());
-
-        //all.setEntries(new ArrayList<>(queryHelper.getAllEntries()));
-        //favorite.setEntries(new ArrayList<>(queryHelper.getFavoriteEntries()));
 
         categories.add(0, all);
         categories.add(1, favorite);
@@ -158,8 +170,19 @@ public class FeedlyAccount {
         favorite.setEntriesCount(queryHelper.getNumberOfFavoriteEntries());
         favorite.setUnreadCount(queryHelper.getNumberOfUnreadFavoriteEntries());
 
-        //all.setEntries(new ArrayList<FeedEntry>(queryHelper.getAllEntries()));
-        //favorite.setEntries(new ArrayList<FeedEntry>(queryHelper.getFavoriteEntries()));
+        updateDefaultCategoryEntries();
+    }
+
+    public void updateDefaultCategoryEntries() {
+        Thread thread = new Thread(new Runnable() {
+            public void run() {
+                all.setEntries(new ArrayList<>(queryHelper.getAllEntries()));
+                favorite.setEntries(new ArrayList<>(queryHelper.getFavoriteEntries()));
+            }
+        });
+
+        thread.setPriority(Thread.MIN_PRIORITY);
+        thread.start();
     }
 
     // Database Methods
@@ -466,6 +489,10 @@ public class FeedlyAccount {
         return currentTime > expirationTime;
     }
 
+    public boolean isProfileSet() {
+        return !userId.equals("") && !picture.equals("");
+    }
+
     public boolean showUnreadOnly() {
         return callback.loadBoolean(R.string.pref_feedly_show_unread_only, true);
     }
@@ -477,6 +504,32 @@ public class FeedlyAccount {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Bitmap getPicture() {
+        // Decode Base64 image String
+        return Tools.byteArrayToBitmap(Base64.decode(picture.getBytes(), Base64.DEFAULT));
+    }
+
+    public void setPicture(Bitmap picture) {
+        // Encode picture as Base64 string to be able to save in shared preferences
+        this.picture = Base64.encodeToString(Tools.bitmapToByteArray(picture), Base64.DEFAULT);
     }
 
     public String getAuthenticationCode() {
