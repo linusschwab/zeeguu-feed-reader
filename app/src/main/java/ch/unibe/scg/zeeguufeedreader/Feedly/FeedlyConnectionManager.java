@@ -39,7 +39,7 @@ import ch.unibe.scg.zeeguufeedreader.R;
 public class FeedlyConnectionManager {
 
     private final String URL = "https://sandbox.feedly.com";
-    private final String redirectUri = "http://localhost";
+    private final String redirectUri = "https://localhost";
 
     private final String clientId = "sandbox";
     private final String clientSecret = "L5L3EBB9XMVLA8OETMO3"; // (expires on December 1st 2015)
@@ -123,6 +123,20 @@ public class FeedlyConnectionManager {
 
     private void onSynchronizationFinished() {
         synchronizing = false;
+        timer.stop();
+
+        // Update UI
+        activity.runOnUiThread(new Runnable() {
+            public void run() {
+                callback.setSubscriptions(account.getCategories(), true);
+                callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated) + " (" + timer.getTimeElapsed() + ")");
+            }
+        });
+    }
+
+    private void onSynchronizationAborted() {
+        synchronizing = false;
+        timer.stop();
     }
 
     /**
@@ -158,10 +172,14 @@ public class FeedlyConnectionManager {
      * POST /v3/auth/token
      */
     public void getAuthenticationToken(String authenticationCode) {
-        if (!isNetworkAvailable())
-            return; // ignore here
-        if (!isInputValid(authenticationCode))
+        if (!isNetworkAvailable()) {
+            onSynchronizationAborted();
             return;
+        }
+        if (!isInputValid(authenticationCode)) {
+            onSynchronizationAborted();
+            return;
+        }
 
         String url = URL + "/v3/auth/token";
 
@@ -197,6 +215,7 @@ public class FeedlyConnectionManager {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e("feedly_get__token", FeedlyResponseParser.parseErrorMessage(error));
+                onSynchronizationAborted();
             }
 
         }) {
@@ -211,8 +230,10 @@ public class FeedlyConnectionManager {
      * POST /v3/auth/token
      */
     public void refreshAccessToken() {
-        if (!isNetworkAvailable())
-            return; // ignore here
+        if (!isNetworkAvailable()) {
+            onSynchronizationAborted();
+            return;
+        }
 
         String url = URL + "/v3/auth/token";
 
@@ -243,6 +264,7 @@ public class FeedlyConnectionManager {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e("feedly_refresh_token", FeedlyResponseParser.parseErrorMessage(error));
+                onSynchronizationAborted();
             }
         }) {
         };
@@ -302,8 +324,10 @@ public class FeedlyConnectionManager {
      * GET /v3/profile
      */
     public void getUserProfile() {
-        if (!isNetworkAvailable())
-            return; // ignore here
+        if (!isNetworkAvailable()) {
+            onSynchronizationAborted();
+            return;
+        }
 
         String url = URL + "/v3/profile";
 
@@ -338,6 +362,7 @@ public class FeedlyConnectionManager {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e("feedly_get_profile", FeedlyResponseParser.parseErrorMessage(error));
+                onSynchronizationAborted();
             }
 
         }) {
@@ -358,8 +383,10 @@ public class FeedlyConnectionManager {
      * GET /v3/categories
      */
     public void getCategories() {
-        if (!isNetworkAvailable())
-            return; // ignore here
+        if (!isNetworkAvailable()) {
+            onSynchronizationAborted();
+            return;
+        }
 
         String url = URL + "/v3/categories";
 
@@ -387,6 +414,7 @@ public class FeedlyConnectionManager {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e("feedly_get_categories", FeedlyResponseParser.parseErrorMessage(error));
+                onSynchronizationAborted();
             }
 
         }) {
@@ -406,8 +434,10 @@ public class FeedlyConnectionManager {
      * GET /v3/subscriptions
      */
     public void getSubscriptions() {
-        if (!isNetworkAvailable())
-            return; // ignore here
+        if (!isNetworkAvailable()) {
+            onSynchronizationAborted();
+            return;
+        }
 
         String url = URL + "/v3/subscriptions";
 
@@ -436,6 +466,7 @@ public class FeedlyConnectionManager {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e("feedly_get_feeds", FeedlyResponseParser.parseErrorMessage(error));
+                onSynchronizationAborted();
             }
 
         }) {
@@ -456,8 +487,10 @@ public class FeedlyConnectionManager {
      * GET /v3/streams/contents?streamId=streamId
      */
     public void getFeedEntries(final Feed feed, int count) {
-        if (!isNetworkAvailable())
-            return; // ignore here
+        if (!isNetworkAvailable()) {
+            onSynchronizationAborted();
+            return;
+        }
         if (count > 1000)
             count = 1000;
 
@@ -480,6 +513,7 @@ public class FeedlyConnectionManager {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e("feedly_get_all_entries", FeedlyResponseParser.parseErrorMessage(error));
+                onSynchronizationAborted();
             }
 
         });
@@ -493,8 +527,10 @@ public class FeedlyConnectionManager {
      * GET /v3/streams/contents?streamId=streamId
      */
     public void getAllFeedEntries(int count) {
-        if (!isNetworkAvailable())
-            return; // ignore here
+        if (!isNetworkAvailable()) {
+            onSynchronizationAborted();
+            return;
+        }
         if (count > 1000) // TODO: Multiple API calls if more than 1000
             count = 1000;
 
@@ -519,16 +555,7 @@ public class FeedlyConnectionManager {
 
                         account.loadCategoryFeed();
 
-                        timer.stop();
                         onSynchronizationFinished();
-
-                        // Update UI
-                        activity.runOnUiThread(new Runnable() {
-                            public void run() {
-                                callback.setSubscriptions(account.getCategories(), true);
-                                callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated) + " (" + timer.getTimeElapsed() + ")");
-                            }
-                        });
                     }
                 });
 
@@ -541,6 +568,7 @@ public class FeedlyConnectionManager {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e("feedly_get_feed_entries", FeedlyResponseParser.parseErrorMessage(error));
+                onSynchronizationAborted();
             }
 
         }) {
@@ -560,8 +588,10 @@ public class FeedlyConnectionManager {
      * GET /v3/markers/reads
      */
     public void getLatestReadOperations(long newerThan) {
-        if (!isNetworkAvailable())
-            return; // ignore here
+        if (!isNetworkAvailable()) {
+            onSynchronizationAborted();
+            return;
+        }
 
         String url = URL + "/v3/markers/reads" + "?newerThan=" + newerThan;
 
@@ -595,6 +625,7 @@ public class FeedlyConnectionManager {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e("feedly_get_latest_reads", FeedlyResponseParser.parseErrorMessage(error));
+                onSynchronizationAborted();
             }
 
         }) {
@@ -615,8 +646,10 @@ public class FeedlyConnectionManager {
      * GET /v3/markers/tags
      */
     public void getLatestTags(long newerThan) {
-        if (!isNetworkAvailable())
-            return; // ignore here
+        if (!isNetworkAvailable()) {
+            onSynchronizationAborted();
+            return;
+        }
 
         String url = URL + "/v3/markers/tags" + "?newerThan=" + newerThan;
 
@@ -647,6 +680,7 @@ public class FeedlyConnectionManager {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e("feedly_get_latest_tags", FeedlyResponseParser.parseErrorMessage(error));
+                onSynchronizationAborted();
             }
 
         }) {
@@ -683,8 +717,10 @@ public class FeedlyConnectionManager {
      * POST /v3/markers
      */
     private void markEntriesAs(final String action, final ArrayList<FeedEntry> entries) {
-        if (!isNetworkAvailable())
-            return; // ignore here
+        if (!isNetworkAvailable()) {
+            onSynchronizationAborted();
+            return;
+        }
 
         String url = URL + "/v3/markers";
 
@@ -710,6 +746,7 @@ public class FeedlyConnectionManager {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e("feedly_mark_as", FeedlyResponseParser.parseErrorMessage(error));
+                onSynchronizationAborted();
             }
 
         }) {
@@ -863,12 +900,12 @@ public class FeedlyConnectionManager {
         return activeNetwork != null && activeNetwork.isConnected();
     }
 
-    public boolean isSynchronizing() {
-        return synchronizing;
-    }
-
     private boolean isInputValid(String input) {
         return !(input == null || input.trim().equals(""));
+    }
+
+    public boolean isSynchronizing() {
+        return synchronizing;
     }
 
     // Getter/Setter
