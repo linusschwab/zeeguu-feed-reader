@@ -6,6 +6,7 @@
     <string name="settings_feedly_account_title">Account</string>
     <string name="settings_feedly_account_summary">Not logged in</string>
     <string name="settings_feedly_account_login">Logged in as</string>
+    <string name="settings_feedly_account_logged">Logged in</string>
     <string name="settings_feedly_synchronize_title">Synchronization</string>
     <string name="settings_feedly_synchronize_summary">Synchronize on app start</string>
 

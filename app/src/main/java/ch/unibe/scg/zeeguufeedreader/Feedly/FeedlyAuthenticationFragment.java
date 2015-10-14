@@ -68,7 +68,8 @@ public class FeedlyAuthenticationFragment extends Fragment {
         webView.loadUrl(url);
         webView.setHorizontalScrollBarEnabled(false);
         webView.setWebViewClient(new WebViewClient() {
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            @Override
+            public void onPageFinished(WebView view, String url) {
                 // Check if the current url is the callback url
                 String parameterCode = "?code=";
                 String parameterError = "?error=";
@@ -79,8 +80,6 @@ public class FeedlyAuthenticationFragment extends Fragment {
                 int end = url.indexOf(parameterState);
 
                 if (start > -1) {
-                    webView.stopLoading();
-
                     // Get the code parameter
                     String code;
                     if (end > -1)
@@ -91,8 +90,6 @@ public class FeedlyAuthenticationFragment extends Fragment {
                     callback.feedlyAuthenticationResponse(code, true);
                 }
                 else if (startError > -1) {
-                    webView.stopLoading();
-
                     // Get the code parameter
                     String error;
                     if (end > -1)
@@ -102,6 +99,8 @@ public class FeedlyAuthenticationFragment extends Fragment {
 
                     callback.feedlyAuthenticationResponse(error, true);
                 }
+
+                super.onPageFinished(view, url);
             }
         });
     }

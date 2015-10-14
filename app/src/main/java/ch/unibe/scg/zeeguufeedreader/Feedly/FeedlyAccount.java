@@ -490,7 +490,7 @@ public class FeedlyAccount {
     }
 
     public boolean isProfileSet() {
-        return !userId.equals("") && !picture.equals("");
+        return !userId.equals("");
     }
 
     public boolean showUnreadOnly() {

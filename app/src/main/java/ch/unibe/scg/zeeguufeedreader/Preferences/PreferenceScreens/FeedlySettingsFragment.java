@@ -26,8 +26,15 @@ public class FeedlySettingsFragment extends BaseSettingsFragment {
 
     private void updateAccount() {
         String email = sharedPref.getString(getString(R.string.pref_feedly_email), "");
+        String name = sharedPref.getString(getString(R.string.pref_feedly_name), "");
+        String id = sharedPref.getString(getString(R.string.pref_feedly_user_id), "");
+
         if (!email.equals("") && isAdded())
             feedlyAccount.setSummary(getString(R.string.settings_feedly_account_login) + " " + email);
+        else if (!name.equals("") && isAdded())
+            feedlyAccount.setSummary(getString(R.string.settings_feedly_account_login) + " " + name);
+        else if (!id.equals("") && isAdded())
+            feedlyAccount.setSummary(getString(R.string.settings_feedly_account_logged));
         else
             feedlyAccount.setSummary(R.string.settings_feedly_account_summary);
     }

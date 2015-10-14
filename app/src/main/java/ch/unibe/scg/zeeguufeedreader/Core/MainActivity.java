@@ -227,7 +227,10 @@ public class MainActivity extends BaseActivity implements
     }
 
     public void setAccountHeader(String name, String email, Bitmap picture) {
-        accountHeader.addProfiles(new ProfileDrawerItem().withName(name).withEmail(email).withIcon(picture));
+        if (picture != null)
+            accountHeader.addProfiles(new ProfileDrawerItem().withName(name).withEmail(email).withIcon(picture));
+        else
+            accountHeader.addProfiles(new ProfileDrawerItem().withName(name).withEmail(email));
         drawer.setHeader(accountHeader.getView());
     }
 

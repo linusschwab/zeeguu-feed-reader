@@ -185,7 +185,9 @@ public class FeedEntryListFragment extends Fragment implements
 
     public boolean hasEntries() {
         if (feed != null)
-            return feed.getUnreadEntries().size() != 0;
+            return feed.getEntriesCount() != 0;
+        else if (category != null)
+            return category.getEntriesCount() != 0;
         else
             return entries != null && entries.size() != 0;
     }
