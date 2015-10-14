@@ -490,7 +490,7 @@ public class FeedlyAccount {
     }
 
     public boolean isProfileSet() {
-        return !userId.equals("");
+        return !userId.equals("") && (!picture.equals("") || !email.equals("") || !name.equals(""));
     }
 
     public boolean showUnreadOnly() {

@@ -344,7 +344,16 @@ public class FeedlyConnectionManager {
                             account.setUserId(profile.get("id"));
                             account.setEmail(profile.get("email"));
                             account.setName(profile.get("name"));
-                            getPicture(profile.get("picture"));
+
+                            if (!profile.get("picture").equals(""))
+                                getPicture(profile.get("picture"));
+                            else {
+                                activity.runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        callback.setAccountHeader(account.getName(), account.getEmail(), account.getPicture());
+                                    }
+                                });
+                            }
                         }
 
                         account.saveLoginInformation();
@@ -861,7 +870,7 @@ public class FeedlyConnectionManager {
 
                         activity.runOnUiThread(new Runnable() {
                             public void run() {
-                                callback.setAccountHeader(account.getName(), account.getEmail(), account.getPicture());
+                            callback.setAccountHeader(account.getName(), account.getEmail(), account.getPicture());
                             }
                         });
                     }
