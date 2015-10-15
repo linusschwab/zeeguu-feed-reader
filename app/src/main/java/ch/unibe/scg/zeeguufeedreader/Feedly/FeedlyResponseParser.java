@@ -255,9 +255,11 @@ public class FeedlyResponseParser {
                 for (int i=0; i < jsonArray.length(); i++) {
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
                     Feed feed = account.getFeedById(jsonObject.getString("id"));
-                    feed.setReadEntriesDate(jsonObject.getLong("asOf"));
 
-                    feeds.add(feed);
+                    if (feed != null) {
+                        feed.setReadEntriesDate(jsonObject.getLong("asOf"));
+                        feeds.add(feed);
+                    }
                 }
             }
         }
