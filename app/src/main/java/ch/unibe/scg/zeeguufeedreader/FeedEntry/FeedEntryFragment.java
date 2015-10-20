@@ -156,6 +156,12 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
     }
 
     @Override
+    public void submitContext() {
+        if (isFeedEntry) setUrl(entry.getUrl());
+        super.submitContext();
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         webView.saveState(savedInstanceState);
     }
