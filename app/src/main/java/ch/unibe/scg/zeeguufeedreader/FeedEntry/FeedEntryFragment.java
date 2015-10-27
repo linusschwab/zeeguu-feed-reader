@@ -246,21 +246,25 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
     }
 
     public void onPanelExpandend(int color) {
-        // Set panel color
-        panelHeader.setBackgroundColor(Tools.transparency(color, 0.9));
+        if (panelHeader != null) {
+            // Set panel color
+            panelHeader.setBackgroundColor(Tools.transparency(color, 0.9));
 
-        // Set text color
-        panelEntryTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
-        panelFeedTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
+            // Set text color
+            panelEntryTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
+            panelFeedTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.white));
+        }
     }
 
     public void onPanelCollapsed() {
-        // Set panel color
-        panelHeader.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
+        if (panelHeader != null) {
+            // Set panel color
+            panelHeader.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.white));
 
-        // Set text color
-        panelEntryTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.text_primary));
-        panelFeedTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.text_primary));
+            // Set text color
+            panelEntryTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.text_primary));
+            panelFeedTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.text_primary));
+        }
     }
 
     public int getPosition() {

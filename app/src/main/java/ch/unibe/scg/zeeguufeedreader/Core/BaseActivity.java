@@ -44,6 +44,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
     protected Toolbar toolbar;
 
     private Stack<CharSequence> backStackTitle = new Stack<>();
+    protected String currentFragmentTag;
 
     protected FragmentManager fragmentManager = getFragmentManager();
     protected SharedPreferences sharedPref;
@@ -118,6 +119,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
         // killed and restarted.
         savedInstanceState.putCharSequence("title", getTitle());
         savedInstanceState.putCharSequenceArrayList("backStackTitle", new ArrayList<CharSequence>(backStackTitle));
+        savedInstanceState.putString("currentFragment", currentFragmentTag);
     }
 
     @Override
@@ -134,6 +136,8 @@ public abstract class BaseActivity extends AppCompatActivity implements
                 backStackTitle.push(title);
             }
         }
+
+        currentFragmentTag = savedInstanceState.getString("currentFragment");
     }
 
     @Override
@@ -164,6 +168,8 @@ public abstract class BaseActivity extends AppCompatActivity implements
                 .replace(R.id.content, fragment, tag)
                 .commit();
 
+        currentFragmentTag = tag;
+
         setTitle(title);
     }
 
@@ -172,6 +178,8 @@ public abstract class BaseActivity extends AppCompatActivity implements
                 .replace(R.id.content, fragment, tag)
                 .addToBackStack(tag)
                 .commit();
+
+        currentFragmentTag = tag;
 
         backStackTitle.push(getTitle());
         setTitle(title);

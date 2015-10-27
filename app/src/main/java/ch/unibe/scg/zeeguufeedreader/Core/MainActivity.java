@@ -3,6 +3,7 @@ package ch.unibe.scg.zeeguufeedreader.Core;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.app.Fragment;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -227,11 +228,13 @@ public class MainActivity extends BaseActivity implements
     }
 
     public void setAccountHeader(String name, String email, Bitmap picture) {
-        if (picture != null)
-            accountHeader.addProfiles(new ProfileDrawerItem().withName(name).withEmail(email).withIcon(picture));
-        else
-            accountHeader.addProfiles(new ProfileDrawerItem().withName(name).withEmail(email));
-        drawer.setHeader(accountHeader.getView());
+        if (accountHeader != null) {
+            if (picture != null)
+                accountHeader.addProfiles(new ProfileDrawerItem().withName(name).withEmail(email).withIcon(picture));
+            else
+                accountHeader.addProfiles(new ProfileDrawerItem().withName(name).withEmail(email));
+            drawer.setHeader(accountHeader.getView());
+        }
     }
 
     private boolean selectDrawerItem(View view, int position, IDrawerItem iDrawerItem) {
