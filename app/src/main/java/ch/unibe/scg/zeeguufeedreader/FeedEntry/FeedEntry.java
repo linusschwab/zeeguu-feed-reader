@@ -64,6 +64,12 @@ public class FeedEntry implements Comparable<FeedEntry> {
     @DatabaseField(columnName = "favorite_update")
     private long favoriteUpdate;
 
+    @DatabaseField(columnName = "zeeguu_difficulty")
+    private Float difficulty;
+
+    @DatabaseField(columnName = "zeeguu_learnability")
+    private Float learnability;
+
     public FeedEntry() {
         // Empty constructor needed by ormlite
     }
@@ -72,6 +78,7 @@ public class FeedEntry implements Comparable<FeedEntry> {
     public FeedEntry(String title, String content, String url, String author, boolean unread, long timestamp) {
         this.title = title;
         this.content = content;
+        this.summary = createSummaryFromContent();
         this.url = url;
         this.author = author;
         this.read = !unread;
@@ -80,7 +87,6 @@ public class FeedEntry implements Comparable<FeedEntry> {
 
     public View getView(LayoutInflater inflater, View convertView, ViewGroup parent) {
         FeedEntryViewHolder holder;
-        String newline = System.getProperty("line.separator");
 
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.feed_entry, parent, false);
@@ -88,6 +94,7 @@ public class FeedEntry implements Comparable<FeedEntry> {
 
             holder.favicon = (ImageView) convertView.findViewById(R.id.feed_entry_favicon);
             holder.published = (TextView) convertView.findViewById(R.id.feed_entry_published);
+            holder.recommender = (TextView) convertView.findViewById(R.id.feed_entry_recommender);
             holder.title = (TextView) convertView.findViewById(R.id.feed_entry_title);
             holder.summary = (TextView) convertView.findViewById(R.id.feed_entry_summary);
             holder.favorite = (ImageView) convertView.findViewById(R.id.feed_entry_favorite);
@@ -122,19 +129,19 @@ public class FeedEntry implements Comparable<FeedEntry> {
         // Date
         holder.published.setText(getDateTime());
 
+        // Recommender
+        if (difficulty != null && learnability != null) {
+            holder.recommender.setVisibility(View.VISIBLE);
+            holder.recommender.setText("D: " + difficulty + ", R: " + learnability);
+        }
+        else
+            holder.recommender.setVisibility(View.INVISIBLE);
+
         // Title
         holder.title.setText(title);
 
         // Summary
-        if (content != null && !content.equals("")) {
-            // TODO: Create summary during parsing?
-            String summary = Html.fromHtml(content).toString();
-            summary = summary.replaceAll("￼", ""); // Removes objects like images
-            summary = summary.replaceAll(newline, " ");
-            summary = summary.trim();
-
-            holder.summary.setText(summary);
-        }
+        holder.summary.setText(summary);
 
         // Favorite
         if (favorite) {
@@ -149,6 +156,19 @@ public class FeedEntry implements Comparable<FeedEntry> {
         return convertView;
     }
 
+    private String createSummaryFromContent() {
+        String newline = System.getProperty("line.separator");
+
+        if (content != null && !content.equals("")) {
+            String summary = Html.fromHtml(content).toString();
+            summary = summary.replaceAll("￼", ""); // Removes objects like images
+            summary = summary.replaceAll(newline, " ");
+            return summary.trim();
+        }
+
+        return "";
+    }
+
     @Override
     public int compareTo(FeedEntry entry) {
         // TODO: Add option for oldest first (this.date.compareTo(entry.date))
@@ -160,7 +180,7 @@ public class FeedEntry implements Comparable<FeedEntry> {
         return title;
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
@@ -174,6 +194,11 @@ public class FeedEntry implements Comparable<FeedEntry> {
 
     public String getContent() {
         return content;
+    }
+
+    public String getContentAsText() {
+        // Currently the summary is the full entry content without html
+        return summary;
     }
 
     public void setContent(String content) {
@@ -275,6 +300,22 @@ public class FeedEntry implements Comparable<FeedEntry> {
         return favoriteUpdate;
     }
 
+    public Float getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(Float difficulty) {
+        this.difficulty = difficulty;
+    }
+
+    public Float getLearnability() {
+        return learnability;
+    }
+
+    public void setLearnability(Float learnability) {
+        this.learnability = learnability;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -297,6 +338,7 @@ public class FeedEntry implements Comparable<FeedEntry> {
     static class FeedEntryViewHolder {
         ImageView favicon;
         TextView published;
+        TextView recommender;
         TextView title;
         TextView summary;
         ImageView favorite;

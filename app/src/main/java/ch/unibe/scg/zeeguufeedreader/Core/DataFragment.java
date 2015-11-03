@@ -12,6 +12,7 @@ import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
 
 public class DataFragment extends Fragment {
     // Stored data
+    private ArticleRecommender articleRecommender;
     private ZeeguuConnectionManager zeeguuConnectionManager;
     private FeedlyConnectionManager feedlyConnectionManager;
     private DatabaseHelper databaseHelper;
@@ -27,12 +28,19 @@ public class DataFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        articleRecommender = new ArticleRecommender(getActivity());
         zeeguuConnectionManager = new ZeeguuConnectionManager(getActivity());
         feedlyConnectionManager = new FeedlyConnectionManager(getActivity());
         databaseHelper = getDatabaseHelper();
     }
 
     public void onRestore(Activity activity) {
+        // ArticleRecommender
+        if (articleRecommender != null)
+            articleRecommender.onRestore(activity);
+        else
+            articleRecommender = new ArticleRecommender(activity);
+
         // ZeeguConnectionManager
         if (zeeguuConnectionManager != null)
             zeeguuConnectionManager.onRestore(activity);
@@ -69,6 +77,10 @@ public class DataFragment extends Fragment {
 
     public FeedlyConnectionManager getFeedlyConnectionManager() {
         return feedlyConnectionManager;
+    }
+
+    public ArticleRecommender getArticleRecommender() {
+        return articleRecommender;
     }
 
     public DatabaseHelper getDatabaseHelper() {

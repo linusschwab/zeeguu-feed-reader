@@ -50,6 +50,7 @@ public class FeedlyAccount {
     // Special Categories
     private DefaultCategory all;
     private DefaultCategory favorite;
+    private DefaultCategory recommended;
     private Category uncategorized;
 
     // Database access objects
@@ -150,6 +151,7 @@ public class FeedlyAccount {
     public void setUpDefaultCategories() {
         all = new DefaultCategory(activity.getResources().getString(R.string.default_category_all));
         favorite = new DefaultCategory(activity.getResources().getString(R.string.default_category_favorite));
+        recommended = new DefaultCategory(activity.getResources().getString(R.string.default_category_recommended));
 
         updateDefaultCategoryEntries();
 
@@ -159,8 +161,13 @@ public class FeedlyAccount {
         favorite.setEntriesCount(queryHelper.getNumberOfFavoriteEntries());
         favorite.setUnreadCount(queryHelper.getNumberOfUnreadFavoriteEntries());
 
+        recommended.setEntriesCount(callback.getArticleRecommender().getEntriesCount());
+        recommended.setUnreadCount(callback.getArticleRecommender().getUnreadCount());
+
         categories.add(0, all);
         categories.add(1, favorite);
+        if (callback.getArticleRecommender().isActive())
+            categories.add(2, recommended);
     }
 
     public void updateDefaultCategories() {
@@ -170,6 +177,9 @@ public class FeedlyAccount {
         favorite.setEntriesCount(queryHelper.getNumberOfFavoriteEntries());
         favorite.setUnreadCount(queryHelper.getNumberOfUnreadFavoriteEntries());
 
+        recommended.setEntriesCount(callback.getArticleRecommender().getEntriesCount());
+        recommended.setUnreadCount(callback.getArticleRecommender().getUnreadCount());
+
         updateDefaultCategoryEntries();
     }
 
@@ -178,6 +188,11 @@ public class FeedlyAccount {
             public void run() {
                 all.setEntries(new ArrayList<>(queryHelper.getAllEntries()));
                 favorite.setEntries(new ArrayList<>(queryHelper.getFavoriteEntries()));
+
+                callback.getArticleRecommender().setEntries(new ArrayList<>(queryHelper.getRecommendedEntries()));
+                recommended.setEntries(callback.getArticleRecommender().getRecommendedEntries());
+                recommended.setEntriesCount(callback.getArticleRecommender().getEntriesCount());
+                recommended.setUnreadCount(callback.getArticleRecommender().getUnreadCount());
             }
         });
 
@@ -446,6 +461,10 @@ public class FeedlyAccount {
     public void onSynchronizationFinished() {
         updateDefaultCategories();
         saveFeeds(feeds);
+
+        // TODO: Move
+        if (callback.getArticleRecommender().isActive())
+            callback.getArticleRecommender().calculateScoreForNewEntries();
     }
 
     // Mark as read
@@ -641,6 +660,21 @@ public class FeedlyAccount {
 
     public FeedEntry getEntryById(String feedlyId) {
         return queryHelper.getFeedEntryByFeedlyId(feedlyId);
+    }
+
+    public FeedEntry getEntryById(int id) {
+        try {
+            return feedEntryDao.queryForId(id);
+        }
+        catch (SQLException e) {
+            Log.e(FeedlyAccount.class.getName(), "Can't get entry with id " + id, e);
+        }
+
+        return null;
+    }
+
+    public ArrayList<FeedEntry> getAllFeedEntries() {
+        return new ArrayList<>(queryHelper.getAllEntries());
     }
 
     public ArrayList<FeedEntry> getLatestReadEntries(long newerThan) {

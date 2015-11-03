@@ -228,8 +228,8 @@ public class FeedlyResponseParser {
                     json.getLong("published"));
             entry.setFeedlyId(json.getString("id"));
 
-            if (json.has("summary"))
-                entry.setSummary(json.getJSONObject("summary").getString("content"));
+            //if (json.has("summary"))
+            //    entry.setSummary(json.getJSONObject("summary").getString("content"));
 
             entry.setFeed(feed);
 

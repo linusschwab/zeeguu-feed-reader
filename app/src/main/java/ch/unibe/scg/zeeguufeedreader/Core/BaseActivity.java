@@ -34,6 +34,7 @@ import ch.unibe.zeeguulibrary.Dialogs.ZeeguuLogoutDialog;
 public abstract class BaseActivity extends AppCompatActivity implements
         DatabaseCallbacks,
         FeedlyCallbacks,
+        ArticleRecommender.ArticleRecommenderCallbacks,
         ZeeguuAccount.ZeeguuAccountCallbacks,
         ZeeguuConnectionManager.ZeeguuConnectionManagerCallbacks,
         ZeeguuSettingsFragment.ZeeguuSettingsCallbacks,
@@ -215,6 +216,11 @@ public abstract class BaseActivity extends AppCompatActivity implements
         return dataFragment.getFeedlyConnectionManager().getAccount();
     }
 
+    @Override
+    public ArticleRecommender getArticleRecommender() {
+        return dataFragment.getArticleRecommender();
+    }
+
     // Zeeguu authentication
     @Override
     public void showZeeguuLoginDialog(String message, String email) {
@@ -279,6 +285,21 @@ public abstract class BaseActivity extends AppCompatActivity implements
             InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
             inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
+    }
+
+    @Override
+    public void setDifficulty(float difficulty, int id) {
+        dataFragment.getArticleRecommender().setDifficultyForEntry(difficulty, id);
+    }
+
+    @Override
+    public void setLearnability(float learnability, int id) {
+        dataFragment.getArticleRecommender().setLearnabilityForEntry(learnability, id);
+    }
+
+    @Override
+    public void onZeeguuLoginSuccessful() {
+        dataFragment.getArticleRecommender().calculateScoreForNewEntries();
     }
 
     // TODO: Move methods from MainActivity to BaseActivity?

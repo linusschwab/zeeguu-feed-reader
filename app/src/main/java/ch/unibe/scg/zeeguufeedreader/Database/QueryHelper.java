@@ -124,6 +124,17 @@ public class QueryHelper {
         }
     }
 
+    public List<FeedEntry> getRecommendedEntries() {
+        try {
+            return callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
+                    .orderBy("zeeguu_difficulty", true).where().isNotNull("zeeguu_difficulty").query();
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get recommended feed entries", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public List<FeedEntry> getLatestReadEntries(long newerThan) {
         try {
             return callback.getDatabaseHelper().getFeedEntryDao().query(buildLatestReadEntriesQuery(newerThan, true));

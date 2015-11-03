@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 
 import java.util.ArrayList;
 
+import ch.unibe.scg.zeeguufeedreader.Core.ArticleRecommender;
 import ch.unibe.scg.zeeguufeedreader.Database.DatabaseHelper;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
 
@@ -18,6 +19,8 @@ public interface FeedlyCallbacks {
     void resetActionBar();
 
     void setAccountHeader(String name, String email, Bitmap picture);
+
+    ArticleRecommender getArticleRecommender();
 
     // Authentication
     void displayFeedlyAuthentication(String url);
