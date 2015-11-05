@@ -132,7 +132,7 @@ public class FeedEntry implements Comparable<FeedEntry> {
         // Recommender
         if (difficulty != null && learnability != null) {
             holder.recommender.setVisibility(View.VISIBLE);
-            holder.recommender.setText("D: " + difficulty + ", R: " + learnability);
+            holder.recommender.setText("D: " + difficulty + ", L: " + learnability);
         }
         else
             holder.recommender.setVisibility(View.INVISIBLE);

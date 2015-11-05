@@ -161,13 +161,16 @@ public class FeedlyAccount {
         favorite.setEntriesCount(queryHelper.getNumberOfFavoriteEntries());
         favorite.setUnreadCount(queryHelper.getNumberOfUnreadFavoriteEntries());
 
-        recommended.setEntriesCount(callback.getArticleRecommender().getEntriesCount());
-        recommended.setUnreadCount(callback.getArticleRecommender().getUnreadCount());
-
         categories.add(0, all);
         categories.add(1, favorite);
-        if (callback.getArticleRecommender().isActive())
+        if (callback.getArticleRecommender().isActive()) {
+            // TODO: Find better solution
+            callback.getArticleRecommender().setEntries(new ArrayList<>(queryHelper.getRecommendedEntries()));
+            recommended.setEntries(callback.getArticleRecommender().getRecommendedEntries());
+            recommended.setEntriesCount(callback.getArticleRecommender().getEntriesCount());
+            recommended.setUnreadCount(callback.getArticleRecommender().getUnreadCount());
             categories.add(2, recommended);
+        }
     }
 
     public void updateDefaultCategories() {
@@ -183,7 +186,7 @@ public class FeedlyAccount {
         updateDefaultCategoryEntries();
     }
 
-    public void updateDefaultCategoryEntries() {
+    private void updateDefaultCategoryEntries() {
         Thread thread = new Thread(new Runnable() {
             public void run() {
                 all.setEntries(new ArrayList<>(queryHelper.getAllEntries()));

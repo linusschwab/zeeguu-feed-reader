@@ -628,6 +628,11 @@ public class MainActivity extends BaseActivity implements
         return getFeedEntryFragment(position).getEntry();
     }
 
+    @Override
+    public FeedOverviewFragment getFeedOverviewFragment() {
+        return feedOverviewFragment;
+    }
+
     // Feedly authentication
     @Override
     public void displayFeedlyAuthentication(String url) {
@@ -690,4 +695,6 @@ public class MainActivity extends BaseActivity implements
     public void notifyDataChanged(boolean myWordsChanged) {
         myWordsFragment.notifyDataSetChanged(myWordsChanged);
     }
+
+
 }

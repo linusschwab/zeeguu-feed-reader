@@ -19,6 +19,7 @@ import java.util.Stack;
 import ch.unibe.scg.zeeguufeedreader.Database.DatabaseCallbacks;
 import ch.unibe.scg.zeeguufeedreader.Database.DatabaseHelper;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.FeedOverviewFragment;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAccount;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyCallbacks;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyConnectionManager;
@@ -288,13 +289,13 @@ public abstract class BaseActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void setDifficulty(float difficulty, int id) {
-        dataFragment.getArticleRecommender().setDifficultyForEntry(difficulty, id);
+    public void setDifficulties(ArrayList<Float> scores, ArrayList<Integer> ids) {
+        dataFragment.getArticleRecommender().setDifficultyForEntries(scores, ids);
     }
 
     @Override
-    public void setLearnability(float learnability, int id) {
-        dataFragment.getArticleRecommender().setLearnabilityForEntry(learnability, id);
+    public void setLearnabilities(ArrayList<Float> scores, ArrayList<Integer> ids) {
+        dataFragment.getArticleRecommender().setLearnabilityForEntries(scores, ids);
     }
 
     @Override
@@ -349,5 +350,10 @@ public abstract class BaseActivity extends AppCompatActivity implements
 
     @Override
     public void setAccountHeader(String name, String email, Bitmap picture) {
+    }
+
+    @Override
+    public FeedOverviewFragment getFeedOverviewFragment() {
+        return null;
     }
 }

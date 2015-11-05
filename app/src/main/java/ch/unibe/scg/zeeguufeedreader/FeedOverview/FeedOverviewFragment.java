@@ -129,16 +129,16 @@ public class FeedOverviewFragment extends Fragment {
     public void updateUnreadCount() {
         new Thread(new Runnable() {
             public void run() {
-                for (Category category : categories)
-                    category.getUnreadCount();
+            for (Category category : categories)
+                category.getUnreadCount();
 
-                if (isAdded()) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        public void run() {
-                        adapter.notifyDataSetChanged();
-                        }
-                    });
-                }
+            if (isAdded()) {
+                getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                    adapter.notifyDataSetChanged();
+                    }
+                });
+            }
             }
         }).start();
     }
