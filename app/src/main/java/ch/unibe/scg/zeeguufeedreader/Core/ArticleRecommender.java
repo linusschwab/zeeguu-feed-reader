@@ -1,8 +1,10 @@
 package ch.unibe.scg.zeeguufeedreader.Core;
 
 import android.app.Activity;
+import android.os.SystemClock;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.FeedOverviewFragment;
@@ -19,14 +21,19 @@ public class ArticleRecommender {
     private ArticleRecommenderCallbacks callback;
 
     // Entries
-    private ArrayList<FeedEntry> recommendedEntries = new ArrayList<>();
+    private HashMap<Integer, FeedEntry> cachedEntries = new HashMap<>();
     private int unreadCount;
 
     // Parameters
-    private int numberOfEntries = 100;
+    private float maxDifficulty = 0.5f;
+    private int urlsPerRequest = 20;
+    private long requestDelay = 10000;
+    private int delayMultiplier = 1;
 
-    boolean difficulties;
-    boolean learnabilities;
+    // State information
+    boolean difficulties_received;
+    boolean learnabilities_received;
+    boolean contents_received;
 
     /**
      * Callback interface that must be implemented by the container activity
@@ -36,6 +43,8 @@ public class ArticleRecommender {
         ZeeguuAccount getZeeguuAccount();
         FeedlyAccount getFeedlyAccount();
         FeedOverviewFragment getFeedOverviewFragment();
+        // TODO: Remove
+        void displayMessage(String message);
     }
 
     public ArticleRecommender(Activity activity) {
@@ -58,15 +67,61 @@ public class ArticleRecommender {
         callback = (ArticleRecommenderCallbacks) activity;
     }
 
-    private void calculateUnreadCount() {
-        int unreadCounter = 0;
+    // Get full content
+    public void getContentForNewEntries() {
+        Thread thread = new Thread(new Runnable() {
+            public void run() {
+                delayMultiplier = 1;
+                ArrayList<FeedEntry> entries = callback.getFeedlyAccount().getAllFeedEntries();
+                ArrayList<HashMap<String, String>> urls = new ArrayList<>();
 
-        for (FeedEntry entry : recommendedEntries) {
-            if (!entry.isRead())
-                unreadCounter++;
+                for (FeedEntry entry : entries) {
+                    if (entry.getContentFull() == null) {
+                        //cachedEntries.put(entry.getId(), entry);
+                        HashMap<String, String> url = new HashMap<>(2);
+                        url.put("url", entry.getUrl());
+                        url.put("id", String.valueOf(entry.getId()));
+                        urls.add(url);
+                        if (urls.size() == urlsPerRequest) {
+                            SystemClock.sleep(requestDelay * delayMultiplier);
+                            callback.getZeeguuConnectionManager().getContentFromUrl(urls);
+                            urls = new ArrayList<>();
+                        }
+                    }
+                }
+
+                if (urls.size() != 0) {
+                    //contents_received = false;
+                    SystemClock.sleep(requestDelay * delayMultiplier);
+                    callback.getZeeguuConnectionManager().getContentFromUrl(urls);
+                }
+
+                if (isActive())
+                    calculateScoreForNewEntries();
+            }
+        });
+
+        thread.setPriority(Thread.MIN_PRIORITY);
+        thread.start();
+    }
+
+    public void setContentForEntries(ArrayList<HashMap<String, String>> contents) {
+        checkIfServerOverloaded(contents);
+        // TODO: Remove
+        callback.displayMessage("Received content for " + contents.size() + " URLs. Current delay: "
+                                + String.valueOf((requestDelay * delayMultiplier)/1000) + "s");
+
+        for (HashMap<String, String> content : contents) {
+            //FeedEntry entry = cachedEntries.get(Integer.parseInt(content.get("id")));
+            FeedEntry entry = callback.getFeedlyAccount().getEntryById(Integer.parseInt(content.get("id")));
+            if (entry != null) {
+                entry.setContentFull(content.get("content"));
+                entry.setImage(content.get("image"));
+                callback.getFeedlyAccount().saveFeedEntry(entry);
+            }
         }
-
-        unreadCount = unreadCounter;
+        //contents_received = true;
+        //cachedEntries.clear();
     }
 
     // Calculate scores
@@ -77,22 +132,28 @@ public class ArticleRecommender {
                 // TODO: Check feed language instead (does not exist yet)
                 String language = callback.getZeeguuAccount().getLanguageLearning();
 
-                ArrayList<String> texts = new ArrayList<>();
-                ArrayList<Integer> ids = new ArrayList<>();
+                ArrayList<HashMap<String, String>> texts = new ArrayList<>();
 
                 // Get scores for all entries
                 for (FeedEntry entry : entries) {
-                    if (entry.getDifficulty() == null || entry.getLearnability() == null) {
-                        texts.add(entry.getContentAsText());
-                        ids.add(entry.getId());
+                    if ((entry.getDifficulty() == null || entry.getLearnability() == null) &&
+                            (entry.getContentFull() != null && !entry.getContentFull().equals(""))) {
+                        cachedEntries.put(entry.getId(), entry);
+                        HashMap<String, String> text = new HashMap<>(2);
+                        if (entry.getContentFull().length() > entry.getContentAsText().length())
+                            text.put("content", entry.getContentFull());
+                        else
+                            text.put("content", entry.getContentAsText());
+                        text.put("id", String.valueOf(entry.getId()));
+                        texts.add(text);
                     }
                 }
 
-                if (texts.size() != 0 && ids.size() != 0) {
-                    difficulties = false;
-                    learnabilities = false;
-                    callback.getZeeguuConnectionManager().getDifficultyForText(language, texts, ids);
-                    callback.getZeeguuConnectionManager().getLearnabilityForText(language, texts, ids);
+                if (texts.size() != 0) {
+                    difficulties_received = false;
+                    learnabilities_received = false;
+                    callback.getZeeguuConnectionManager().getDifficultyForText(language, texts);
+                    callback.getZeeguuConnectionManager().getLearnabilityForText(language, texts);
                 }
             }
         });
@@ -101,29 +162,34 @@ public class ArticleRecommender {
         thread.start();
     }
 
-    public void setDifficultyForEntries(ArrayList<Float> scores, ArrayList<Integer> ids) {
-        for (int i = 0; i < scores.size(); i++) {
-            FeedEntry entry = callback.getFeedlyAccount().getEntryById(ids.get(i));
-            entry.setDifficulty(scores.get(i));
-            callback.getFeedlyAccount().saveFeedEntry(entry);
+    public void setDifficultyForEntries(ArrayList<HashMap<String, String>> difficulties) {
+        for (HashMap<String, String> difficulty : difficulties) {
+            FeedEntry entry = cachedEntries.get(Integer.parseInt(difficulty.get("id")));
+            entry.setDifficulty(Float.parseFloat(difficulty.get("score")));
         }
-        difficulties = true;
+        difficulties_received = true;
         updateEntries();
     }
 
-    public void setLearnabilityForEntries(ArrayList<Float> scores, ArrayList<Integer> ids) {
-        for (int i = 0; i < scores.size(); i++) {
-            FeedEntry entry = callback.getFeedlyAccount().getEntryById(ids.get(i));
-            entry.setLearnability(scores.get(i));
-            callback.getFeedlyAccount().saveFeedEntry(entry);
+    public void setLearnabilityForEntries(ArrayList<HashMap<String, String>> learnabilities) {
+        for (HashMap<String, String> learnability : learnabilities) {
+            FeedEntry entry = cachedEntries.get(Integer.parseInt(learnability.get("id")));
+            entry.setLearnability(Float.parseFloat(learnability.get("score")));
+            // TODO: Add count?
         }
-        learnabilities = true;
+        learnabilities_received = true;
         updateEntries();
     }
 
-    public void updateEntries() {
+    private void updateEntries() {
         // Make sure that both scores were received
-        if (difficulties && learnabilities) {
+        if (difficulties_received && learnabilities_received) {
+            // Save entries
+            for (FeedEntry entry : cachedEntries.values())
+                callback.getFeedlyAccount().saveFeedEntry(entry);
+            cachedEntries.clear();
+
+            // Update view
             callback.getFeedlyAccount().updateDefaultCategories();
             if (callback.getFeedOverviewFragment() != null)
                 callback.getFeedOverviewFragment().updateUnreadCount();
@@ -131,29 +197,26 @@ public class ArticleRecommender {
     }
 
     // Getter-/Setter
-    public int getEntriesCount() {
-        if (recommendedEntries != null)
-            return recommendedEntries.size();
-        else
-            return 0;
-    }
-
-    public int getUnreadCount() {
-        return unreadCount;
-    }
-
-    public ArrayList<FeedEntry> getRecommendedEntries() {
-        return recommendedEntries;
-    }
-
-    public void setEntries(ArrayList<FeedEntry> entries) {
-        if (entries.size() < numberOfEntries)
-            numberOfEntries = entries.size();
-        recommendedEntries = new ArrayList<>(entries.subList(0, numberOfEntries));
-        calculateUnreadCount();
+    public float getMaxDifficulty() {
+        return maxDifficulty;
     }
 
     public boolean isActive() {
         return callback.getZeeguuAccount().isUserInSession();
+    }
+
+    public boolean isWaitingForResponse() {
+        return !difficulties_received || !learnabilities_received || !contents_received;
+    }
+
+    private void checkIfServerOverloaded(ArrayList contents) {
+        if (contents.isEmpty())
+            delayMultiplier += 3;
+        else if (contents.size() <= (urlsPerRequest/3))
+            delayMultiplier += 2;
+        else if (contents.size() <= (urlsPerRequest/2))
+            delayMultiplier += 1;
+        else
+            delayMultiplier = 1;
     }
 }

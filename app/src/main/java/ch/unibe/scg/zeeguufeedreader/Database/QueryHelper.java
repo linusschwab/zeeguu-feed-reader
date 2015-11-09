@@ -124,13 +124,40 @@ public class QueryHelper {
         }
     }
 
-    public List<FeedEntry> getRecommendedEntries() {
+    public List<FeedEntry> getRecommendedEntries(float maxDifficulty) {
         try {
             return callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
-                    .orderBy("zeeguu_difficulty", true).where().isNotNull("zeeguu_difficulty").query();
+                    .orderBy("zeeguu_difficulty", true)
+                    .where().between("zeeguu_difficulty", 0, maxDifficulty)
+                    .query();
         }
         catch (SQLException e) {
             Log.e(QueryHelper.class.getName(), "Can't get recommended feed entries", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getNumberOfRecommendedEntries(float maxDifficulty) {
+        try {
+            return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
+                    .where().between("zeeguu_difficulty", 0, maxDifficulty)
+                    .countOf();
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get number of unread feed entries", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getNumberOfUnreadRecommendedEntries(float maxDifficulty) {
+        try {
+            return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
+                    .where().between("zeeguu_difficulty", 0, maxDifficulty)
+                    .and().eq("read", false)
+                    .countOf();
+        }
+        catch (SQLException e) {
+            Log.e(QueryHelper.class.getName(), "Can't get number of unread feed entries", e);
             throw new RuntimeException(e);
         }
     }

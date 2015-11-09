@@ -10,6 +10,7 @@ import com.j256.ormlite.dao.Dao;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import ch.unibe.scg.zeeguufeedreader.Core.Tools;
@@ -161,16 +162,15 @@ public class FeedlyAccount {
         favorite.setEntriesCount(queryHelper.getNumberOfFavoriteEntries());
         favorite.setUnreadCount(queryHelper.getNumberOfUnreadFavoriteEntries());
 
+        float maxDifficulty = callback.getArticleRecommender().getMaxDifficulty();
+        int recommendedEntriesCount = queryHelper.getNumberOfRecommendedEntries(maxDifficulty);
+        recommended.setEntriesCount(recommendedEntriesCount);
+        recommended.setUnreadCount(queryHelper.getNumberOfUnreadRecommendedEntries(maxDifficulty));
+
         categories.add(0, all);
         categories.add(1, favorite);
-        if (callback.getArticleRecommender().isActive()) {
-            // TODO: Find better solution
-            callback.getArticleRecommender().setEntries(new ArrayList<>(queryHelper.getRecommendedEntries()));
-            recommended.setEntries(callback.getArticleRecommender().getRecommendedEntries());
-            recommended.setEntriesCount(callback.getArticleRecommender().getEntriesCount());
-            recommended.setUnreadCount(callback.getArticleRecommender().getUnreadCount());
+        if (callback.getArticleRecommender().isActive() && recommendedEntriesCount != 0)
             categories.add(2, recommended);
-        }
     }
 
     public void updateDefaultCategories() {
@@ -180,8 +180,9 @@ public class FeedlyAccount {
         favorite.setEntriesCount(queryHelper.getNumberOfFavoriteEntries());
         favorite.setUnreadCount(queryHelper.getNumberOfUnreadFavoriteEntries());
 
-        recommended.setEntriesCount(callback.getArticleRecommender().getEntriesCount());
-        recommended.setUnreadCount(callback.getArticleRecommender().getUnreadCount());
+        float maxDifficulty = callback.getArticleRecommender().getMaxDifficulty();
+        recommended.setEntriesCount(queryHelper.getNumberOfRecommendedEntries(maxDifficulty));
+        recommended.setUnreadCount(queryHelper.getNumberOfUnreadRecommendedEntries(maxDifficulty));
 
         updateDefaultCategoryEntries();
     }
@@ -191,11 +192,8 @@ public class FeedlyAccount {
             public void run() {
                 all.setEntries(new ArrayList<>(queryHelper.getAllEntries()));
                 favorite.setEntries(new ArrayList<>(queryHelper.getFavoriteEntries()));
-
-                callback.getArticleRecommender().setEntries(new ArrayList<>(queryHelper.getRecommendedEntries()));
-                recommended.setEntries(callback.getArticleRecommender().getRecommendedEntries());
-                recommended.setEntriesCount(callback.getArticleRecommender().getEntriesCount());
-                recommended.setUnreadCount(callback.getArticleRecommender().getUnreadCount());
+                float maxDifficulty = callback.getArticleRecommender().getMaxDifficulty();
+                recommended.setEntries(new ArrayList<>(queryHelper.getRecommendedEntries(maxDifficulty)));
             }
         });
 
@@ -466,8 +464,7 @@ public class FeedlyAccount {
         saveFeeds(feeds);
 
         // TODO: Move
-        if (callback.getArticleRecommender().isActive())
-            callback.getArticleRecommender().calculateScoreForNewEntries();
+        callback.getArticleRecommender().getContentForNewEntries();
     }
 
     // Mark as read

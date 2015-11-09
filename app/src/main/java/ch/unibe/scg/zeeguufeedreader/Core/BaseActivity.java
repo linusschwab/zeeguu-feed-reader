@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Stack;
 
 import ch.unibe.scg.zeeguufeedreader.Database.DatabaseCallbacks;
@@ -289,18 +290,24 @@ public abstract class BaseActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void setDifficulties(ArrayList<Float> scores, ArrayList<Integer> ids) {
-        dataFragment.getArticleRecommender().setDifficultyForEntries(scores, ids);
+    public void setDifficulties(ArrayList<HashMap<String, String>> difficulties) {
+        dataFragment.getArticleRecommender().setDifficultyForEntries(difficulties);
     }
 
     @Override
-    public void setLearnabilities(ArrayList<Float> scores, ArrayList<Integer> ids) {
-        dataFragment.getArticleRecommender().setLearnabilityForEntries(scores, ids);
+    public void setLearnabilities(ArrayList<HashMap<String, String>> learnabilities) {
+        dataFragment.getArticleRecommender().setLearnabilityForEntries(learnabilities);
+    }
+
+    @Override
+    public void setContents(ArrayList<HashMap<String, String>> contents) {
+        dataFragment.getArticleRecommender().setContentForEntries(contents);
     }
 
     @Override
     public void onZeeguuLoginSuccessful() {
-        dataFragment.getArticleRecommender().calculateScoreForNewEntries();
+        if (!dataFragment.getArticleRecommender().isWaitingForResponse())
+            dataFragment.getArticleRecommender().calculateScoreForNewEntries();
     }
 
     // TODO: Move methods from MainActivity to BaseActivity?

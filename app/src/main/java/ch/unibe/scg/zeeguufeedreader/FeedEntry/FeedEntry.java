@@ -1,7 +1,6 @@
 package ch.unibe.scg.zeeguufeedreader.FeedEntry;
 
 import android.graphics.Bitmap;
-import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -40,8 +39,14 @@ public class FeedEntry implements Comparable<FeedEntry> {
     @DatabaseField(columnName = "content")
     private String content;
 
+    @DatabaseField(columnName = "content_full")
+    private String contentFull;
+
     @DatabaseField(columnName = "summary")
     private String summary;
+
+    @DatabaseField(columnName = "image")
+    private String image;
 
     @DatabaseField(columnName = "url")
     private String url;
@@ -205,12 +210,28 @@ public class FeedEntry implements Comparable<FeedEntry> {
         this.content = content;
     }
 
+    public String getContentFull() {
+        return contentFull;
+    }
+
+    public void setContentFull(String contentFull) {
+        this.contentFull = contentFull;
+    }
+
     public String getSummary() {
         return summary;
     }
 
     public void setSummary(String summary) {
         this.summary = summary;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 
     public String getUrl() {

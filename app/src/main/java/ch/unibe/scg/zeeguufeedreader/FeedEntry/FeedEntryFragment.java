@@ -167,22 +167,39 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
     }
 
     private String loadHtml() {
+        String newline = System.getProperty("line.separator");
+
         String title = entry.getTitle();
         String url = entry.getUrl();
         String date = entry.getDateFull() + " - " + entry.getDateTime();
         String feed = entry.getFeed().getName();
-        String author = entry.getAuthor(); // TODO: Remove "by" if no author
+        String author = entry.getAuthor();
         String content = entry.getContent();
+        String contentFull = entry.getContentFull();
+        String image = entry.getImage();
 
         String css = Utility.assetToString(getActivity(), "css/style.css");
 
         if (title != null && content != null) {
+            // Title block
             String html = "<html><head><style>" + css + "</style><title>" + title + "</title></head><body>" +
                           "<a class='entry_title' href='" + url + "'><div class='entry_header'>" +
                           "<span class='entry_info'>" + date + "</span>" +
-                          "<h1>" + title + "</h1>" +
-                          "<span class='entry_info'>" + feed + " by " + author + "</span>" +
-                          "</div></a>" + content + "</body></html>";
+                          "<h1>" + title + "</h1><span class='entry_info'>" + feed;
+            // Author
+            if (!author.equals(""))
+                html += " by " + author;
+            html += "</span></div></a>";
+
+            // Content
+            if (contentFull != null && (contentFull.length() > entry.getContentAsText().length())) {
+                if (image != null)
+                    html += "<img src=\"" + image + "\">";
+                html += "<p>" + contentFull.replace(newline, "<br>") + "</p>";
+            }
+            else
+                html += content;
+            html += "</body></html>";
 
             return html;
         }
