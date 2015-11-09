@@ -136,7 +136,7 @@ public class ArticleRecommender {
 
                 // Get scores for all entries
                 for (FeedEntry entry : entries) {
-                    if ((entry.getDifficulty() == null || entry.getLearnability() == null) &&
+                    if ((entry.getDifficulty() == null || entry.getLearnabilityPercentage() == null) &&
                             (entry.getContentFull() != null && !entry.getContentFull().equals(""))) {
                         cachedEntries.put(entry.getId(), entry);
                         HashMap<String, String> text = new HashMap<>(2);
@@ -165,7 +165,8 @@ public class ArticleRecommender {
     public void setDifficultyForEntries(ArrayList<HashMap<String, String>> difficulties) {
         for (HashMap<String, String> difficulty : difficulties) {
             FeedEntry entry = cachedEntries.get(Integer.parseInt(difficulty.get("id")));
-            entry.setDifficulty(Float.parseFloat(difficulty.get("score")));
+            entry.setDifficultyAverage(Float.parseFloat(difficulty.get("score_average")));
+            entry.setDifficultyMedian(Float.parseFloat(difficulty.get("score_median")));
         }
         difficulties_received = true;
         updateEntries();
@@ -174,8 +175,8 @@ public class ArticleRecommender {
     public void setLearnabilityForEntries(ArrayList<HashMap<String, String>> learnabilities) {
         for (HashMap<String, String> learnability : learnabilities) {
             FeedEntry entry = cachedEntries.get(Integer.parseInt(learnability.get("id")));
-            entry.setLearnability(Float.parseFloat(learnability.get("score")));
-            // TODO: Add count?
+            entry.setLearnabilityPercentage(Float.parseFloat(learnability.get("score")));
+            entry.setLearnabilityCount(Integer.parseInt(learnability.get("count")));
         }
         learnabilities_received = true;
         updateEntries();

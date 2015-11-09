@@ -23,5 +23,12 @@
             android:title="@string/settings_zeguu_highlight_title"
             android:summary="@string/settings_zeguu_highlight_summary"
             android:defaultValue="true" />
+        <ListPreference
+            android:key="pref_zeeguu_difficulty"
+            android:title="@string/settings_zeguu_difficulty_title"
+            android:summary="@string/settings_zeguu_difficulty_summary"
+            android:entries="@array/zeeguu_difficulty_entries"
+            android:entryValues="@array/zeeguu_difficulty_entries"
+            android:defaultValue="Median" />
     </ch.unibe.scg.zeeguufeedreader.Preferences.PreferenceCategoryCustom>
 </PreferenceScreen>

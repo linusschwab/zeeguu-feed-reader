@@ -1,6 +1,8 @@
 package ch.unibe.scg.zeeguufeedreader.FeedEntry;
 
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -13,6 +15,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -69,11 +72,17 @@ public class FeedEntry implements Comparable<FeedEntry> {
     @DatabaseField(columnName = "favorite_update")
     private long favoriteUpdate;
 
-    @DatabaseField(columnName = "zeeguu_difficulty")
-    private Float difficulty;
+    @DatabaseField(columnName = "zeeguu_difficulty_average")
+    private Float difficultyAverage;
 
-    @DatabaseField(columnName = "zeeguu_learnability")
-    private Float learnability;
+    @DatabaseField(columnName = "zeeguu_difficulty_median")
+    private Float difficultyMedian;
+
+    @DatabaseField(columnName = "zeeguu_learnability_percentage")
+    private Float learnabilityPercentage;
+
+    @DatabaseField(columnName = "zeeguu_learnability_count")
+    private Integer learnabilityCount;
 
     public FeedEntry() {
         // Empty constructor needed by ormlite
@@ -115,11 +124,13 @@ public class FeedEntry implements Comparable<FeedEntry> {
             holder.published.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.silver));
             holder.title.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.gray));
             holder.summary.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.silver));
+            holder.recommender.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.silver));
         }
         else {
             holder.published.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.gray));
             holder.title.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.darkgray));
             holder.summary.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.gray));
+            holder.recommender.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.gray));
         }
 
         // Favicon
@@ -135,9 +146,10 @@ public class FeedEntry implements Comparable<FeedEntry> {
         holder.published.setText(getDateTime());
 
         // Recommender
-        if (difficulty != null && learnability != null) {
+        if (getDifficulty() != null && learnabilityCount != null) {
+            DecimalFormat decimal = new DecimalFormat("0.00");
             holder.recommender.setVisibility(View.VISIBLE);
-            holder.recommender.setText("D: " + difficulty + ", L: " + learnability);
+            holder.recommender.setText("D: " + decimal.format(getDifficulty()).replace(',', '.') + ", L: " + learnabilityCount);
         }
         else
             holder.recommender.setVisibility(View.INVISIBLE);
@@ -322,19 +334,35 @@ public class FeedEntry implements Comparable<FeedEntry> {
     }
 
     public Float getDifficulty() {
-        return difficulty;
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(ContextManager.getContext());
+        if (sharedPref.getString("pref_zeeguu_difficulty", "Median").equals("Average"))
+            return difficultyAverage;
+        else
+            return difficultyMedian;
     }
 
-    public void setDifficulty(Float difficulty) {
-        this.difficulty = difficulty;
+    public void setDifficultyAverage(Float difficultyAverage) {
+        this.difficultyAverage = difficultyAverage;
     }
 
-    public Float getLearnability() {
-        return learnability;
+    public void setDifficultyMedian(Float difficultyMedian) {
+        this.difficultyMedian = difficultyMedian;
     }
 
-    public void setLearnability(Float learnability) {
-        this.learnability = learnability;
+    public Float getLearnabilityPercentage() {
+        return learnabilityPercentage;
+    }
+
+    public void setLearnabilityPercentage(Float learnabilityPercentage) {
+        this.learnabilityPercentage = learnabilityPercentage;
+    }
+
+    public Integer getLearnabilityCount() {
+        return learnabilityCount;
+    }
+
+    public void setLearnabilityCount(Integer learnabilityCount) {
+        this.learnabilityCount = learnabilityCount;
     }
 
     @Override

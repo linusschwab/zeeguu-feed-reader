@@ -1,6 +1,8 @@
 package ch.unibe.scg.zeeguufeedreader.Database;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.j256.ormlite.dao.Dao;
@@ -11,6 +13,7 @@ import com.j256.ormlite.stmt.SelectArg;
 import java.sql.SQLException;
 import java.util.List;
 
+import ch.unibe.scg.zeeguufeedreader.Core.ContextManager;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
@@ -24,6 +27,8 @@ public class QueryHelper {
 
     private PreparedQuery<Category> categoriesForFeedQuery;
     private PreparedQuery<Feed> feedsForCategoryQuery;
+
+    private SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(ContextManager.getContext());
 
     public QueryHelper(Activity activity) {
         // Make sure that the interface is implemented in the container activity
@@ -126,10 +131,14 @@ public class QueryHelper {
 
     public List<FeedEntry> getRecommendedEntries(float maxDifficulty) {
         try {
+            String difficulty = "zeeguu_difficulty_median";
+            if (sharedPref.getString("pref_zeeguu_difficulty", "Median").equals("Average"))
+                difficulty = "zeeguu_difficulty_average";
+
             return callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
-                    .orderBy("zeeguu_difficulty", true)
-                    .where().between("zeeguu_difficulty", 0, maxDifficulty)
-                    .query();
+                .orderBy(difficulty, true)
+                .where().between(difficulty, 0, maxDifficulty)
+                .query();
         }
         catch (SQLException e) {
             Log.e(QueryHelper.class.getName(), "Can't get recommended feed entries", e);
@@ -139,9 +148,13 @@ public class QueryHelper {
 
     public int getNumberOfRecommendedEntries(float maxDifficulty) {
         try {
+            String difficulty = "zeeguu_difficulty_median";
+            if (sharedPref.getString("pref_zeeguu_difficulty", "Median").equals("Average"))
+                difficulty = "zeeguu_difficulty_average";
+
             return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
-                    .where().between("zeeguu_difficulty", 0, maxDifficulty)
-                    .countOf();
+                .where().between(difficulty, 0, maxDifficulty)
+                .countOf();
         }
         catch (SQLException e) {
             Log.e(QueryHelper.class.getName(), "Can't get number of unread feed entries", e);
@@ -151,10 +164,14 @@ public class QueryHelper {
 
     public int getNumberOfUnreadRecommendedEntries(float maxDifficulty) {
         try {
+            String difficulty = "zeeguu_difficulty_median";
+            if (sharedPref.getString("pref_zeeguu_difficulty", "Median").equals("Average"))
+                difficulty = "zeeguu_difficulty_average";
+
             return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
-                    .where().between("zeeguu_difficulty", 0, maxDifficulty)
-                    .and().eq("read", false)
-                    .countOf();
+                .where().between(difficulty, 0, maxDifficulty)
+                .and().eq("read", false)
+                .countOf();
         }
         catch (SQLException e) {
             Log.e(QueryHelper.class.getName(), "Can't get number of unread feed entries", e);

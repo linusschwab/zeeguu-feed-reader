@@ -190,10 +190,10 @@ public class FeedlyAccount {
     private void updateDefaultCategoryEntries() {
         Thread thread = new Thread(new Runnable() {
             public void run() {
-                all.setEntries(new ArrayList<>(queryHelper.getAllEntries()));
-                favorite.setEntries(new ArrayList<>(queryHelper.getFavoriteEntries()));
-                float maxDifficulty = callback.getArticleRecommender().getMaxDifficulty();
-                recommended.setEntries(new ArrayList<>(queryHelper.getRecommendedEntries(maxDifficulty)));
+            all.setEntries(new ArrayList<>(queryHelper.getAllEntries()));
+            favorite.setEntries(new ArrayList<>(queryHelper.getFavoriteEntries()));
+            float maxDifficulty = callback.getArticleRecommender().getMaxDifficulty();
+            recommended.setEntries(new ArrayList<>(queryHelper.getRecommendedEntries(maxDifficulty)));
             }
         });
 

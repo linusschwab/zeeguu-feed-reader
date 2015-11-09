@@ -20,6 +20,8 @@
     <string name="settings_zeguu_language_learning_summary">The language you are currently learning</string>
     <string name="settings_zeguu_highlight_title">Highlight words</string>
     <string name="settings_zeguu_highlight_summary">Highlight the words you are currently learning in the text.</string>
+    <string name="settings_zeguu_difficulty_title">Article Recommender</string>
+    <string name="settings_zeguu_difficulty_summary">Method for the difficulty calculation.</string>
 
     <string name="settings_browser_title">Browser</string>
     <string name="settings_browser_homepage_title">Homepage</string>
@@ -108,6 +110,11 @@
         <item>de</item>
         <item>fr</item>
         <item>it</item>
+    </string-array>
+
+    <string-array name="zeeguu_difficulty_entries">
+        <item>Average</item>
+        <item>Median</item>
     </string-array>
 
 </resources>
