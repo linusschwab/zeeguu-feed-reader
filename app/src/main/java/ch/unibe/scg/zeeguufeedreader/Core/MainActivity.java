@@ -16,6 +16,7 @@ import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.view.ActionMode;
+import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
@@ -661,7 +662,7 @@ public class MainActivity extends BaseActivity implements
     // Messages
     @Override
     public void displayMessage(String message) {
-        Snackbar.make(contentFrame, message, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(contentFrame, Html.fromHtml(message), Snackbar.LENGTH_SHORT).show();
     }
 
     @Override
