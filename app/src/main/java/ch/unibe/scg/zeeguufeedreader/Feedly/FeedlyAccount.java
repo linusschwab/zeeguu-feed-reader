@@ -207,8 +207,10 @@ public class FeedlyAccount {
             if (category.getId() == 0 && !category.equals(uncategorized)) {
                 categoryDao.create(category);
                 categories.add(category);
-            } else
+            } else {
                 categoryDao.update(category);
+                categories.set(categories.indexOf(category), category);
+            }
         }
         catch (SQLException e) {
             Log.e(FeedlyAccount.class.getName(), "Can't save category: " + category.getName(), e);
@@ -283,8 +285,10 @@ public class FeedlyAccount {
                 feedDao.create(feed);
                 feeds.add(feed);
             }
-            else
+            else {
                 feedDao.update(feed);
+                feeds.set(feeds.indexOf(feed), feed);
+            }
         }
         catch (SQLException e) {
             Log.e(FeedlyAccount.class.getName(), "Can't save feed: " + feed.getName(), e);
