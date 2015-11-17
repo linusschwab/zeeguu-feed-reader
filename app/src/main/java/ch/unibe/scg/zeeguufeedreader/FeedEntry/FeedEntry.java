@@ -143,7 +143,7 @@ public class FeedEntry implements Comparable<FeedEntry> {
             holder.favicon.setVisibility(View.INVISIBLE);
 
         // Date
-        holder.published.setText(getDateTime());
+        holder.published.setText(getDateSimple());
 
         // Recommender
         if (getDifficulty() != null && learnabilityCount != null) {
@@ -269,6 +269,11 @@ public class FeedEntry implements Comparable<FeedEntry> {
     public String getDateFull() {
         DateFormat dateFull = new SimpleDateFormat("EEEE, dd.MM.yyyy");
         return dateFull.format(date);
+    }
+
+    public String getDateSimple() {
+        DateFormat dateSimple = new SimpleDateFormat("dd.MM - HH:mm");
+        return dateSimple.format(date);
     }
 
     public String getDateTime() {
