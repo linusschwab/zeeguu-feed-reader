@@ -20,8 +20,6 @@ public class FeedlySettingsFragment extends BaseSettingsFragment {
         feedlyAccount = findPreference(getString(R.string.pref_feedly_account));
 
         updateAccount();
-
-        //createChangeListener();
     }
 
     private void updateAccount() {

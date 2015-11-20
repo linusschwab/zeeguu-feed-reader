@@ -10,7 +10,8 @@ import ch.unibe.scg.zeeguufeedreader.Preferences.BaseSettingsFragment;
 import ch.unibe.scg.zeeguufeedreader.R;
 import ch.unibe.zeeguulibrary.Core.ZeeguuConnectionManager;
 
-public class ZeeguuSettingsFragment extends BaseSettingsFragment {
+public class ZeeguuSettingsFragment extends BaseSettingsFragment implements
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     private ZeeguuSettingsCallbacks callback;
 
@@ -41,8 +42,6 @@ public class ZeeguuSettingsFragment extends BaseSettingsFragment {
         updateNativeLanguage();
         updateLearningLanguage();
         updateAccount();
-
-        createChangeListener();
     }
 
     @Override
@@ -70,19 +69,26 @@ public class ZeeguuSettingsFragment extends BaseSettingsFragment {
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
 
-    private void createChangeListener() {
-        SharedPreferences.OnSharedPreferenceChangeListener listener =
-                new SharedPreferences.OnSharedPreferenceChangeListener() {
-                    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                        if (key.equals("pref_zeeguu_email"))
-                            updateAccount();
-                        else if (key.equals("pref_zeeguu_language_native"))
-                            updateNativeLanguage();
-                        else if (key.equals("pref_zeeguu_language_learning"))
-                            updateLearningLanguage();
-                    }
-                };
-        sharedPref.registerOnSharedPreferenceChangeListener(listener);
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals("pref_zeeguu_email"))
+            updateAccount();
+        else if (key.equals("pref_zeeguu_language_native"))
+            updateNativeLanguage();
+        else if (key.equals("pref_zeeguu_language_learning"))
+            updateLearningLanguage();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        sharedPref.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        sharedPref.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     private void updateAccount() {
