@@ -18,6 +18,7 @@ import java.util.ArrayList;
 
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntry;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Category;
+import ch.unibe.scg.zeeguufeedreader.FeedOverview.DefaultCategory;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAccount;
 import ch.unibe.scg.zeeguufeedreader.R;
@@ -69,8 +70,7 @@ public class FeedEntryListFragment extends Fragment implements
                     callback.updateFeedEntries(entries, feed);
                     newEntries = false;
                     updateEntry(adapter.getItem(position), position);
-                }
-                else if (!callback.getPagerEntry(position).equals(adapter.getItem(position))) {
+                } else if (!callback.getPagerEntry(position).equals(adapter.getItem(position))) {
                     callback.updateFeedEntries(entries, feed);
                 }
                 if (position != selectedItem)
@@ -186,8 +186,12 @@ public class FeedEntryListFragment extends Fragment implements
     public boolean hasEntries() {
         if (feed != null)
             return feed.getEntriesCount() != 0;
-        else if (category != null)
-            return category.getEntriesCount() != 0;
+        else if (category != null) {
+            if (category instanceof DefaultCategory)
+                return category.getEntries().size() != 0;
+            else
+                return category.getEntriesCount() != 0;
+        }
         else
             return entries != null && entries.size() != 0;
     }
@@ -242,17 +246,17 @@ public class FeedEntryListFragment extends Fragment implements
     public void markAllEntriesAsRead() {
         new Thread(new Runnable() {
             public void run() {
-                if (entries != null && entries.size() != 0)
-                    for (FeedEntry entry : entries)
-                        markEntryAsRead(entry);
+            if (entries != null && entries.size() != 0)
+                for (FeedEntry entry : entries)
+                    markEntryAsRead(entry);
 
-                if (isAdded()) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        public void run() {
-                        updateVisibleViews();
-                        }
-                    });
-                }
+            if (isAdded()) {
+                getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                    updateVisibleViews();
+                    }
+                });
+            }
             }
         }).start();
     }

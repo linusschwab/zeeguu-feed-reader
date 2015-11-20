@@ -145,8 +145,7 @@ public class FeedlyConnectionManager {
      * GET /v3/auth/auth
      */
     public void getAuthenticationCode() {
-        if (!isNetworkAvailable())
-            return; // ignore here
+        // TODO: Display error message if no network available
 
         String scope = Uri.encode("https://cloud.feedly.com/subscriptions");
 
