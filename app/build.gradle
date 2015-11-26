@@ -27,7 +27,7 @@ dependencies {
     compile 'com.mikepenz:google-material-typeface:1.2.0.1@aar'
     compile 'com.mikepenz:fontawesome-typeface:4.4.0.1@aar'
     compile project(':libraries:zeeguulibrary')
-    compile project(':libraries:volley')
+    //compile project(':libraries:volley')
     compile project(':libraries:ormlite')
     compile project(':libraries:slidinguppanel')
 }
