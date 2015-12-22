@@ -52,7 +52,6 @@ import ch.unibe.scg.zeeguufeedreader.FeedOverview.Feed;
 import ch.unibe.scg.zeeguufeedreader.FeedOverview.FeedOverviewCallbacks;
 import ch.unibe.scg.zeeguufeedreader.Feedly.FeedlyAuthenticationFragment;
 import ch.unibe.scg.zeeguufeedreader.Preferences.SettingsActivity;
-import ch.unibe.zeeguulibrary.WebView.ZeeguuTranslationActionMode;
 import ch.unibe.zeeguulibrary.WebView.ZeeguuWebViewFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.Compatibility.FeedEntryCompatibilityFragment;
 import ch.unibe.scg.zeeguufeedreader.FeedEntry.FeedEntryFragment;
@@ -95,7 +94,6 @@ public class MainActivity extends BaseActivity implements
 
     // Action Mode
     private ActionMode actionMode;
-    private ZeeguuTranslationActionMode translationActionMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -421,33 +419,14 @@ public class MainActivity extends BaseActivity implements
         // TODO: Set status bar color (and back to transparent on finish)
         actionMode = mode;
 
-        if (displayTranslationActionMode()) {
-            translationActionMode = new ZeeguuTranslationActionMode(getCurrentFeedEntryFragment());
-            translationActionMode.onPrepareActionMode(mode, mode.getMenu());
-            translationActionMode.onCreateActionMode(mode, mode.getMenu());
-        }
-
         super.onSupportActionModeStarted(mode);
     }
 
     @Override
     public void onSupportActionModeFinished(ActionMode mode) {
-
-        if (displayTranslationActionMode() && translationActionMode != null)
-            translationActionMode.onDestroyActionMode(mode);
-
         actionMode = null;
-        translationActionMode = null;
 
         super.onSupportActionModeFinished(mode);
-    }
-
-    public void onActionItemClicked(MenuItem item) {
-        // Handle custom action mode clicks
-        if (actionMode != null) {
-            if (displayTranslationActionMode())
-                translationActionMode.onActionItemClicked(actionMode, item);
-        }
     }
 
     private boolean displayTranslationActionMode() {

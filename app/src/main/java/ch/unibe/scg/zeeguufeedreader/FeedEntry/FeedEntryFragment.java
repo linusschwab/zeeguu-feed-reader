@@ -84,7 +84,9 @@ public class FeedEntryFragment extends ZeeguuWebViewFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View mainView = inflater.inflate(R.layout.fragment_feed_entry, container, false);
-        translationBar = (TextView) mainView.findViewById(R.id.webview_translation);
+        translationBar = (RelativeLayout) mainView.findViewById(R.id.webview_translation_bar);
+        translationView = (TextView) mainView.findViewById(R.id.webview_translation);
+        bookmarkButton = (ImageView) mainView.findViewById(R.id.webview_bookmark);
         webView = (WebView) mainView.findViewById(R.id.webview_content);
         progressBar = (ProgressBar) mainView.findViewById(R.id.webview_progress_bar);
         panelHeader = (RelativeLayout) mainView.findViewById(R.id.panel_header);
