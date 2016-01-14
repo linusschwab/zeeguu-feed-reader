@@ -31,7 +31,7 @@
     40% - 66, 35% - 59, 30% - 4D, 25% - 40,
     20% - 33, 15% - 26, 10% - 1A, 5% - 0D,
     0% — 00 -->
-    <color name="transparent_white">#e6f5f5f5</color>
+    <color name="transparent_white">#E6F5F5F5</color>
 
     <!-- App Theme Colors -->
     <color name="status_bar_gray">#3C434B</color>

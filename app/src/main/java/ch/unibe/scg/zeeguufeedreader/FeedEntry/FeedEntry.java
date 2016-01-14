@@ -108,7 +108,8 @@ public class FeedEntry implements Comparable<FeedEntry> {
 
             holder.favicon = (ImageView) convertView.findViewById(R.id.feed_entry_favicon);
             holder.published = (TextView) convertView.findViewById(R.id.feed_entry_published);
-            holder.recommender = (TextView) convertView.findViewById(R.id.feed_entry_recommender);
+            holder.learnability = (TextView) convertView.findViewById(R.id.feed_entry_learnability);
+            holder.difficulty = (ImageView) convertView.findViewById(R.id.feed_entry_difficulty);
             holder.title = (TextView) convertView.findViewById(R.id.feed_entry_title);
             holder.summary = (TextView) convertView.findViewById(R.id.feed_entry_summary);
             holder.favorite = (ImageView) convertView.findViewById(R.id.feed_entry_favorite);
@@ -124,13 +125,15 @@ public class FeedEntry implements Comparable<FeedEntry> {
             holder.published.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.silver));
             holder.title.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.gray));
             holder.summary.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.silver));
-            holder.recommender.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.silver));
+            holder.learnability.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.silver));
+            holder.difficulty.setAlpha(0.2f);
         }
         else {
             holder.published.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.gray));
             holder.title.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.darkgray));
             holder.summary.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.gray));
-            holder.recommender.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.gray));
+            holder.learnability.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.gray));
+            holder.difficulty.setAlpha(0.6f);
         }
 
         // Favicon
@@ -145,14 +148,24 @@ public class FeedEntry implements Comparable<FeedEntry> {
         // Date
         holder.published.setText(getDateSimple());
 
-        // Recommender
+        // Article Recommender
         if (getDifficulty() != null && learnabilityCount != null) {
-            DecimalFormat decimal = new DecimalFormat("0.00");
-            holder.recommender.setVisibility(View.VISIBLE);
-            holder.recommender.setText("D: " + decimal.format(getDifficulty()).replace(',', '.') + ", L: " + learnabilityCount);
+            holder.learnability.setVisibility(View.VISIBLE);
+            holder.difficulty.setVisibility(View.VISIBLE);
+
+            holder.learnability.setText(Integer.toString(learnabilityCount));
+
+            if (getDifficulty() <= 0.3f)
+                holder.difficulty.setColorFilter(ContextCompat.getColor(ContextManager.getContext(), R.color.green));
+            else if (getDifficulty() <= 0.4f)
+                holder.difficulty.setColorFilter(ContextCompat.getColor(ContextManager.getContext(), R.color.yellow));
+            else
+                holder.difficulty.setColorFilter(ContextCompat.getColor(ContextManager.getContext(), R.color.red));
+            }
+        else {
+            holder.learnability.setVisibility(View.INVISIBLE);
+            holder.difficulty.setVisibility(View.INVISIBLE);
         }
-        else
-            holder.recommender.setVisibility(View.INVISIBLE);
 
         // Title
         holder.title.setText(title);
@@ -339,11 +352,7 @@ public class FeedEntry implements Comparable<FeedEntry> {
     }
 
     public Float getDifficulty() {
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(ContextManager.getContext());
-        if (sharedPref.getString("pref_zeeguu_difficulty", "Median").equals("Average"))
-            return difficultyAverage;
-        else
-            return difficultyMedian;
+        return difficultyAverage;
     }
 
     public void setDifficultyAverage(Float difficultyAverage) {
@@ -392,7 +401,8 @@ public class FeedEntry implements Comparable<FeedEntry> {
     static class FeedEntryViewHolder {
         ImageView favicon;
         TextView published;
-        TextView recommender;
+        TextView learnability;
+        ImageView difficulty;
         TextView title;
         TextView summary;
         ImageView favorite;

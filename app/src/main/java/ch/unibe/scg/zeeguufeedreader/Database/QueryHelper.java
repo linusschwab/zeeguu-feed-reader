@@ -131,13 +131,9 @@ public class QueryHelper {
 
     public List<FeedEntry> getRecommendedEntries(float maxDifficulty) {
         try {
-            String difficulty = "zeeguu_difficulty_median";
-            if (sharedPref.getString("pref_zeeguu_difficulty", "Median").equals("Average"))
-                difficulty = "zeeguu_difficulty_average";
-
             return callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
-                .orderBy(difficulty, true)
-                .where().between(difficulty, 0, maxDifficulty)
+                .orderBy("zeeguu_difficulty_average", true)
+                .where().between("zeeguu_difficulty_average", 0, maxDifficulty)
                 .query();
         }
         catch (SQLException e) {
@@ -148,12 +144,8 @@ public class QueryHelper {
 
     public int getNumberOfRecommendedEntries(float maxDifficulty) {
         try {
-            String difficulty = "zeeguu_difficulty_median";
-            if (sharedPref.getString("pref_zeeguu_difficulty", "Median").equals("Average"))
-                difficulty = "zeeguu_difficulty_average";
-
             return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
-                .where().between(difficulty, 0, maxDifficulty)
+                .where().between("zeeguu_difficulty_average", 0, maxDifficulty)
                 .countOf();
         }
         catch (SQLException e) {
@@ -164,12 +156,8 @@ public class QueryHelper {
 
     public int getNumberOfUnreadRecommendedEntries(float maxDifficulty) {
         try {
-            String difficulty = "zeeguu_difficulty_median";
-            if (sharedPref.getString("pref_zeeguu_difficulty", "Median").equals("Average"))
-                difficulty = "zeeguu_difficulty_average";
-
             return (int) callback.getDatabaseHelper().getFeedEntryDao().queryBuilder()
-                .where().between(difficulty, 0, maxDifficulty)
+                .where().between("zeeguu_difficulty_average", 0, maxDifficulty)
                 .and().eq("read", false)
                 .countOf();
         }

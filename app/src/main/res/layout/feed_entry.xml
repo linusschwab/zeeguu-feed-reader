@@ -32,15 +32,35 @@
             android:textColor="@color/gray"
             android:textSize="14sp"/>
 
-        <TextView
-            android:id="@+id/feed_entry_recommender"
+        <RelativeLayout
+            android:id="@+id/feed_entry_zeeguu"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_gravity="top"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/gray"
-            android:textSize="14sp"/>
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/feed_entry_learnability"
+                android:layout_gravity="top"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/gray"
+                android:textSize="14sp"/>
+
+            <ImageView
+                android:id="@+id/feed_entry_difficulty"
+                android:layout_toRightOf="@+id/feed_entry_learnability"
+                android:layout_toEndOf="@+id/feed_entry_learnability"
+                android:layout_gravity="top"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginLeft="6dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/circle" />
+
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/feed_entry_title"
