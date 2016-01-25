@@ -129,7 +129,8 @@ public class FeedlyConnectionManager {
         activity.runOnUiThread(new Runnable() {
             public void run() {
                 callback.setSubscriptions(account.getCategories(), true);
-                callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated) + " (" + timer.getTimeElapsed() + ")");
+                callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated));
+                //callback.displayMessage(activity.getString(R.string.feedly_subscriptions_updated) + " (" + timer.getTimeElapsed() + ")");
             }
         });
     }

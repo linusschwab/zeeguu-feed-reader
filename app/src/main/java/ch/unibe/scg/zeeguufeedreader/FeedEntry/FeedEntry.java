@@ -122,10 +122,10 @@ public class FeedEntry implements Comparable<FeedEntry> {
 
         // Read/Unread
         if (read) {
-            holder.published.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.silver));
-            holder.title.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.gray));
-            holder.summary.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.silver));
-            holder.learnability.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.silver));
+            holder.published.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.lightsilver));
+            holder.title.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.silver));
+            holder.summary.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.lightsilver));
+            holder.learnability.setTextColor(ContextCompat.getColor(ContextManager.getContext(), R.color.lightsilver));
             holder.difficulty.setAlpha(0.2f);
         }
         else {

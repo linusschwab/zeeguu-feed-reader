@@ -25,15 +25,14 @@ public class ArticleRecommender {
     private int unreadCount;
 
     // Parameters
-    private float maxDifficulty = 0.5f;
+    private float maxDifficulty = 0.4f;
     private int urlsPerRequest = 20;
     private long requestDelay = 10000;
     private int delayMultiplier = 1;
 
     // State information
-    boolean difficulties_received;
-    boolean learnabilities_received;
-    boolean contents_received;
+    boolean difficulties_received = true;
+    boolean learnabilities_received = true;
 
     /**
      * Callback interface that must be implemented by the container activity
@@ -43,8 +42,6 @@ public class ArticleRecommender {
         ZeeguuAccount getZeeguuAccount();
         FeedlyAccount getFeedlyAccount();
         FeedOverviewFragment getFeedOverviewFragment();
-        // TODO: Remove
-        void displayMessage(String message);
     }
 
     public ArticleRecommender(Activity activity) {
@@ -77,7 +74,6 @@ public class ArticleRecommender {
 
                 for (FeedEntry entry : entries) {
                     if (entry.getContentFull() == null) {
-                        //cachedEntries.put(entry.getId(), entry);
                         HashMap<String, String> url = new HashMap<>(2);
                         url.put("url", entry.getUrl());
                         url.put("id", String.valueOf(entry.getId()));
@@ -91,13 +87,9 @@ public class ArticleRecommender {
                 }
 
                 if (urls.size() != 0) {
-                    //contents_received = false;
                     SystemClock.sleep(requestDelay * delayMultiplier);
                     callback.getZeeguuConnectionManager().getContentFromUrl(urls);
                 }
-
-                if (isActive())
-                    calculateScoreForNewEntries();
             }
         });
 
@@ -107,12 +99,8 @@ public class ArticleRecommender {
 
     public void setContentForEntries(ArrayList<HashMap<String, String>> contents) {
         checkIfServerOverloaded(contents);
-        // TODO: Remove
-        callback.displayMessage("Received content for " + contents.size() + " URLs. Current delay: "
-                                + String.valueOf((requestDelay * delayMultiplier)/1000) + "s");
 
         for (HashMap<String, String> content : contents) {
-            //FeedEntry entry = cachedEntries.get(Integer.parseInt(content.get("id")));
             FeedEntry entry = callback.getFeedlyAccount().getEntryById(Integer.parseInt(content.get("id")));
             if (entry != null) {
                 entry.setContentFull(content.get("content"));
@@ -120,8 +108,9 @@ public class ArticleRecommender {
                 callback.getFeedlyAccount().saveFeedEntry(entry);
             }
         }
-        //contents_received = true;
-        //cachedEntries.clear();
+
+        if (isActive() && contents.size() != 0 && !isWaitingForResponse())
+            calculateScoreForNewEntries();
     }
 
     // Calculate scores
@@ -129,6 +118,8 @@ public class ArticleRecommender {
         Thread thread = new Thread(new Runnable() {
             public void run() {
                 ArrayList<FeedEntry> entries = callback.getFeedlyAccount().getAllFeedEntries();
+                cachedEntries.clear();
+
                 // TODO: Check feed language instead (does not exist yet)
                 String language = callback.getZeeguuAccount().getLanguageLearning();
 
@@ -207,7 +198,7 @@ public class ArticleRecommender {
     }
 
     public boolean isWaitingForResponse() {
-        return !difficulties_received || !learnabilities_received || !contents_received;
+        return !difficulties_received || !learnabilities_received;
     }
 
     private void checkIfServerOverloaded(ArrayList contents) {

@@ -675,6 +675,4 @@ public class MainActivity extends BaseActivity implements
     public void notifyDataChanged(boolean myWordsChanged) {
         myWordsFragment.notifyDataSetChanged(myWordsChanged);
     }
-
-
 }

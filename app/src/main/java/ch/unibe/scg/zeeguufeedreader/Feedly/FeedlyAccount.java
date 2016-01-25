@@ -181,8 +181,13 @@ public class FeedlyAccount {
         favorite.setUnreadCount(queryHelper.getNumberOfUnreadFavoriteEntries());
 
         float maxDifficulty = callback.getArticleRecommender().getMaxDifficulty();
-        recommended.setEntriesCount(queryHelper.getNumberOfRecommendedEntries(maxDifficulty));
+        int recommendedEntriesCount = queryHelper.getNumberOfRecommendedEntries(maxDifficulty);
+        recommended.setEntriesCount(recommendedEntriesCount);
         recommended.setUnreadCount(queryHelper.getNumberOfUnreadRecommendedEntries(maxDifficulty));
+
+        // Add recommended category as soon as it contains some entries
+        if (!categories.contains(recommended) && callback.getArticleRecommender().isActive() && recommendedEntriesCount != 0)
+            categories.add(2, recommended);
 
         updateDefaultCategoryEntries();
     }
@@ -469,6 +474,8 @@ public class FeedlyAccount {
 
         // TODO: Move
         callback.getArticleRecommender().getContentForNewEntries();
+        if (callback.getArticleRecommender().isActive())
+            callback.getArticleRecommender().calculateScoreForNewEntries();
     }
 
     // Mark as read
