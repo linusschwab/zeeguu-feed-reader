@@ -42,7 +42,8 @@ public class FeedlyConnectionManager {
     private final String redirectUri = "https://localhost";
 
     private final String clientId = "sandbox";
-    private final String clientSecret = "LTIZYM5VDKHQF1CI085I"; // (expires on February 1st 2016)
+    private final String clientSecret = "JSSBD6FZT72058P51XEG"; // (expires on April 1st 2016)
+    // See more at  https://groups.google.com/forum/m/#!topic/feedly-cloud/V7MElMqQXsU
 
     private RequestQueue queue;
     private FeedlyAccount account;
