@@ -22,11 +22,11 @@ public class CategoryFeed {
 
     // This is a foreign object which just stores the id from the Category object in this table.
     @DatabaseField(foreign = true, columnName = "category_id", columnDefinition = "integer references categories(id) on delete cascade")
-    Category category;
+    private Category category;
 
     // This is a foreign object which just stores the id from the Feed object in this table.
     @DatabaseField(foreign = true, columnName = "feed_id", columnDefinition = "integer references feeds(id) on delete cascade")
-    Feed feed;
+    private Feed feed;
 
     CategoryFeed() {
         // Empty constructor needed by ormlite
